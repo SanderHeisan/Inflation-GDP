@@ -169,7 +169,7 @@ def plot_quad_probability_heatmap(prob: pd.DataFrame, calls: dict,
                 ax.add_patch(plt.Rectangle((j - 0.47, i - 0.47), 0.94, 0.94,
                                            fill=False, edgecolor=INK,
                                            linewidth=2))
-    ax.set_title(f"Quad probabilities, next {n} quarters"
+    ax.set_title(f"Quad probabilities by quarter"
                  f" (forecast as of {pd.Timestamp(asof).date()})",
                  color=INK, fontsize=12.5, loc="left", pad=10)
     fig.text(0.01, 0.015, METHOD_NOTES.get(method, ""),
@@ -205,7 +205,7 @@ def plot_quad_probability_monthly(mprob: pd.DataFrame, path: str) -> None:
                   fontsize=8.5, color=INK_2)
     ax.set_ylim(0, 100)
     ax.set_ylabel("Probability (%)", color=INK_2, fontsize=10)
-    ax.set_title("Quad probabilities by month, next 12 months",
+    ax.set_title("Quad probabilities by month",
                  color=INK, fontsize=12.5, loc="left", pad=10)
     ax.legend(frameon=False, fontsize=9, labelcolor=INK_2, ncol=4,
               loc="upper center", bbox_to_anchor=(0.5, -0.22))

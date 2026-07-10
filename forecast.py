@@ -165,11 +165,16 @@ def main(argv=None):
         for n in notes:
             print("  " + n)
 
+    # As-of is *today*: the vintage truncation applies the publication lags
+    # automatically, exactly as the backtest's as-of dates did. Horizon 0 is
+    # the quarter we are standing in right now.
     prob, calls, asof = probability.current_quad_probabilities(
         bundle, preds, realized, cfg, method=args.method,
+        asof=pd.Timestamp(dt.date.today()),
+        horizons=(0, 1, 2, 3, 4),
         assumption_overrides=overrides or None)
 
-    print(f"\n=== Quad probabilities, next 4 quarters "
+    print(f"\n=== Quad probabilities, current + next 4 quarters "
           f"(as of {asof.date()}, method={args.method}) ===")
     print(probability.format_probability_table(prob, calls).to_string())
 
