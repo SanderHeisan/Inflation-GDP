@@ -1,0 +1,49 @@
+# =====================================================================
+# Monthly market inputs -- update these before each run.
+# This file IS the forward-looking part of the model: everything here
+# is either a market price (objective) or your explicit view (auditable).
+# =====================================================================
+
+# --- Electricity (Nord Pool / Nasdaq Commodities forwards, ore/kWh incl VAT,
+#     volume-weighted for the NO price areas relevant to CPI) ---
+power_recent_ore_kwh: 95.0
+power_forward_ore_kwh:
+  "2026-08": 82.0
+  "2026-09": 88.0
+  "2026-10": 105.0
+  "2026-11": 118.0
+  "2026-12": 125.0
+  "2027-01": 128.0
+  "2027-02": 122.0
+  "2027-03": 110.0
+power_variable_share: 0.55   # share of CPI electricity bill that is spot
+
+# --- Oil / fuel ---
+brent_recent_usd: 78.0
+brent_forward_usd:            # Brent futures strip
+  "2026-08": 77.5
+  "2026-09": 77.0
+  "2026-12": 75.5
+usdnok_recent: 10.60
+usdnok_path:                  # your NOK view (or forward points)
+  "2026-12": 10.50
+fuel_passthrough: 0.40        # taxes dampen crude moves at the pump
+
+# --- FX pass-through: assumed I-44 path (empty = flat at last value).
+#     Note: most of the coming year's pass-through comes from ALREADY
+#     observed I-44 moves via the lags -- this only matters at the margin.
+i44_path: {}
+imported_goods_baseline_yoy: 1.0   # foreign PPI trend in imported goods
+
+# --- Wages: the frontfag settlement norm (TBU), announced each spring ---
+wage_norm_pct: 4.5
+services_wage_haircut: 0.75
+
+# --- Food pipeline: world food prices in NOK, 6m lead ---
+food_pipeline_yoy: 3.0
+
+# --- GDP nowcast indicators (update after each release) ---
+gdp_indicators:
+  regional_network_index: 0.8   # Norges Bank Regional Network, output next 6m
+  pmi: 51.5                     # NIMA/DNB PMI, latest
+  retail_qoq: 0.002             # retail volume QoQ, latest quarter

@@ -1,0 +1,6 @@
+__pycache__/
+*.pyc
+.venv/
+quad_map.png
+quad_projections.csv
+cpi_decomposition.csv
