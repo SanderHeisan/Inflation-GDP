@@ -127,8 +127,19 @@ def plot_confusion_matrix(matrix: pd.DataFrame, horizon: int,
     plt.close(fig)
 
 
+METHOD_NOTES = {
+    "calibration": "P(quad) = how often the realized quad followed this "
+                   "call at this horizon in the walk-forward backtest. "
+                   "Outlined = model's point call.",
+    "residual": "P(quad) = share of the model's backtest error cloud "
+                "(per horizon) landing in each quadrant around today's "
+                "predicted deltas. Outlined = model's point call.",
+}
+
+
 def plot_quad_probability_heatmap(prob: pd.DataFrame, calls: dict,
-                                  asof, path: str) -> None:
+                                  asof, path: str,
+                                  method: str = "residual") -> None:
     """Headline forecast view: P(quad) for each of the next quarters.
     Sequential blue on probability; the model's point call gets a ring."""
     cmap = LinearSegmentedColormap.from_list("blues", SEQ_BLUES)
@@ -161,10 +172,7 @@ def plot_quad_probability_heatmap(prob: pd.DataFrame, calls: dict,
     ax.set_title(f"Quad probabilities, next {n} quarters"
                  f" (forecast as of {pd.Timestamp(asof).date()})",
                  color=INK, fontsize=12.5, loc="left", pad=10)
-    fig.text(0.01, 0.015,
-             "P(quad) = how often the realized quad followed this call at "
-             "this horizon in the walk-forward backtest. Outlined = model's "
-             "point call.",
+    fig.text(0.01, 0.015, METHOD_NOTES.get(method, ""),
              color=MUTED, fontsize=8)
     fig.tight_layout(rect=(0, 0.05, 1, 1))
     fig.savefig(path, facecolor=SURFACE)

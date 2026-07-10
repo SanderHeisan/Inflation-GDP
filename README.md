@@ -102,11 +102,34 @@ timeline plots.
 
 The headline output is `quad_probabilities_quarterly.png` /
 `_monthly.png` (+ `.csv`): the probability of each quad in each of the
-next four quarters, obtained by reading today's point calls through the
-backtest's own per-horizon calibration — P(quad) is how often each quad
-actually followed this call at this horizon in the walk-forward history,
-so the numbers carry the model's measured error rate rather than its
-self-confidence.
+next four quarters. Default method (`residual`): the model's per-horizon
+backtest error cloud on (d_growth, d_inflation) is placed around today's
+predicted deltas and P(quad) is the share landing in each quadrant — so
+the probabilities carry the model's measured error rate *and* respond
+continuously to the inputs. The alternative `calibration` method reads
+the point call through the per-horizon confusion matrix instead.
+
+## Live daily forecast
+
+```bash
+python forecast.py            # after a backtest run has produced calibration
+```
+
+Re-runs today's forecast with **live market prices** fetched at runtime:
+Brent (FRED daily), USDNOK and I-44 (Norges Bank daily), and Nord Pool
+area power prices (hvakosterstrommen.no). Live spots replace the
+*forward* paths while the recent anchors stay at the level embedded in
+the last CPI print — the gap between them is the price impulse the
+projection reacts to. A power or oil spike today therefore raises the
+projected inflation deltas and P(quad 2/3) today, without waiting for
+the next CPI release. Base effects from already-published index levels
+remain the backbone of the YoY arithmetic throughout. Each run appends
+to `forecast_history.csv` so call drift is auditable.
+
+`.github/workflows/daily-forecast.yml` runs the whole chain (fetch →
+backtest → live forecast) every morning at 06:45 UTC and publishes the
+outputs to the `live-forecast` branch plus a workflow artifact; it can
+also be triggered manually from the Actions tab.
 
 ### Point-in-time discipline
 

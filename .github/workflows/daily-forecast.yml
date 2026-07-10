@@ -1,0 +1,61 @@
+# Re-runs the live quad forecast every morning: fresh SSB/Norges Bank data,
+# live Brent/NOK/power spots, probabilities from the backtest error cloud.
+# Results land on the 'live-forecast' branch (charts viewable on GitHub)
+# and as a workflow artifact. Also runnable on demand from the Actions tab.
+name: Daily quad forecast
+
+on:
+  schedule:
+    - cron: "45 6 * * *"   # 06:45 UTC, after Nord Pool day-ahead + FRED update
+  workflow_dispatch:
+
+jobs:
+  forecast:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Fetch latest macro data
+        run: python -m backtest.fetch_data --data-dir data
+
+      - name: Carry over forecast history from previous runs
+        run: |
+          mkdir -p results
+          git fetch origin live-forecast --depth 1 2>/dev/null && \
+            git show origin/live-forecast:forecast_history.csv \
+              > results/forecast_history.csv 2>/dev/null || \
+            echo "no previous history"
+
+      - name: Run walk-forward backtest (calibration)
+        run: python backtest.py --start 2012 --end 2025 --horizon 4 --freq M --outdir results
+
+      - name: Run live daily forecast
+        run: python forecast.py --data-dir data --outdir results
+
+      - name: Upload results artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: forecast-${{ github.run_id }}
+          path: results/
+
+      - name: Publish to live-forecast branch
+        run: |
+          cd results
+          git init -b live-forecast
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "Daily forecast $(date -u +%F)"
+          git push --force \
+            "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" \
+            live-forecast

@@ -118,11 +118,13 @@ def main(argv=None) -> pd.DataFrame:
     # calibration -> P(quad) per target quarter for the year ahead.
     try:
         prob, calls, asof = probability.current_quad_probabilities(
-            bundle, preds, realized_final, cfg, horizons=tuple(horizons))
+            bundle, preds, realized_final, cfg, horizons=tuple(horizons),
+            method="residual")
         prob.to_csv(outdir / "quad_probabilities.csv")
         plots.plot_quad_probability_heatmap(
             prob, calls, asof,
-            str(outdir / "quad_probabilities_quarterly.png"))
+            str(outdir / "quad_probabilities_quarterly.png"),
+            method="residual")
         plots.plot_quad_probability_monthly(
             probability.monthly_probabilities(prob),
             str(outdir / "quad_probabilities_monthly.png"))
