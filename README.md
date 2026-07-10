@@ -100,6 +100,14 @@ base-effects / random benchmarks — scored against both final-vintage and
 first-release realized quads), plus hit-rate, confusion-matrix and
 timeline plots.
 
+The headline output is `quad_probabilities_quarterly.png` /
+`_monthly.png` (+ `.csv`): the probability of each quad in each of the
+next four quarters, obtained by reading today's point calls through the
+backtest's own per-horizon calibration — P(quad) is how often each quad
+actually followed this call at this horizon in the walk-forward history,
+so the numbers carry the model's measured error rate rather than its
+self-confidence.
+
 ### Point-in-time discipline
 
 `backtest/vintage.py` is the leakage firewall. At each as-of date it

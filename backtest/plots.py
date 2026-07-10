@@ -127,6 +127,89 @@ def plot_confusion_matrix(matrix: pd.DataFrame, horizon: int,
     plt.close(fig)
 
 
+def plot_quad_probability_heatmap(prob: pd.DataFrame, calls: dict,
+                                  asof, path: str) -> None:
+    """Headline forecast view: P(quad) for each of the next quarters.
+    Sequential blue on probability; the model's point call gets a ring."""
+    cmap = LinearSegmentedColormap.from_list("blues", SEQ_BLUES)
+    n = len(prob.columns)
+    fig, ax = plt.subplots(figsize=(1.9 + 1.55 * n, 4.4), dpi=150)
+    fig.patch.set_facecolor(SURFACE)
+    ax.set_facecolor(SURFACE)
+    ax.imshow(prob.values, cmap=cmap, vmin=0, vmax=1, aspect="auto")
+
+    ax.set_xticks(range(n), [str(c) for c in prob.columns],
+                  fontsize=10, color=INK_2)
+    ax.set_yticks(range(4), [QUAD_NAMES[q] for q in prob.index],
+                  fontsize=9.5, color=INK_2)
+    for spine in ax.spines.values():
+        spine.set_visible(False)
+    ax.tick_params(length=0)
+
+    for i, q in enumerate(prob.index):
+        for j, tq in enumerate(prob.columns):
+            p = prob.iloc[i, j]
+            called = calls.get(tq) == q
+            ax.text(j, i, f"{p * 100:.0f}%", ha="center", va="center",
+                    fontsize=13 if called else 11,
+                    fontweight="bold" if called else "normal",
+                    color="#ffffff" if p > 0.55 else INK)
+            if called:
+                ax.add_patch(plt.Rectangle((j - 0.47, i - 0.47), 0.94, 0.94,
+                                           fill=False, edgecolor=INK,
+                                           linewidth=2))
+    ax.set_title(f"Quad probabilities, next {n} quarters"
+                 f" (forecast as of {pd.Timestamp(asof).date()})",
+                 color=INK, fontsize=12.5, loc="left", pad=10)
+    fig.text(0.01, 0.015,
+             "P(quad) = how often the realized quad followed this call at "
+             "this horizon in the walk-forward backtest. Outlined = model's "
+             "point call.",
+             color=MUTED, fontsize=8)
+    fig.tight_layout(rect=(0, 0.05, 1, 1))
+    fig.savefig(path, facecolor=SURFACE)
+    plt.close(fig)
+
+
+def plot_quad_probability_monthly(mprob: pd.DataFrame, path: str) -> None:
+    """The same distributions across the next twelve months: one stacked
+    probability bar per month (months of a quarter share its distribution)."""
+    months = list(mprob.columns)
+    fig, ax = plt.subplots(figsize=(8.6, 4.6), dpi=150)
+    fig.patch.set_facecolor(SURFACE)
+    _style_axes(ax)
+
+    x = np.arange(len(months))
+    bottom = np.zeros(len(months))
+    for q in mprob.index:
+        vals = mprob.loc[q].to_numpy()
+        ax.bar(x, vals * 100, bottom=bottom * 100, width=0.82,
+               color=QUAD_COLORS[q], label=QUAD_NAMES[q],
+               edgecolor=SURFACE, linewidth=2)
+        for j, v in enumerate(vals):
+            if v >= 0.18:   # direct-label the meaningful bands only
+                ax.text(x[j], (bottom[j] + v / 2) * 100, f"{v * 100:.0f}",
+                        ha="center", va="center", fontsize=8,
+                        color="#ffffff" if q in (1, 3, 4) else INK)
+        bottom += vals
+
+    ax.set_xticks(x, [str(m) for m in months], rotation=45,
+                  fontsize=8.5, color=INK_2)
+    ax.set_ylim(0, 100)
+    ax.set_ylabel("Probability (%)", color=INK_2, fontsize=10)
+    ax.set_title("Quad probabilities by month, next 12 months",
+                 color=INK, fontsize=12.5, loc="left", pad=10)
+    ax.legend(frameon=False, fontsize=9, labelcolor=INK_2, ncol=4,
+              loc="upper center", bbox_to_anchor=(0.5, -0.22))
+    fig.text(0.01, 0.015,
+             "Quads are quarterly: the three months of a quarter share its "
+             "distribution.",
+             color=MUTED, fontsize=8)
+    fig.tight_layout(rect=(0, 0.04, 1, 1))
+    fig.savefig(path, facecolor=SURFACE, bbox_inches="tight")
+    plt.close(fig)
+
+
 def plot_timeline(preds: pd.DataFrame, realized: pd.DataFrame,
                   horizons: list[int], path: str) -> None:
     """Predicted vs realized quads over time: one row per horizon plus the

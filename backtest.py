@@ -23,7 +23,7 @@ from pathlib import Path
 
 import pandas as pd
 
-from backtest import btconfig, data_bundle, engine, plots, scoring
+from backtest import btconfig, data_bundle, engine, plots, probability, scoring
 from backtest.vintage import resolve_revision_mode
 
 
@@ -113,8 +113,27 @@ def main(argv=None) -> pd.DataFrame:
         plots.plot_confusion_matrix(m, h, str(outdir / f"confusion_h{h}.png"))
     plots.plot_timeline(preds, realized_final, horizons,
                         str(outdir / "timeline.png"))
-    print(f"\nwrote summary.csv, hit-rate/confusion/timeline plots to "
-          f"{outdir.resolve()}")
+
+    # Headline forecast: today's calls read through the backtest's own
+    # calibration -> P(quad) per target quarter for the year ahead.
+    try:
+        prob, calls, asof = probability.current_quad_probabilities(
+            bundle, preds, realized_final, cfg, horizons=tuple(horizons))
+        prob.to_csv(outdir / "quad_probabilities.csv")
+        plots.plot_quad_probability_heatmap(
+            prob, calls, asof,
+            str(outdir / "quad_probabilities_quarterly.png"))
+        plots.plot_quad_probability_monthly(
+            probability.monthly_probabilities(prob),
+            str(outdir / "quad_probabilities_monthly.png"))
+        print(f"\n=== Quad probabilities for the year ahead "
+              f"(forecast as of {asof.date()}, calibrated on the backtest) ===")
+        print(probability.format_probability_table(prob, calls).to_string())
+    except Exception as e:
+        print(f"\nforward probability view skipped: {e}")
+
+    print(f"\nwrote summary.csv, quad-probability/hit-rate/confusion/"
+          f"timeline plots to {outdir.resolve()}")
     return summary
 
 
