@@ -4,3 +4,9 @@ __pycache__/
 quad_map.png
 quad_projections.csv
 cpi_decomposition.csv
+backtest_results.parquet
+summary.csv
+hit_rate_*.png
+confusion_h*.png
+timeline.png
+.pytest_cache/

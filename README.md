@@ -65,6 +65,55 @@ assigns the quad, and flags quarters inside a ±0.10pp deadband as
 low-conviction. `quads.quad_flips()` extracts regime changes — the events a
 subscriber briefing should lead with.
 
+## Backtesting
+
+The walk-forward harness answers one question: how often would this model
+have called the correct quad 1-4 quarters ahead, using only information
+available at the time?
+
+```bash
+python backtest.py --demo --start 2012 --end 2025 --horizon 4   # synthetic
+python backtest.py --start 2012 --end 2025 --horizon 4          # cached data
+python -m pytest tests/                                          # leakage & scoring tests
+```
+
+Outputs: `backtest_results.parquet` (every prediction: as-of date, target
+quarter, horizon, quad, deltas, conviction, benchmarks, vintage
+bookkeeping), `summary.csv` (per-horizon hit rates, direction hit rates,
+flip precision/recall, and the model's edge over persistence /
+base-effects / random benchmarks — scored against both final-vintage and
+first-release realized quads), plus hit-rate, confusion-matrix and
+timeline plots.
+
+### Point-in-time discipline
+
+`backtest/vintage.py` is the leakage firewall. At each as-of date it
+rebuilds the information set: QNA truncated to a ~40-day publication lag,
+CPI to ~10 days (SSB CPI is never revised, so truncation is exact there),
+market forwards frozen at the last observed spot (spot-carry — realized
+future prices never enter the assumptions dict), and the wage norm only
+visible from mid-April of its settlement year. `tests/test_vintage.py`
+asserts all of it, including a mutate-the-future test proving predictions
+cannot change when post-as-of data changes.
+
+GDP revisions run in one of three flagged modes (recorded in every output
+row):
+
+* `realtime` — replay true vintages from `data/gdp_vintages.csv`. Norges
+  Bank maintains a real-time database of Norwegian QNA vintages (the
+  dataset behind their nowcasting research); it is not fetchable from this
+  sandbox, so download it yourself and convert to the CSV format described
+  in `backtest/fetch_data.py`. The harness switches over automatically.
+* `noise` (default fallback) — simulate first releases: current-vintage
+  QoQ plus a persistent, per-quarter N(0, sigma) revision error that
+  decays as the quarter matures. `--sigma` defaults to 0.25pp, in line
+  with SSB's published revision statistics for mainland QoQ growth.
+* `none` — truncation only, revisions ignored (an upper bound).
+
+Run `python -m backtest.fetch_data` on a networked machine to populate
+`data/` with current-vintage SSB GDP/CPI and Norges Bank I-44; market and
+vintage files are documented there too.
+
 ## Before production
 
 - Run `data_sources.get_table_metadata()` on each SSB table and confirm the

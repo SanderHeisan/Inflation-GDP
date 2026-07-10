@@ -1,0 +1,179 @@
+"""
+Static report figures for the backtest (matplotlib, light surface).
+
+Quad colors are a fixed CVD-validated categorical mapping (worst adjacent
+CVD deltaE 24; the yellow slot is below 3:1 contrast on the surface, so every
+figure that uses it also carries direct labels).
+"""
+from __future__ import annotations
+
+import matplotlib
+matplotlib.use("Agg")
+import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
+from matplotlib.colors import LinearSegmentedColormap, ListedColormap
+from matplotlib.patches import Patch
+
+QUAD_COLORS = {1: "#008300",   # Goldilocks
+               2: "#eda100",   # Reflation
+               3: "#e34948",   # Stagflation
+               4: "#2a78d6"}   # Disinflation
+QUAD_NAMES = {1: "Q1 Goldilocks", 2: "Q2 Reflation",
+              3: "Q3 Stagflation", 4: "Q4 Disinflation"}
+
+SURFACE = "#fcfcfb"
+INK = "#0b0b0b"
+INK_2 = "#52514e"
+MUTED = "#898781"
+GRID = "#e1e0d9"
+BASELINE = "#c3c2b7"
+
+STRATEGY_COLORS = {"model": "#2a78d6", "persistence": "#eda100",
+                   "base_effects": "#4a3aa7"}
+STRATEGY_NAMES = {"model": "Model", "persistence": "Persistence",
+                  "base_effects": "Base effects only"}
+
+SEQ_BLUES = ["#fcfcfb", "#cde2fb", "#9ec5f4", "#6da7ec",
+             "#3987e5", "#256abf", "#184f95", "#0d366b"]
+
+
+def _style_axes(ax):
+    ax.set_facecolor(SURFACE)
+    for side in ("top", "right"):
+        ax.spines[side].set_visible(False)
+    for side in ("left", "bottom"):
+        ax.spines[side].set_color(BASELINE)
+    ax.tick_params(colors=MUTED, labelcolor=INK_2, labelsize=9)
+    ax.yaxis.grid(True, color=GRID, linewidth=0.8)
+    ax.set_axisbelow(True)
+
+
+def plot_hit_rate_by_horizon(summary: pd.DataFrame, basis: str,
+                             path: str) -> None:
+    """Quad hit rate per horizon: model line vs each benchmark, random as a
+    dashed reference."""
+    fig, ax = plt.subplots(figsize=(7.5, 4.6), dpi=150)
+    fig.patch.set_facecolor(SURFACE)
+    _style_axes(ax)
+
+    sub = summary.loc[basis]
+    for strat, color in STRATEGY_COLORS.items():
+        if strat not in sub.index.get_level_values(0):
+            continue
+        s = sub.loc[strat]["hit_rate"].sort_index()
+        ax.plot(s.index, s.values * 100, color=color, linewidth=2,
+                marker="o", markersize=5, label=STRATEGY_NAMES[strat])
+        ax.annotate(STRATEGY_NAMES[strat],
+                    (s.index[-1], s.values[-1] * 100),
+                    xytext=(8, 0), textcoords="offset points",
+                    color=color, fontsize=9, fontweight="bold", va="center")
+    ax.axhline(25, color=MUTED, linewidth=1.4, linestyle=(0, (4, 3)))
+    ax.annotate("Random (25%)", (ax.get_xlim()[0], 25), xytext=(4, 5),
+                textcoords="offset points", color=MUTED, fontsize=9)
+
+    ax.set_xlabel("Horizon (quarters ahead)", color=INK_2, fontsize=10)
+    ax.set_ylabel("Quad hit rate (%)", color=INK_2, fontsize=10)
+    ax.set_xticks(sorted(sub.index.get_level_values("horizon").unique()))
+    ax.set_ylim(0, 100)
+    ax.set_title(f"Quad hit rate by horizon - scored vs {basis} vintages",
+                 color=INK, fontsize=12, loc="left", pad=12)
+    ax.legend(frameon=False, fontsize=9, labelcolor=INK_2, loc="upper right")
+    fig.tight_layout()
+    fig.savefig(path, facecolor=SURFACE)
+    plt.close(fig)
+
+
+def plot_confusion_matrix(matrix: pd.DataFrame, horizon: int,
+                          path: str) -> None:
+    """4x4 heatmap, rows = realized quad, cols = predicted. Sequential blue
+    ramp on row-normalized shares; every cell carries its count."""
+    shares = matrix.div(matrix.sum(axis=1).replace(0, np.nan), axis=0)
+    cmap = LinearSegmentedColormap.from_list("blues", SEQ_BLUES)
+
+    fig, ax = plt.subplots(figsize=(5.6, 5.0), dpi=150)
+    fig.patch.set_facecolor(SURFACE)
+    ax.set_facecolor(SURFACE)
+    im = ax.imshow(shares.fillna(0).values, cmap=cmap, vmin=0, vmax=1)
+
+    labels = [QUAD_NAMES[q] for q in range(1, 5)]
+    ax.set_xticks(range(4), labels, fontsize=8.5, color=INK_2)
+    ax.set_yticks(range(4), labels, fontsize=8.5, color=INK_2)
+    ax.set_xlabel("Predicted", color=INK_2, fontsize=10)
+    ax.set_ylabel("Realized", color=INK_2, fontsize=10)
+    for spine in ax.spines.values():
+        spine.set_visible(False)
+    ax.tick_params(length=0)
+
+    for i in range(4):
+        for j in range(4):
+            share = shares.iloc[i, j]
+            dark = share == share and share > 0.55
+            txt = f"{matrix.iloc[i, j]}"
+            if share == share:
+                txt += f"\n{share * 100:.0f}%"
+            ax.text(j, i, txt, ha="center", va="center", fontsize=9,
+                    color="#ffffff" if dark else INK,
+                    fontweight="bold" if i == j else "normal")
+
+    ax.set_title(f"Confusion matrix - {horizon} quarter(s) ahead",
+                 color=INK, fontsize=12, loc="left", pad=12)
+    cb = fig.colorbar(im, ax=ax, fraction=0.045, pad=0.03)
+    cb.set_label("Share of realized quad", color=INK_2, fontsize=9)
+    cb.ax.tick_params(colors=MUTED, labelsize=8)
+    cb.outline.set_visible(False)
+    fig.tight_layout()
+    fig.savefig(path, facecolor=SURFACE)
+    plt.close(fig)
+
+
+def plot_timeline(preds: pd.DataFrame, realized: pd.DataFrame,
+                  horizons: list[int], path: str) -> None:
+    """Predicted vs realized quads over time: one row per horizon plus the
+    realized row, one column per target quarter, cells colored by quad."""
+    targets = sorted(preds["target_quarter"].unique())
+    targets = [t for t in targets
+               if t in realized.index.astype(str)]
+    rows = ["Realized"] + [f"Predicted h={h}" for h in horizons]
+
+    grid = np.full((len(rows), len(targets)), np.nan)
+    real_by_q = realized["quad"].copy()
+    real_by_q.index = real_by_q.index.astype(str)
+    for j, t in enumerate(targets):
+        grid[0, j] = real_by_q.get(t, np.nan)
+        for i, h in enumerate(horizons, start=1):
+            sub = preds[(preds["target_quarter"] == t)
+                        & (preds["horizon"] == h)]
+            if len(sub):
+                # latest as-of call for that (target, horizon)
+                grid[i, j] = sub.sort_values("asof")["pred_quad"].iloc[-1]
+
+    cmap = ListedColormap([QUAD_COLORS[q] for q in range(1, 5)])
+    fig_w = max(8.0, len(targets) * 0.22)
+    fig, ax = plt.subplots(figsize=(fig_w, 1.1 + 0.5 * len(rows)), dpi=150)
+    fig.patch.set_facecolor(SURFACE)
+    ax.set_facecolor(SURFACE)
+
+    masked = np.ma.masked_invalid(grid)
+    ax.pcolormesh(np.arange(len(targets) + 1), np.arange(len(rows) + 1),
+                  masked, cmap=cmap, vmin=0.5, vmax=4.5,
+                  edgecolors=SURFACE, linewidth=2)
+    ax.invert_yaxis()
+
+    step = max(1, len(targets) // 16)
+    ax.set_xticks(np.arange(0.5, len(targets), step),
+                  targets[::step], fontsize=8, color=INK_2, rotation=45)
+    ax.set_yticks(np.arange(0.5, len(rows)), rows, fontsize=9, color=INK_2)
+    for spine in ax.spines.values():
+        spine.set_visible(False)
+    ax.tick_params(length=0)
+
+    handles = [Patch(facecolor=QUAD_COLORS[q], label=QUAD_NAMES[q])
+               for q in range(1, 5)]
+    ax.legend(handles=handles, frameon=False, fontsize=9, labelcolor=INK_2,
+              ncol=4, loc="upper center", bbox_to_anchor=(0.5, -0.42))
+    ax.set_title("Predicted vs realized quads (latest call per horizon)",
+                 color=INK, fontsize=12, loc="left", pad=12)
+    fig.tight_layout()
+    fig.savefig(path, facecolor=SURFACE, bbox_inches="tight")
+    plt.close(fig)
