@@ -32,10 +32,36 @@ def get_table_metadata(table_id: str) -> dict:
     return r.json()
 
 
+def _get_variable(meta: dict, code: str) -> dict | None:
+    """Find one variable block (code + values + valueTexts) in PxWeb table
+    metadata, case-insensitively."""
+    for v in meta.get("variables", []):
+        if v.get("code", "").lower() == code.lower():
+            return v
+    return None
+
+
+def _match_value(var: dict, must: tuple = (), exclude: tuple = ()) -> str | None:
+    """First value whose English label contains every `must` keyword and no
+    `exclude` keyword. SSB renames ContentsCodes when the base year rolls,
+    but the labels stay descriptive - so resolving by label survives table
+    restructurings that break hardcoded codes."""
+    for val, text in zip(var.get("values", []), var.get("valueTexts", [])):
+        t = str(text).lower()
+        if all(k in t for k in must) and not any(k in t for k in exclude):
+            return val
+    return None
+
+
 def _post_query(table_id: str, query: list[dict]) -> dict:
     payload = {"query": query, "response": {"format": "json-stat2"}}
     r = requests.post(config.SSB_BASE + table_id, json=payload, timeout=60)
-    r.raise_for_status()
+    if not r.ok:
+        # SSB puts the reason (e.g. which variable code is invalid) in the
+        # body; surface it instead of a bare status code.
+        raise requests.HTTPError(
+            f"SSB query for table {table_id} failed with "
+            f"{r.status_code}: {r.text[:300]}", response=r)
     return r.json()
 
 
@@ -59,11 +85,20 @@ def fetch_cpi_by_group(start_year: int = 2000) -> pd.DataFrame:
     Returns DataFrame: index = Period[M], columns = consumption groups,
     values = index levels (2015=100).
     """
+    ccode = "KpiIndMnd"
+    try:
+        meta = get_table_metadata(config.SSB_TABLES["cpi"])
+        contents = _get_variable(meta, "ContentsCode")
+        if contents and ccode not in contents.get("values", []):
+            ccode = _match_value(contents, must=("index",),
+                                 exclude=("change", "rate")) or ccode
+    except Exception:
+        pass   # metadata lookup is best-effort; the query may still work
     query = [
         # Empty values + 'all' filter = every consumption group in the table
         {"code": "Konsumgrp", "selection": {"filter": "all", "values": ["*"]}},
         {"code": "ContentsCode",
-         "selection": {"filter": "item", "values": ["KpiIndMnd"]}},
+         "selection": {"filter": "item", "values": [ccode]}},
     ]
     js = _post_query(config.SSB_TABLES["cpi"], query)
     df = _jsonstat_to_frame(js)
@@ -89,18 +124,49 @@ def fetch_cpi_delivery_sector(start_year: int = 2000) -> pd.DataFrame:
     return wide[wide.index.year >= start_year]
 
 
+def resolve_mainland_gdp_codes(table_id: str | None = None) -> tuple[str, str]:
+    """Resolve the (Makrost, ContentsCode) pair for mainland GDP, constant
+    prices, seasonally adjusted, from the table's live metadata. SSB renames
+    ContentsCodes when the national-accounts base year rolls, so hardcoded
+    codes 400 sooner or later; the labels stay descriptive."""
+    meta = get_table_metadata(table_id or config.SSB_TABLES["gdp_qna"])
+
+    makro_code = "bnpb.nrfast"
+    makro = _get_variable(meta, "Makrost")
+    if makro and makro_code not in makro.get("values", []):
+        makro_code = (_match_value(makro, must=("mainland", "market values"))
+                      or _match_value(makro, must=("mainland",),
+                                      exclude=("excluding",))
+                      or makro_code)
+
+    ccode = None
+    contents = _get_variable(meta, "ContentsCode")
+    if contents:
+        for must in (("seasonally adjusted", "constant"),
+                     ("seasonally adjusted", "volume"),
+                     ("seasonally adjusted",)):
+            ccode = _match_value(contents, must=must,
+                                 exclude=("trend", "current", "price ind"))
+            if ccode:
+                break
+    return makro_code, ccode or "Sesongjustert"
+
+
 def fetch_mainland_gdp(start_year: int = 2000) -> pd.Series:
     """Quarterly mainland-Norway GDP, constant prices, seasonally adjusted.
 
-    NOTE: run get_table_metadata('09190') once to confirm the exact
-    Makrost code for 'bnpb.nrfast' (GDP Mainland Norway, market values)
-    and the ContentsCode for seasonally adjusted constant prices.
+    Variable codes are resolved from the table metadata at call time (with
+    the historical codes as fallback) - see resolve_mainland_gdp_codes.
     """
+    try:
+        makro_code, ccode = resolve_mainland_gdp_codes()
+    except Exception:
+        makro_code, ccode = "bnpb.nrfast", "Sesongjustert"
     query = [
         {"code": "Makrost",
-         "selection": {"filter": "item", "values": ["bnpb.nrfast"]}},
+         "selection": {"filter": "item", "values": [makro_code]}},
         {"code": "ContentsCode",
-         "selection": {"filter": "item", "values": ["Sesongjustert"]}},
+         "selection": {"filter": "item", "values": [ccode]}},
     ]
     js = _post_query(config.SSB_TABLES["gdp_qna"], query)
     df = _jsonstat_to_frame(js)

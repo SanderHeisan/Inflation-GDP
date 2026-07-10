@@ -142,7 +142,10 @@ def main(argv=None) -> None:
 
     print("fetching SSB CPI (03013)...")
     cpi_groups = ds.fetch_cpi_by_group()
-    cpi = cpi_groups.iloc[:, 0].dropna()
+    total_cols = [c for c in cpi_groups.columns
+                  if str(c).upper() in ("TOTAL", "TOTALT", "ALLGRUPPER")]
+    cpi = (cpi_groups[total_cols[0]] if total_cols
+           else cpi_groups.iloc[:, 0]).dropna()
     cpi.rename("value").rename_axis("period").to_csv(
         d / btconfig.DATA_FILES["cpi"])
 
