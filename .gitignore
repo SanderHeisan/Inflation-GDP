@@ -10,3 +10,6 @@ hit_rate_*.png
 confusion_h*.png
 timeline.png
 .pytest_cache/
+results/
+data/
+backtest_output.zip

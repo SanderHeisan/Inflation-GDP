@@ -71,6 +71,21 @@ The walk-forward harness answers one question: how often would this model
 have called the correct quad 1-4 quarters ahead, using only information
 available at the time?
 
+### Easiest way to run it: Google Colab
+
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/SanderHeisan/Inflation-GDP/blob/claude/norway-gip-backtest-harness-nln7uw/backtest_colab.ipynb)
+
+Open `backtest_colab.ipynb` in Colab and hit **Runtime -> Run all**. It
+clones the repo, installs dependencies, fetches **real data** (SSB GDP +
+CPI, Norges Bank I-44/USDNOK, Brent from FRED, plus a documented power
+proxy), runs the backtest, and renders the summary tables and charts
+inline. Because this repo is private you must authorize GitHub in Colab
+(tick "Include private repositories" in the Colab GitHub dialog) and paste
+a personal access token when the clone step asks. If any live fetch fails
+the notebook falls back to the synthetic demo bundle, clearly labelled.
+
+### Locally
+
 ```bash
 python backtest.py --demo --start 2012 --end 2025 --horizon 4   # synthetic
 python backtest.py --start 2012 --end 2025 --horizon 4          # cached data
