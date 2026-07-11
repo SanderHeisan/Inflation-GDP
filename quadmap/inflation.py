@@ -159,6 +159,24 @@ def project_services(wage_norm: float, horizon: pd.PeriodIndex,
     return pd.Series(wage_norm * haircut / 12.0 / 100.0, index=horizon)
 
 
+def seasonal_mom_profile(cpi_hist: pd.Series, years: int = 10) -> dict[int, float]:
+    """Calendar seasonality of monthly CPI changes: per calendar month, the
+    median MoM over the trailing window minus the overall median - centred
+    on the typical month so no trend is smuggled in. Medians keep one-off
+    shocks (an energy-spike August) from polluting their calendar month.
+
+    Norwegian CPI has pronounced seasonality - winter/summer sales and the
+    repricing windows - that the component drivers alone do not produce;
+    this profile is estimated point-in-time from whatever history the
+    caller passes in, so it is backtest-safe.
+    """
+    mom = cpi_hist.pct_change().dropna().iloc[-years * 12:]
+    overall = float(mom.median())
+    return {m: float(mom[mom.index.month == m].median() - overall)
+            if (mom.index.month == m).any() else 0.0
+            for m in range(1, 13)}
+
+
 # ---------------------------------------------------------------------------
 # Aggregation
 # ---------------------------------------------------------------------------
@@ -209,11 +227,18 @@ def build_cpi_projection(cpi_hist: pd.Series, horizon_months: int,
     }
     block_weights["services_other"] = total_w - sum(block_weights.values())
 
+    # Optional calendar-seasonality overlay (assumptions['cpi_seasonality']).
+    # Off by default so existing callers see identical output.
+    seasonal = seasonal_mom_profile(cpi_hist) \
+        if assumptions.get("cpi_seasonality") else None
+
     rows = []
     level = cpi_hist.iloc[-1]
     for p in horizon:
         contribs = {b: block_weights[b] / total_w * blocks[b][p]
                     for b in blocks}
+        if seasonal is not None:
+            contribs["seasonal"] = seasonal[p.month]
         mom = sum(contribs.values())
         level = level * (1.0 + mom)
         rows.append({"period": p, "cpi_index": level, "mom_pct": mom * 100,

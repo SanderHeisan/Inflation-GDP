@@ -149,6 +149,9 @@ def spot_carry_assumptions(bundle: RawDataBundle, asof: pd.Timestamp,
         "food_pipeline_yoy": float(np.clip(cpi_yoy_last, 0.0, 6.0)),
         "fuel_passthrough": 0.40,
         "services_wage_haircut": 0.75,
+        # Calendar seasonality of MoM prints, estimated point-in-time from
+        # the vintage CPI history inside the projection.
+        "cpi_seasonality": True,
     }
 
 

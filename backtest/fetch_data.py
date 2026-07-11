@@ -182,6 +182,15 @@ def _fetch_cpi_freshest(ds) -> tuple[pd.Series, pd.DataFrame]:
     return cpi, groups
 
 
+def _market_stale(market_file: Path, cpi: pd.Series) -> bool:
+    try:
+        m = pd.read_csv(market_file)
+        last = pd.Period(m["period"].iloc[-1], freq="M")
+        return last < cpi.index[-1] - 1
+    except Exception:
+        return True
+
+
 def _staleness_check(name: str, last_period, max_age_days: int,
                      ds, table_id: str) -> None:
     """A series ending long before today means either the table was frozen
@@ -243,16 +252,22 @@ def main(argv=None) -> None:
                      ds, btconfig.SSB_TABLES["gdp_qna"])
 
     market_file = d / btconfig.DATA_FILES["market"]
-    if market_file.exists():
-        print(f"{market_file.name} already present - not overwriting")
+    marker = d / ".market_is_proxy"   # only files WE built get rebuilt
+    rebuild = (not market_file.exists()
+               or (marker.exists() and _market_stale(market_file, cpi)))
+    if market_file.exists() and not marker.exists():
+        print(f"{market_file.name} is user-supplied - not overwriting")
     elif args.skip_market_proxy:
         print(f"MANUAL: {market_file.name} skipped - see module docstring")
-    else:
+    elif rebuild:
         try:
             build_market_proxy(d, cpi_groups)
+            marker.touch()
         except Exception as e:   # non-fatal: backtest needs it, but the user
             print(f"market proxy build failed ({e}) - see module docstring "
                   "for the manual format")
+    else:
+        print(f"{market_file.name} proxy is current - keeping it")
 
     norms_file = d / btconfig.DATA_FILES["wage_norms"]
     if not norms_file.exists():

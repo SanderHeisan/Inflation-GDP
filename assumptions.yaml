@@ -42,6 +42,10 @@ services_wage_haircut: 0.75
 # --- Food pipeline: world food prices in NOK, 6m lead ---
 food_pipeline_yoy: 3.0
 
+# --- Calendar seasonality: add the historical median monthly seasonal
+#     pattern (sales months, repricing windows) to the projected MoM path ---
+cpi_seasonality: true
+
 # --- GDP nowcast indicators (update after each release) ---
 gdp_indicators:
   regional_network_index: 0.8   # Norges Bank Regional Network, output next 6m
