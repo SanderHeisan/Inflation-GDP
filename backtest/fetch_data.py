@@ -130,11 +130,132 @@ def _total_col(groups: pd.DataFrame) -> pd.Series:
     return (groups[cols[0]] if cols else groups.iloc[:, 0]).dropna()
 
 
+SSB_SEARCH = "https://data.ssb.no/api/v0/en/table/?query={q}"
+
+
+def _splice_series(old: pd.Series, new: pd.Series) -> pd.Series:
+    """Continue `old` with `new` (a rebased/successor series): rescale the
+    old history onto the new base at the overlap so MoM/YoY arithmetic
+    stays continuous across the junction."""
+    if new.index[0] <= old.index[0]:
+        return new.dropna()
+    overlap = old.index.intersection(new.index)
+    if not len(overlap):
+        print("  WARNING: no overlap between old and new CPI series - "
+              "keeping the longer one; YoY near the junction unreliable")
+        return (new if len(new) >= 15 * 12 else old).dropna()
+    ratio = float((new.loc[overlap] / old.loc[overlap]).mean())
+    junction = new.index[0]
+    spliced = pd.concat([old.loc[old.index < junction] * ratio, new])
+    print(f"  spliced pre-{junction} history onto the new base "
+          f"(ratio {ratio:.4f})")
+    return spliced.dropna()
+
+
+def _search_ssb_tables(query: str) -> list[tuple[str, str]]:
+    import requests
+    from urllib.parse import quote
+    r = requests.get(SSB_SEARCH.format(q=quote(query)), timeout=30)
+    r.raise_for_status()
+    js = r.json()
+    hits = js if isinstance(js, list) else js.get("tables", [])
+    out = []
+    for h in hits:
+        tid = str(h.get("id", "")).strip()
+        title = str(h.get("title") or h.get("text") or h.get("label") or "")
+        if tid:
+            out.append((tid, title))
+    return out
+
+
+def _try_cpi_from_table(ds, table_id: str) -> pd.Series | None:
+    """Best-effort: pull a monthly total-CPI index series out of an
+    arbitrary CPI-shaped StatBank table."""
+    meta = ds.get_table_metadata(table_id)
+    variables = meta.get("variables", [])
+    tvar = next((v for v in variables
+                 if v.get("code", "").lower() in ("tid", "time")), None)
+    if not tvar or "M" not in str(tvar.get("values", ["?"])[-1]).upper():
+        return None   # not a monthly table
+
+    query = []
+    gvar = next((v for v in variables
+                 if "konsum" in v.get("code", "").lower()
+                 or "coicop" in v.get("code", "").lower()), None)
+    if gvar:
+        total = next((val for val, t in zip(gvar["values"],
+                                            gvar["valueTexts"])
+                      if str(val).upper() in ("TOTAL", "TOTALT")
+                      or "all-item" in str(t).lower()
+                      or str(t).lower() in ("total", "cpi total")),
+                     gvar["values"][0])
+        query.append({"code": gvar["code"],
+                      "selection": {"filter": "item", "values": [total]}})
+    contents = ds._get_variable(meta, "ContentsCode")
+    if contents:
+        ccode = ds._match_value(contents, must=("index",),
+                                exclude=("change", "rate"))
+        if ccode:
+            query.append({"code": "ContentsCode",
+                          "selection": {"filter": "item", "values": [ccode]}})
+
+    js = ds._post_query(table_id, query)
+    df = ds._jsonstat_to_frame(js)
+    tcol = next((c for c in df.columns
+                 if str(c).lower() in ("tid", "time")), None)
+    if tcol is None:
+        return None
+    df["period"] = pd.PeriodIndex(df[tcol].str.replace("M", "-"), freq="M")
+    s = df.groupby("period")["value"].first().sort_index().dropna()
+    return s if len(s) > 24 else None
+
+
+def _discover_replacement_table(ds, old_cpi: pd.Series) -> pd.Series | None:
+    """The frozen-table case (e.g. the 2026 base-year rebase retired the
+    old CPI table): search StatBank for successor tables, probe the most
+    plausible ones, adopt the freshest, splice histories."""
+    print("  searching StatBank for a successor CPI table...")
+    try:
+        hits = _search_ssb_tables("consumer price index")
+    except Exception as e:
+        print(f"  table search failed: {e}")
+        return None
+    best, best_id, best_title = None, None, None
+    checked = 0
+    for tid, title in hits:
+        t = title.lower()
+        if tid == ds.config.SSB_TABLES["cpi"] or "consumer price" not in t:
+            continue
+        if any(x in t for x in ("harmonis", "delivery", "seasonal",
+                                "closed", "discontinued")):
+            continue
+        if checked >= 8:
+            break
+        checked += 1
+        try:
+            s = _try_cpi_from_table(ds, tid)
+        except Exception:
+            continue
+        if s is not None and (best is None or s.index[-1] > best.index[-1]):
+            best, best_id, best_title = s, tid, title
+    if best is None or best.index[-1] <= old_cpi.index[-1]:
+        print("  no fresher CPI table found automatically. Manual escape "
+              "hatch: export the current CPI index to data/cpi_monthly.csv "
+              "- a hand-supplied file that is fresher than the fetch is "
+              "kept, never overwritten.")
+        return None
+    print(f"  ADOPTED table {best_id} ('{best_title[:70]}') - runs to "
+          f"{best.index[-1]}")
+    print(f"  -> make it permanent: set SSB_TABLES['cpi'] = {best_id!r} "
+          "in quadmap/config.py")
+    return _splice_series(old_cpi, best)
+
+
 def _fetch_cpi_freshest(ds) -> tuple[pd.Series, pd.DataFrame]:
     """Fetch the CPI index; if the default content series has gone stale
-    (typically a base-year rebase freezing the old index at year-end),
-    probe the table's other index series, take the freshest, and splice the
-    old history onto it where the new series is shorter."""
+    (typically a base-year rebase), first probe the same table's other
+    index series, then search StatBank for the successor table. Whatever
+    wins gets the old history spliced on so YoY arithmetic is continuous."""
     groups = ds.fetch_cpi_by_group()
     cpi = _total_col(groups)
     age = (pd.Timestamp.today() - cpi.index[-1].end_time).days
@@ -162,23 +283,16 @@ def _fetch_cpi_freshest(ds) -> tuple[pd.Series, pd.DataFrame]:
                 print(f"  ContentsCode {code!r} runs to {s.index[-1]} - "
                       "using it")
         if best is not cpi:
-            if best.index[0] > cpi.index[0]:
-                overlap = cpi.index.intersection(best.index)
-                if len(overlap):
-                    junction = best.index[0]
-                    ratio = float((best.loc[overlap]
-                                   / cpi.loc[overlap]).mean())
-                    old_part = cpi.loc[cpi.index < junction] * ratio
-                    best = pd.concat([old_part, best])
-                    print(f"  spliced pre-{junction} history onto the new "
-                          f"base (ratio {ratio:.4f})")
-                else:
-                    print("  WARNING: new series has no overlap with the "
-                          "old one - YoY rates near the junction are "
-                          "unreliable")
-            return best.dropna(), best_groups
+            return _splice_series(cpi, best), best_groups
     except Exception as e:
         print(f"  alternative-series probe failed: {e}")
+
+    try:   # same table exhausted -> the table itself is frozen
+        replaced = _discover_replacement_table(ds, cpi)
+        if replaced is not None:
+            return replaced, groups
+    except Exception as e:
+        print(f"  successor-table discovery failed: {e}")
     return cpi, groups
 
 
@@ -236,8 +350,18 @@ def main(argv=None) -> None:
 
     print("fetching SSB CPI (03013)...")
     cpi, cpi_groups = _fetch_cpi_freshest(ds)
-    cpi.rename("value").rename_axis("period").to_csv(
-        d / btconfig.DATA_FILES["cpi"])
+    cpi_path = d / btconfig.DATA_FILES["cpi"]
+    if cpi_path.exists():   # manual escape hatch: never clobber fresher data
+        try:
+            from .data_bundle import _read_period_series
+            existing = _read_period_series(cpi_path, "M")
+            if existing.index[-1] > cpi.index[-1]:
+                print(f"keeping existing {cpi_path.name} (ends "
+                      f"{existing.index[-1]}, fresher than the fetch)")
+                cpi = existing
+        except Exception:
+            pass
+    cpi.rename("value").rename_axis("period").to_csv(cpi_path)
 
     print("fetching Norges Bank I-44...")
     i44 = ds.fetch_i44()
@@ -246,10 +370,13 @@ def main(argv=None) -> None:
     print(f"wrote GDP/CPI/I-44 to {d.resolve()}")
     print(f"series end:  GDP {gdp.index[-1]} | CPI {cpi.index[-1]} | "
           f"I-44 {i44.index[-1]}")
-    _staleness_check("CPI", cpi.index[-1], 75,
-                     ds, btconfig.SSB_TABLES["cpi"])
-    _staleness_check("GDP", gdp.index[-1], 160,
-                     ds, btconfig.SSB_TABLES["gdp_qna"])
+    try:   # diagnostics must never kill the fetch
+        _staleness_check("CPI", cpi.index[-1], 75,
+                         ds, ds.config.SSB_TABLES["cpi"])
+        _staleness_check("GDP", gdp.index[-1], 160,
+                         ds, ds.config.SSB_TABLES["gdp_qna"])
+    except Exception as e:
+        print(f"(staleness diagnostics failed: {e})")
 
     market_file = d / btconfig.DATA_FILES["market"]
     marker = d / ".market_is_proxy"   # only files WE built get rebuilt
