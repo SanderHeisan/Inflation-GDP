@@ -99,6 +99,39 @@ def test_staleness_check_never_raises():
                                 broken, "03013")
 
 
+def test_power_proxy_scale_bridges_units():
+    from forecast import power_proxy_scale
+    # proxy says 60 'ore' for the anchor month; real sampled days say ~120
+    scale = power_proxy_scale(pd.Period("2026-05", freq="M"), 60.0,
+                              day_mean_fn=lambda d: 120.0)
+    assert scale == pytest.approx(0.5)
+    # a 132.61 real live spot then enters the projection as ~66 proxy-ore:
+    # the same *relative* level, no fabricated doubling
+    assert 132.61 * scale == pytest.approx(66.3, abs=0.1)
+    with pytest.raises(RuntimeError):
+        power_proxy_scale(pd.Period("2026-05", freq="M"), 60.0,
+                          day_mean_fn=lambda d: None)
+
+
+def test_discovery_returns_groups_for_power_proxy(monkeypatch):
+    ds = _fake_ds(new_end="2026-06", new_base=50.0)
+    calls = {}
+
+    def fetch_groups(start_year=2000, content_code=None, table_id=None):
+        calls["table_id"] = table_id
+        if table_id == "99999":
+            return _index_series("2020-01", "2026-06",
+                                 base=50.0).to_frame("TOTAL")
+        return _index_series("2000-01", "2025-12").to_frame("TOTAL")
+
+    ds.fetch_cpi_by_group = fetch_groups
+    monkeypatch.setattr(fetch_data, "_search_ssb_tables",
+                        lambda q: ds.__search_hits__)
+    cpi, groups = fetch_data._fetch_cpi_freshest(ds)
+    assert calls["table_id"] == "99999"          # groups came from successor
+    assert groups.index[-1] == pd.Period("2026-06", freq="M")
+
+
 def test_splice_no_overlap_keeps_longer():
     old = _index_series("2000-01", "2025-12")
     new = _index_series("2026-01", "2026-06", base=210.0)

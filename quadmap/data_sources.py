@@ -80,34 +80,45 @@ def _jsonstat_to_frame(js: dict) -> pd.DataFrame:
 
 
 def fetch_cpi_by_group(start_year: int = 2000,
-                       content_code: str | None = None) -> pd.DataFrame:
+                       content_code: str | None = None,
+                       table_id: str | None = None) -> pd.DataFrame:
     """Monthly CPI index level for total + COICOP divisions.
 
     Returns DataFrame: index = Period[M], columns = consumption groups,
-    values = index levels. content_code overrides the automatic
-    ContentsCode choice - callers can probe alternative index series (e.g.
-    after a base-year rebase freezes the default one).
+    values = index levels. The consumption-group variable name and the
+    ContentsCode are resolved from the table metadata (tables get replaced
+    on base-year rebases and rename both); content_code / table_id override
+    the automatic choices so callers can probe alternatives.
     """
+    table = table_id or config.SSB_TABLES["cpi"]
+    group_code = "Konsumgrp"
     ccode = content_code or "KpiIndMnd"
-    if content_code is None:
-        try:
-            meta = get_table_metadata(config.SSB_TABLES["cpi"])
+    try:
+        meta = get_table_metadata(table)
+        gvar = next((v for v in meta.get("variables", [])
+                     if "konsum" in v.get("code", "").lower()
+                     or "coicop" in v.get("code", "").lower()), None)
+        if gvar:
+            group_code = gvar["code"]
+        if content_code is None:
             contents = _get_variable(meta, "ContentsCode")
             if contents and ccode not in contents.get("values", []):
                 ccode = _match_value(contents, must=("index",),
                                      exclude=("change", "rate")) or ccode
-        except Exception:
-            pass   # metadata lookup is best-effort; the query may still work
+    except Exception:
+        pass   # metadata lookup is best-effort; the query may still work
     query = [
         # Empty values + 'all' filter = every consumption group in the table
-        {"code": "Konsumgrp", "selection": {"filter": "all", "values": ["*"]}},
+        {"code": group_code,
+         "selection": {"filter": "all", "values": ["*"]}},
         {"code": "ContentsCode",
          "selection": {"filter": "item", "values": [ccode]}},
     ]
-    js = _post_query(config.SSB_TABLES["cpi"], query)
+    js = _post_query(table, query)
     df = _jsonstat_to_frame(js)
-    df["period"] = pd.PeriodIndex(df["Tid"].str.replace("M", "-"), freq="M")
-    wide = df.pivot_table(index="period", columns="Konsumgrp", values="value")
+    tcol = next(c for c in df.columns if str(c).lower() in ("tid", "time"))
+    df["period"] = pd.PeriodIndex(df[tcol].str.replace("M", "-"), freq="M")
+    wide = df.pivot_table(index="period", columns=group_code, values="value")
     return wide[wide.index.year >= start_year]
 
 

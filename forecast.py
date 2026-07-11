@@ -73,25 +73,52 @@ def live_i44() -> tuple[float, str]:
     return _norges_bank_daily("I44")
 
 
-def live_power_ore_kwh(day: dt.date | None = None) -> tuple[float, str]:
-    """Today's mean hourly spot across the southern price areas, converted
-    to ore/kWh incl VAT (the CPI-facing unit). Falls back one day if
-    today's prices are not posted yet."""
+def _area_day_mean_ore(d: dt.date) -> float | None:
+    """Mean hourly spot across the southern areas for one day, in ore/kWh
+    incl VAT, or None if not available."""
     import requests
+    prices = []
+    for area in POWER_AREAS:
+        url = POWER_API.format(y=d.year, m=d.month, d=d.day, area=area)
+        r = requests.get(url, timeout=30)
+        if r.status_code != 200:
+            return None
+        prices.extend(h["NOK_per_kWh"] for h in r.json())
+    return (sum(prices) / len(prices)) * 100.0 * 1.25 if prices else None
+
+
+def live_power_ore_kwh(day: dt.date | None = None) -> tuple[float, str]:
+    """Today's spot in ore/kWh incl VAT. Falls back one day if today's
+    prices are not posted yet."""
     day = day or dt.date.today()
     for offset in (0, 1):
         d = day - dt.timedelta(days=offset)
-        prices = []
-        for area in POWER_AREAS:
-            url = POWER_API.format(y=d.year, m=d.month, d=d.day, area=area)
-            r = requests.get(url, timeout=30)
-            if r.status_code != 200:
-                break
-            prices.extend(h["NOK_per_kWh"] for h in r.json())
-        if prices:
-            ore_incl_vat = (sum(prices) / len(prices)) * 100.0 * 1.25
-            return float(ore_incl_vat), f"hvakosterstrommen.no ({d})"
+        v = _area_day_mean_ore(d)
+        if v is not None:
+            return float(v), f"hvakosterstrommen.no ({d})"
     raise RuntimeError("no area prices available for today or yesterday")
+
+
+def power_proxy_scale(anchor_month: pd.Period, proxy_anchor_value: float,
+                      day_mean_fn=_area_day_mean_ore) -> float:
+    """Bridge between proxy units and real ore/kWh.
+
+    When market_monthly.csv is the CPI-subindex PROXY, its power column is
+    on an arbitrary rescaled level - feeding a real Nord Pool spot into a
+    proxy-anchored projection fabricates a giant price move (observed: a
+    fake +1.3pp MoM impulse). Estimate the real ore level of the anchor
+    month by sampling a few of its days, and return the factor that maps
+    real ore into proxy units. Raises if the month cannot be sampled."""
+    samples = []
+    for dom in (4, 11, 18, 25):
+        v = day_mean_fn(dt.date(anchor_month.year, anchor_month.month, dom))
+        if v is not None:
+            samples.append(v)
+    if not samples:
+        raise RuntimeError(f"could not sample real power prices for "
+                           f"{anchor_month}")
+    real_est = sum(samples) / len(samples)
+    return float(proxy_anchor_value / real_est)
 
 
 def gather_live_spots() -> tuple[dict, dict, list[str]]:
@@ -166,6 +193,25 @@ def main(argv=None):
         print("live market inputs:")
         for n in notes:
             print("  " + n)
+
+        # Proxy-unit bridge: if the market file is the CPI-subindex proxy,
+        # a real ore/kWh spot must be rescaled into proxy units before it
+        # touches the projection, or the unit gap masquerades as a shock.
+        if "power_forward_ore_kwh" in overrides and \
+                (Path(args.data_dir) / ".market_is_proxy").exists():
+            try:
+                anchor_m = bundle.market.index[-1]
+                scale = power_proxy_scale(
+                    anchor_m, float(bundle.market["power_ore_kwh"].iloc[-1]))
+                overrides["power_forward_ore_kwh"] = {
+                    k: v * scale
+                    for k, v in overrides["power_forward_ore_kwh"].items()}
+                print(f"  power rescaled to proxy units (x{scale:.3f}, "
+                      f"anchored on real {anchor_m} prices)")
+            except Exception as e:
+                overrides.pop("power_forward_ore_kwh", None)
+                print(f"  power override DROPPED (proxy-unit bridge failed: "
+                      f"{e}) - power stays at the monthly proxy anchor")
 
     # As-of is *today*: the vintage truncation applies the publication lags
     # automatically, exactly as the backtest's as-of dates did. Horizon 0 is

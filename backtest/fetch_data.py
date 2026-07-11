@@ -210,7 +210,8 @@ def _try_cpi_from_table(ds, table_id: str) -> pd.Series | None:
     return s if len(s) > 24 else None
 
 
-def _discover_replacement_table(ds, old_cpi: pd.Series) -> pd.Series | None:
+def _discover_replacement_table(
+        ds, old_cpi: pd.Series) -> tuple[pd.Series, pd.DataFrame | None] | None:
     """The frozen-table case (e.g. the 2026 base-year rebase retired the
     old CPI table): search StatBank for successor tables, probe the most
     plausible ones, adopt the freshest, splice histories."""
@@ -248,7 +249,12 @@ def _discover_replacement_table(ds, old_cpi: pd.Series) -> pd.Series | None:
           f"{best.index[-1]}")
     print(f"  -> make it permanent: set SSB_TABLES['cpi'] = {best_id!r} "
           "in quadmap/config.py")
-    return _splice_series(old_cpi, best)
+    groups = None
+    try:   # group frame from the adopted table keeps the power proxy fresh
+        groups = ds.fetch_cpi_by_group(table_id=best_id)
+    except Exception as e:
+        print(f"  (could not fetch group breakdown from {best_id}: {e})")
+    return _splice_series(old_cpi, best), groups
 
 
 def _fetch_cpi_freshest(ds) -> tuple[pd.Series, pd.DataFrame]:
@@ -288,9 +294,11 @@ def _fetch_cpi_freshest(ds) -> tuple[pd.Series, pd.DataFrame]:
         print(f"  alternative-series probe failed: {e}")
 
     try:   # same table exhausted -> the table itself is frozen
-        replaced = _discover_replacement_table(ds, cpi)
-        if replaced is not None:
-            return replaced, groups
+        result = _discover_replacement_table(ds, cpi)
+        if result is not None:
+            replaced, new_groups = result
+            return replaced, (new_groups if new_groups is not None
+                              else groups)
     except Exception as e:
         print(f"  successor-table discovery failed: {e}")
     return cpi, groups
@@ -348,7 +356,7 @@ def main(argv=None) -> None:
     gdp.rename("value").rename_axis("period").to_csv(
         d / btconfig.DATA_FILES["gdp"])
 
-    print("fetching SSB CPI (03013)...")
+    print(f"fetching SSB CPI ({ds.config.SSB_TABLES['cpi']})...")
     cpi, cpi_groups = _fetch_cpi_freshest(ds)
     cpi_path = d / btconfig.DATA_FILES["cpi"]
     if cpi_path.exists():   # manual escape hatch: never clobber fresher data
