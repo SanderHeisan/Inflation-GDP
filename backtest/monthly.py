@@ -64,15 +64,20 @@ def monthly_direction_backtest(bundle: RawDataBundle, start: str, end: str,
             continue
         pred_delta = float(yoy[m1] - yoy[m0])
         real_delta = float(ryoy[m1] - ryoy[m0])
+        pred_mom = float(proj["mom_pct"].get(m1, np.nan))
+        real_mom = float(rmom.get(m1, np.nan))
         rows.append({
             "asof": asof,
             "last_print": str(m0),
             "target_print": str(m1),
             "pred_yoy": float(yoy[m1]),
             "real_yoy": float(ryoy[m1]),
+            "yoy_error": float(yoy[m1] - ryoy[m1]),
             "pred_delta": pred_delta,
             "real_delta": real_delta,
-            "pred_mom": float(proj["mom_pct"].get(m1, np.nan)),
+            "pred_mom": pred_mom,
+            "real_mom": real_mom,
+            "mom_error": pred_mom - real_mom,
             "hurdle_mom": float(rmom.get(m1 - 12, np.nan)),
             "pred_dir": "accelerating" if pred_delta > 0 else "decelerating",
             "real_dir": "accelerating" if real_delta > 0 else "decelerating",
@@ -115,6 +120,24 @@ def summarize_monthly_direction(df: pd.DataFrame) -> pd.DataFrame:
                      "avg_conviction_pp":
                          float(callable_["conviction_pp"].mean())})
     return pd.DataFrame(rows).set_index("bucket")
+
+
+def prediction_error_stats(df: pd.DataFrame) -> pd.Series:
+    """How close the level forecasts get, one print ahead. MAE in
+    percentage points; bias positive = model runs hot."""
+    return pd.Series({
+        "n_months": len(df),
+        "yoy_mae_pp": float(df["yoy_error"].abs().mean()),
+        "yoy_bias_pp": float(df["yoy_error"].mean()),
+        "yoy_within_0.1pp": float((df["yoy_error"].abs() <= 0.10).mean()),
+        "yoy_within_0.2pp": float((df["yoy_error"].abs() <= 0.20).mean()),
+        "mom_mae_pp": float(df["mom_error"].abs().mean()),
+        "mom_bias_pp": float(df["mom_error"].mean()),
+        "direction_hit_rate": float(df["hit"].mean()),
+        "direction_hit_ex_coinflip": float(
+            df.loc[df["conviction_pp"] >= 0.05, "hit"].mean())
+        if (df["conviction_pp"] >= 0.05).any() else float("nan"),
+    })
 
 
 def direction_hit_rate_for(conviction_pp: float,

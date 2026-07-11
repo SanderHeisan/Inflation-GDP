@@ -218,6 +218,57 @@ def plot_quad_probability_monthly(mprob: pd.DataFrame, path: str) -> None:
     plt.close(fig)
 
 
+def plot_monthly_predictions(mdir: pd.DataFrame, path: str) -> None:
+    """Every monthly print: the YoY number the model published one month
+    earlier vs what SSB printed, with direction misses flagged below."""
+    df = mdir.copy()
+    df["m"] = pd.PeriodIndex(df["target_print"], freq="M")
+    df = df.sort_values("m")
+    x = np.arange(len(df))
+
+    fig, (ax, axe) = plt.subplots(
+        2, 1, figsize=(max(9.0, len(df) * 0.11), 6.4), dpi=150,
+        sharex=True, height_ratios=[2.4, 1.0])
+    fig.patch.set_facecolor(SURFACE)
+    for a in (ax, axe):
+        _style_axes(a)
+
+    ax.plot(x, df["real_yoy"], color="#2a78d6", linewidth=2,
+            label="Actual CPI YoY")
+    ax.plot(x, df["pred_yoy"], color="#1baf7a", linewidth=2,
+            linestyle=(0, (5, 2.5)), label="Model, 1 month earlier")
+    ax.annotate("Actual", (x[-1], df["real_yoy"].iloc[-1]),
+                xytext=(8, 0), textcoords="offset points", color="#2a78d6",
+                fontsize=9, fontweight="bold", va="center")
+    ax.annotate("Model", (x[-1], df["pred_yoy"].iloc[-1]),
+                xytext=(8, -12), textcoords="offset points", color="#1baf7a",
+                fontsize=9, fontweight="bold", va="center")
+    ax.set_ylabel("CPI YoY (%)", color=INK_2, fontsize=10)
+    mae = df["yoy_error"].abs().mean()
+    ax.set_title("Next-print inflation: model vs actual, every month "
+                 f"(YoY MAE {mae:.2f}pp, direction hit "
+                 f"{df['hit'].mean() * 100:.0f}%)",
+                 color=INK, fontsize=12, loc="left", pad=10)
+    ax.legend(frameon=False, fontsize=9, labelcolor=INK_2, loc="upper left")
+
+    miss = ~df["hit"].to_numpy()
+    axe.bar(x[~miss], df["yoy_error"].to_numpy()[~miss], width=0.8,
+            color=BASELINE, label="Error (direction right)")
+    axe.bar(x[miss], df["yoy_error"].to_numpy()[miss], width=0.8,
+            color="#d03b3b", label="Error (direction MISSED)")
+    axe.axhline(0, color=MUTED, linewidth=1)
+    axe.set_ylabel("Error (pp)", color=INK_2, fontsize=10)
+    axe.legend(frameon=False, fontsize=8.5, labelcolor=INK_2, ncol=2,
+               loc="upper left")
+
+    step = max(1, len(df) // 14)
+    axe.set_xticks(x[::step], [str(m) for m in df["m"]][::step],
+                   rotation=45, fontsize=8, color=INK_2)
+    fig.tight_layout()
+    fig.savefig(path, facecolor=SURFACE)
+    plt.close(fig)
+
+
 def plot_timeline(preds: pd.DataFrame, realized: pd.DataFrame,
                   horizons: list[int], path: str) -> None:
     """Predicted vs realized quads over time: one row per horizon plus the

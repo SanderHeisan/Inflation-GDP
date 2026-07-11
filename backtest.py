@@ -141,10 +141,21 @@ def main(argv=None) -> pd.DataFrame:
         mdir = monthly.monthly_direction_backtest(bundle, args.start,
                                                   args.end, cfg)
         mdir.to_parquet(outdir / "monthly_direction.parquet", index=False)
+        show_cols = ["target_print", "pred_yoy", "real_yoy", "yoy_error",
+                     "pred_mom", "real_mom", "mom_error", "pred_dir",
+                     "real_dir", "hit", "conviction_pp"]
+        mdir[["asof"] + show_cols].to_csv(
+            outdir / "monthly_predictions.csv", index=False)
         msum = monthly.summarize_monthly_direction(mdir)
         msum.to_csv(outdir / "monthly_direction_summary.csv")
+        plots.plot_monthly_predictions(
+            mdir, str(outdir / "monthly_predictions.png"))
         print("\n=== Next-print YoY inflation direction, one month ahead ===")
         print(msum.round(3).to_string())
+        print("\n=== How close the level forecasts get ===")
+        print(monthly.prediction_error_stats(mdir).round(3).to_string())
+        print("\n=== Last 12 monthly prints: model vs actual ===")
+        print(mdir[show_cols].tail(12).round(2).to_string(index=False))
     except Exception as e:
         print(f"\nmonthly direction backtest skipped: {e}")
 

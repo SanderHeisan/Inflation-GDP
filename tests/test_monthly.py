@@ -56,6 +56,21 @@ def test_summary_buckets(mdir):
     assert bucket_rows["n"].sum() == len(mdir)
 
 
+def test_error_columns_and_stats(bundle, mdir):
+    rmom = (bundle.cpi.pct_change() * 100).dropna()
+    r = mdir.iloc[7]
+    m1 = pd.Period(r["target_print"], freq="M")
+    assert r["real_mom"] == pytest.approx(rmom[m1])
+    assert r["mom_error"] == pytest.approx(r["pred_mom"] - r["real_mom"])
+    assert r["yoy_error"] == pytest.approx(r["pred_yoy"] - r["real_yoy"])
+
+    stats = monthly.prediction_error_stats(mdir)
+    assert stats["n_months"] == len(mdir)
+    assert stats["yoy_mae_pp"] >= abs(stats["yoy_bias_pp"])
+    assert 0.0 <= stats["yoy_within_0.1pp"] <= stats["yoy_within_0.2pp"] <= 1.0
+    assert stats["direction_hit_rate"] == pytest.approx(mdir["hit"].mean())
+
+
 def test_direction_hit_rate_lookup(mdir):
     acc, n = monthly.direction_hit_rate_for(0.5, mdir)
     assert 0.0 <= acc <= 1.0 and n > 0
