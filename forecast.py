@@ -30,7 +30,9 @@ from pathlib import Path
 
 import pandas as pd
 
-from backtest import btconfig, data_bundle, plots, probability, scoring
+from backtest import btconfig, data_bundle, monthly, plots, probability, scoring
+from quadmap import inflation
+from backtest.vintage import build_vintage
 from backtest.btconfig import VintageConfig
 from backtest.fetch_data import FRED_BRENT
 
@@ -177,6 +179,32 @@ def main(argv=None):
     print(f"\n=== Quad probabilities, current + next 4 quarters "
           f"(as of {asof.date()}, method={args.method}) ===")
     print(probability.format_probability_table(prob, calls).to_string())
+
+    # The monthly money-call: direction of the NEXT CPI print's YoY rate,
+    # with the empirical accuracy of past calls of this conviction.
+    try:
+        fcfg = VintageConfig(revision_mode="none")
+        v = build_vintage(bundle, asof, fcfg)
+        if overrides:
+            v.assumptions.update(overrides)
+        proj = inflation.build_cpi_projection(v.cpi_index, 3,
+                                              v.assumptions, v.i44)
+        m0, m1 = v.last_cpi_month, v.last_cpi_month + 1
+        yoy = proj["yoy_pct"]
+        delta = float(yoy[m1] - yoy[m0])
+        direction = "ACCELERATING" if delta > 0 else "DECELERATING"
+        line = (f"{m1}: YoY {direction} - {yoy[m0]:.2f}% -> "
+                f"{yoy[m1]:.2f}% ({delta:+.2f}pp, "
+                f"{monthly.bucket_label(abs(delta))})")
+        mdir_path = outdir / "monthly_direction.parquet"
+        if mdir_path.exists():
+            hist = pd.read_parquet(mdir_path)
+            acc, n = monthly.direction_hit_rate_for(abs(delta), hist)
+            line += (f"\n  historical accuracy of calls this size: "
+                     f"{acc * 100:.0f}% ({n} backtested months)")
+        print(f"\n=== Next CPI print ===\n{line}")
+    except Exception as e:
+        print(f"\nnext-print card skipped: {e}")
 
     prob.to_csv(outdir / "quad_probabilities.csv")
     plots.plot_quad_probability_heatmap(

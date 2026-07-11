@@ -23,7 +23,8 @@ from pathlib import Path
 
 import pandas as pd
 
-from backtest import btconfig, data_bundle, engine, plots, probability, scoring
+from backtest import (btconfig, data_bundle, engine, monthly, plots,
+                      probability, scoring)
 from backtest.vintage import resolve_revision_mode
 
 
@@ -133,6 +134,19 @@ def main(argv=None) -> pd.DataFrame:
         print(probability.format_probability_table(prob, calls).to_string())
     except Exception as e:
         print(f"\nforward probability view skipped: {e}")
+
+    # One-print-ahead inflation direction: the monthly call a Nordic GIP
+    # service lives or dies on. Scored by conviction bucket.
+    try:
+        mdir = monthly.monthly_direction_backtest(bundle, args.start,
+                                                  args.end, cfg)
+        mdir.to_parquet(outdir / "monthly_direction.parquet", index=False)
+        msum = monthly.summarize_monthly_direction(mdir)
+        msum.to_csv(outdir / "monthly_direction_summary.csv")
+        print("\n=== Next-print YoY inflation direction, one month ahead ===")
+        print(msum.round(3).to_string())
+    except Exception as e:
+        print(f"\nmonthly direction backtest skipped: {e}")
 
     print(f"\nwrote summary.csv, quad-probability/hit-rate/confusion/"
           f"timeline plots to {outdir.resolve()}")

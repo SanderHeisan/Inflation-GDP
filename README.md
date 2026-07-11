@@ -109,6 +109,14 @@ the probabilities carry the model's measured error rate *and* respond
 continuously to the inputs. The alternative `calibration` method reads
 the point call through the per-horizon confusion matrix instead.
 
+The backtest also scores the sharpest monthly call: the **direction of
+the next CPI print's YoY rate** (accelerating vs decelerating), one month
+ahead, bucketed by conviction (`monthly_direction_summary.csv`). Next
+month's YoY change is half-known — it equals next month's MoM versus the
+already-published MoM from a year ago — so months with an extreme known
+hurdle are near-certain calls, and the conviction buckets quantify
+exactly how much to trust each live call.
+
 ## Live daily forecast
 
 ```bash
