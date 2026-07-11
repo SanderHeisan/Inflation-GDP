@@ -218,6 +218,59 @@ def plot_quad_probability_monthly(mprob: pd.DataFrame, path: str) -> None:
     plt.close(fig)
 
 
+ACCEL = "#eda100"   # inflation accelerating (Reflation/Stagflation side)
+DECEL = "#2a78d6"   # inflation decelerating (Goldilocks/Disinflation side)
+
+
+def plot_monthly_inflation_direction(minfl: pd.DataFrame, path: str) -> None:
+    """Monthly-resolution inflation call: P(YoY accelerating) per print,
+    each month with its own base effect. The predicted YoY level runs
+    above the bars so the path and the odds read together."""
+    months = list(minfl.index)
+    x = np.arange(len(months))
+    pa = minfl["p_accel"].to_numpy(dtype=float)
+
+    fig, ax = plt.subplots(figsize=(max(8.6, len(months) * 0.62), 4.9),
+                           dpi=150)
+    fig.patch.set_facecolor(SURFACE)
+    _style_axes(ax)
+
+    ax.bar(x, pa * 100, width=0.82, color=ACCEL, label="Accelerating",
+           edgecolor=SURFACE, linewidth=2)
+    ax.bar(x, (1 - pa) * 100, bottom=pa * 100, width=0.82, color=DECEL,
+           label="Decelerating", edgecolor=SURFACE, linewidth=2)
+    for j, p in enumerate(pa):
+        if p >= 0.15:
+            ax.text(x[j], p * 50, f"{p * 100:.0f}", ha="center",
+                    va="center", fontsize=8.5, color=INK)
+        if (1 - p) >= 0.15:
+            ax.text(x[j], (p + (1 - p) / 2) * 100, f"{(1 - p) * 100:.0f}",
+                    ha="center", va="center", fontsize=8.5, color="#ffffff")
+        ax.text(x[j], 104, f"{minfl['pred_yoy'].iloc[j]:.1f}", ha="center",
+                va="bottom", fontsize=8, color=INK_2)
+    ax.text(-0.7, 104, "YoY %", ha="right", va="bottom", fontsize=8,
+            color=MUTED)
+
+    ax.axhline(50, color=MUTED, linewidth=1.2, linestyle=(0, (4, 3)))
+    ax.set_xticks(x, [str(m) for m in months], rotation=45, fontsize=8.5,
+                  color=INK_2)
+    ax.set_ylim(0, 100)
+    ax.set_yticks([0, 25, 50, 75, 100])
+    ax.set_ylabel("Probability (%)", color=INK_2, fontsize=10)
+    ax.set_title("Will YoY inflation accelerate? - print by print",
+                 color=INK, fontsize=12.5, loc="left", pad=22)
+    ax.legend(frameon=False, fontsize=9, labelcolor=INK_2, ncol=2,
+              loc="upper center", bbox_to_anchor=(0.5, -0.28))
+    fig.text(0.01, 0.015,
+             "Each month carries its own base effect (the known "
+             "same-month-last-year MoM) and its own backtested error "
+             "distribution.",
+             color=MUTED, fontsize=8)
+    fig.tight_layout(rect=(0, 0.04, 1, 1))
+    fig.savefig(path, facecolor=SURFACE, bbox_inches="tight")
+    plt.close(fig)
+
+
 def plot_monthly_predictions(mdir: pd.DataFrame, path: str) -> None:
     """Every monthly print: the YoY number the model published one month
     earlier vs what SSB printed, with direction misses flagged below."""

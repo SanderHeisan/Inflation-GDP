@@ -79,21 +79,25 @@ def _jsonstat_to_frame(js: dict) -> pd.DataFrame:
     return df
 
 
-def fetch_cpi_by_group(start_year: int = 2000) -> pd.DataFrame:
+def fetch_cpi_by_group(start_year: int = 2000,
+                       content_code: str | None = None) -> pd.DataFrame:
     """Monthly CPI index level for total + COICOP divisions.
 
     Returns DataFrame: index = Period[M], columns = consumption groups,
-    values = index levels (2015=100).
+    values = index levels. content_code overrides the automatic
+    ContentsCode choice - callers can probe alternative index series (e.g.
+    after a base-year rebase freezes the default one).
     """
-    ccode = "KpiIndMnd"
-    try:
-        meta = get_table_metadata(config.SSB_TABLES["cpi"])
-        contents = _get_variable(meta, "ContentsCode")
-        if contents and ccode not in contents.get("values", []):
-            ccode = _match_value(contents, must=("index",),
-                                 exclude=("change", "rate")) or ccode
-    except Exception:
-        pass   # metadata lookup is best-effort; the query may still work
+    ccode = content_code or "KpiIndMnd"
+    if content_code is None:
+        try:
+            meta = get_table_metadata(config.SSB_TABLES["cpi"])
+            contents = _get_variable(meta, "ContentsCode")
+            if contents and ccode not in contents.get("values", []):
+                ccode = _match_value(contents, must=("index",),
+                                     exclude=("change", "rate")) or ccode
+        except Exception:
+            pass   # metadata lookup is best-effort; the query may still work
     query = [
         # Empty values + 'all' filter = every consumption group in the table
         {"code": "Konsumgrp", "selection": {"filter": "all", "values": ["*"]}},

@@ -124,6 +124,91 @@ def build_market_proxy(data_dir: Path,
           f"({market.index[0]}..{market.index[-1]})")
 
 
+def _total_col(groups: pd.DataFrame) -> pd.Series:
+    cols = [c for c in groups.columns
+            if str(c).upper() in ("TOTAL", "TOTALT", "ALLGRUPPER")]
+    return (groups[cols[0]] if cols else groups.iloc[:, 0]).dropna()
+
+
+def _fetch_cpi_freshest(ds) -> tuple[pd.Series, pd.DataFrame]:
+    """Fetch the CPI index; if the default content series has gone stale
+    (typically a base-year rebase freezing the old index at year-end),
+    probe the table's other index series, take the freshest, and splice the
+    old history onto it where the new series is shorter."""
+    groups = ds.fetch_cpi_by_group()
+    cpi = _total_col(groups)
+    age = (pd.Timestamp.today() - cpi.index[-1].end_time).days
+    if age <= 75:
+        return cpi, groups
+
+    print(f"  default CPI series ends {cpi.index[-1]} ({age} days old) - "
+          "probing alternative index series (base-year rebase?)")
+    try:
+        meta = ds.get_table_metadata(ds.config.SSB_TABLES["cpi"])
+        contents = ds._get_variable(meta, "ContentsCode") or {}
+        cands = [v for v, t in zip(contents.get("values", []),
+                                   contents.get("valueTexts", []))
+                 if "index" in str(t).lower()
+                 and not any(x in str(t).lower() for x in ("change", "rate"))]
+        best, best_groups = cpi, groups
+        for code in cands[:6]:
+            try:
+                g = ds.fetch_cpi_by_group(content_code=code)
+                s = _total_col(g)
+            except Exception:
+                continue
+            if s.index[-1] > best.index[-1]:
+                best, best_groups = s, g
+                print(f"  ContentsCode {code!r} runs to {s.index[-1]} - "
+                      "using it")
+        if best is not cpi:
+            if best.index[0] > cpi.index[0]:
+                overlap = cpi.index.intersection(best.index)
+                if len(overlap):
+                    junction = best.index[0]
+                    ratio = float((best.loc[overlap]
+                                   / cpi.loc[overlap]).mean())
+                    old_part = cpi.loc[cpi.index < junction] * ratio
+                    best = pd.concat([old_part, best])
+                    print(f"  spliced pre-{junction} history onto the new "
+                          f"base (ratio {ratio:.4f})")
+                else:
+                    print("  WARNING: new series has no overlap with the "
+                          "old one - YoY rates near the junction are "
+                          "unreliable")
+            return best.dropna(), best_groups
+    except Exception as e:
+        print(f"  alternative-series probe failed: {e}")
+    return cpi, groups
+
+
+def _staleness_check(name: str, last_period, max_age_days: int,
+                     ds, table_id: str) -> None:
+    """A series ending long before today means either the table was frozen
+    (SSB restructure) or our chosen variable code stopped being populated.
+    Compare against the table's own latest time value to tell which."""
+    age = (pd.Timestamp.today() - last_period.end_time).days
+    if age <= max_age_days:
+        return
+    print(f"\nWARNING: {name} ends at {last_period} - {age} days old. ")
+    try:
+        meta = ds.get_table_metadata(table_id)
+        tid = next((v for v in meta.get("variables", [])
+                    if v.get("code", "").lower() in ("tid", "time")), None)
+        latest_in_table = tid["values"][-1] if tid else "?"
+        print(f"  Table {table_id} itself runs to: {latest_in_table}")
+        if tid and str(last_period.year) not in str(latest_in_table):
+            print("  -> the TABLE has newer data than our series: the "
+                  "selected variable code stopped being populated; inspect "
+                  f"get_table_metadata('{table_id}') and update the query.")
+        else:
+            print("  -> the table appears frozen/discontinued: SSB likely "
+                  "replaced it. Search ssb.no/en/statbank for the successor "
+                  f"table and update SSB_TABLES in quadmap/config.py.")
+    except Exception as e:
+        print(f"  (could not fetch table metadata for diagnosis: {e})")
+
+
 def main(argv=None) -> None:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--data-dir", default=str(btconfig.DATA_DIR))
@@ -141,11 +226,7 @@ def main(argv=None) -> None:
         d / btconfig.DATA_FILES["gdp"])
 
     print("fetching SSB CPI (03013)...")
-    cpi_groups = ds.fetch_cpi_by_group()
-    total_cols = [c for c in cpi_groups.columns
-                  if str(c).upper() in ("TOTAL", "TOTALT", "ALLGRUPPER")]
-    cpi = (cpi_groups[total_cols[0]] if total_cols
-           else cpi_groups.iloc[:, 0]).dropna()
+    cpi, cpi_groups = _fetch_cpi_freshest(ds)
     cpi.rename("value").rename_axis("period").to_csv(
         d / btconfig.DATA_FILES["cpi"])
 
@@ -154,6 +235,12 @@ def main(argv=None) -> None:
     i44.rename("value").rename_axis("period").to_csv(
         d / btconfig.DATA_FILES["i44"])
     print(f"wrote GDP/CPI/I-44 to {d.resolve()}")
+    print(f"series end:  GDP {gdp.index[-1]} | CPI {cpi.index[-1]} | "
+          f"I-44 {i44.index[-1]}")
+    _staleness_check("CPI", cpi.index[-1], 75,
+                     ds, btconfig.SSB_TABLES["cpi"])
+    _staleness_check("GDP", gdp.index[-1], 160,
+                     ds, btconfig.SSB_TABLES["gdp_qna"])
 
     market_file = d / btconfig.DATA_FILES["market"]
     if market_file.exists():

@@ -126,9 +126,6 @@ def main(argv=None) -> pd.DataFrame:
             prob, calls, asof,
             str(outdir / "quad_probabilities_quarterly.png"),
             method="residual")
-        plots.plot_quad_probability_monthly(
-            probability.monthly_probabilities(prob),
-            str(outdir / "quad_probabilities_monthly.png"))
         print(f"\n=== Quad probabilities for the year ahead "
               f"(forecast as of {asof.date()}, calibrated on the backtest) ===")
         print(probability.format_probability_table(prob, calls).to_string())
@@ -156,6 +153,19 @@ def main(argv=None) -> pd.DataFrame:
         print(monthly.prediction_error_stats(mdir).round(3).to_string())
         print("\n=== Last 12 monthly prints: model vs actual ===")
         print(mdir[show_cols].tail(12).round(2).to_string(index=False))
+
+        # Monthly-resolution error clouds (horizons 1..12) and today's
+        # print-by-print acceleration odds, each month with its own base
+        # effect - the quad is quarterly, but the inflation axis is not.
+        mpath = monthly.monthly_path_backtest(bundle, args.start, args.end,
+                                              cfg)
+        mpath.to_parquet(outdir / "monthly_path_errors.parquet", index=False)
+        minfl = monthly.monthly_inflation_probabilities(bundle, mpath, cfg)
+        minfl.to_csv(outdir / "monthly_inflation_probabilities.csv")
+        plots.plot_monthly_inflation_direction(
+            minfl, str(outdir / "monthly_inflation_direction.png"))
+        print("\n=== P(YoY inflation accelerating), print by print ===")
+        print(minfl.round(3).to_string())
     except Exception as e:
         print(f"\nmonthly direction backtest skipped: {e}")
 

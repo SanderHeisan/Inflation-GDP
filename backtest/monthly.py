@@ -122,6 +122,85 @@ def summarize_monthly_direction(df: pd.DataFrame) -> pd.DataFrame:
     return pd.DataFrame(rows).set_index("bucket")
 
 
+def monthly_path_backtest(bundle: RawDataBundle, start: str, end: str,
+                          cfg: VintageConfig | None = None,
+                          max_h: int = 12) -> pd.DataFrame:
+    """Forecast errors on the month-to-month YoY delta at every monthly
+    horizon 1..max_h: the error clouds behind a monthly-resolution
+    inflation-direction probability. Each target month's delta is driven by
+    its own base effect - the same-month-last-year MoM that rolls out of
+    the YoY window - so no two months share a hurdle."""
+    cfg = cfg or VintageConfig()
+    ryoy = (bundle.cpi.pct_change(12) * 100).dropna()
+
+    rows = []
+    for asof in asof_dates(start, end, "M"):
+        try:
+            v = build_vintage(bundle, asof, cfg)
+        except ValueError:
+            continue
+        proj = inflation.build_cpi_projection(
+            v.cpi_index, max_h + 2, v.assumptions, v.i44)
+        yoy = proj["yoy_pct"]
+        m0 = v.last_cpi_month
+        for h in range(1, max_h + 1):
+            m = m0 + h
+            if m not in yoy.index or m not in ryoy.index \
+                    or (m - 1) not in ryoy.index:
+                continue
+            pred_delta = float(yoy[m] - yoy[m - 1])
+            real_delta = float(ryoy[m] - ryoy[m - 1])
+            rows.append({"asof": asof, "h": h, "month": str(m),
+                         "pred_delta": pred_delta, "real_delta": real_delta,
+                         "err": real_delta - pred_delta})
+    df = pd.DataFrame(rows)
+    if df.empty:
+        raise ValueError("no monthly path observations in the window")
+    return df
+
+
+def monthly_inflation_probabilities(bundle: RawDataBundle,
+                                    path_errors: pd.DataFrame,
+                                    cfg: VintageConfig | None = None,
+                                    asof=None, months: int = 12,
+                                    assumption_overrides: dict | None = None
+                                    ) -> pd.DataFrame:
+    """P(YoY inflation accelerating) for each of the next `months` monthly
+    prints: the projected delta for that month (its own base effect + the
+    projected MoM) plus the backtested error cloud at that horizon."""
+    from .vintage import build_vintage as _bv   # avoid circular alias
+    cfg = cfg or VintageConfig()
+    fcfg = VintageConfig(gdp_pub_lag_days=cfg.gdp_pub_lag_days,
+                         cpi_pub_lag_days=cfg.cpi_pub_lag_days,
+                         market_pub_lag_days=cfg.market_pub_lag_days,
+                         revision_mode="none", seed=cfg.seed)
+    asof = pd.Timestamp(asof) if asof is not None else \
+        bundle.cpi.index[-1].end_time + pd.Timedelta(days=11)
+    v = _bv(bundle, asof, fcfg)
+    if assumption_overrides:
+        v.assumptions.update(assumption_overrides)
+    proj = inflation.build_cpi_projection(v.cpi_index, months + 2,
+                                          v.assumptions, v.i44)
+    yoy = proj["yoy_pct"]
+    m0 = v.last_cpi_month
+    rmom = (v.cpi_index.pct_change() * 100).dropna()
+
+    rows = {}
+    for h in range(1, months + 1):
+        m = m0 + h
+        if m not in yoy.index:
+            continue
+        delta = float(yoy[m] - yoy[m - 1])
+        errs = path_errors.loc[path_errors["h"] == h, "err"]
+        p_accel = float(((delta + errs) > 0).mean()) if len(errs) else 0.5
+        rows[m] = {"pred_yoy": float(yoy[m]), "pred_delta": delta,
+                   "hurdle_mom": float(rmom.get(m - 12, np.nan)),
+                   "p_accel": p_accel, "n_errs": len(errs)}
+    out = pd.DataFrame(rows).T
+    out.index.name = "month"
+    return out
+
+
 def prediction_error_stats(df: pd.DataFrame) -> pd.Series:
     """How close the level forecasts get, one print ahead. MAE in
     percentage points; bias positive = model runs hot."""

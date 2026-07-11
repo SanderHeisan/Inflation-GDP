@@ -190,6 +190,13 @@ def main(argv=None):
         proj = inflation.build_cpi_projection(v.cpi_index, 3,
                                               v.assumptions, v.i44)
         m0, m1 = v.last_cpi_month, v.last_cpi_month + 1
+        staleness = (asof - m0.end_time).days
+        if staleness > 45:
+            print(f"\nWARNING: newest CPI in the dataset is {m0} - "
+                  f"{staleness} days before the as-of date. The 'next "
+                  "print' below is NOT the upcoming release; refresh data/ "
+                  "(python -m backtest.fetch_data) and check its staleness "
+                  "diagnostics.")
         yoy = proj["yoy_pct"]
         delta = float(yoy[m1] - yoy[m0])
         direction = "ACCELERATING" if delta > 0 else "DECELERATING"
@@ -210,9 +217,20 @@ def main(argv=None):
     plots.plot_quad_probability_heatmap(
         prob, calls, asof, str(outdir / "quad_probabilities_quarterly.png"),
         method=args.method)
-    plots.plot_quad_probability_monthly(
-        probability.monthly_probabilities(prob),
-        str(outdir / "quad_probabilities_monthly.png"))
+
+    # Monthly-resolution inflation call: every print gets its own base
+    # effect and its own odds - months within a quarter do NOT repeat here.
+    mpath_file = outdir / "monthly_path_errors.parquet"
+    if mpath_file.exists():
+        mpath = pd.read_parquet(mpath_file)
+        minfl = monthly.monthly_inflation_probabilities(
+            bundle, mpath, cfg, asof=asof,
+            assumption_overrides=overrides or None)
+        minfl.to_csv(outdir / "monthly_inflation_probabilities.csv")
+        plots.plot_monthly_inflation_direction(
+            minfl, str(outdir / "monthly_inflation_direction.png"))
+        print("\n=== P(YoY inflation accelerating), print by print ===")
+        print(minfl.round(3).to_string())
 
     # Append to the run history so day-to-day drift is auditable.
     hist_path = outdir / "forecast_history.csv"

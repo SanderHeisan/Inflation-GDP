@@ -71,6 +71,31 @@ def test_error_columns_and_stats(bundle, mdir):
     assert stats["direction_hit_rate"] == pytest.approx(mdir["hit"].mean())
 
 
+def test_monthly_probabilities_differ_across_months(bundle):
+    """The complaint this feature answers: months must NOT share odds -
+    each print has its own base effect and its own error cloud."""
+    cfg = VintageConfig()
+    mpath = monthly.monthly_path_backtest(bundle, "2017-01-01", "2019-12-31",
+                                          cfg, max_h=12)
+    assert set(mpath["h"]) == set(range(1, 13))
+    minfl = monthly.monthly_inflation_probabilities(bundle, mpath, cfg)
+    assert len(minfl) == 12
+    assert ((minfl["p_accel"] >= 0) & (minfl["p_accel"] <= 1)).all()
+    assert minfl["p_accel"].nunique() > 6
+    assert minfl["pred_yoy"].nunique() == 12
+
+
+def test_monthly_path_backtest_is_point_in_time():
+    a = make_demo_bundle(seed=7)
+    b = make_demo_bundle(seed=7)
+    b.cpi.loc[b.cpi.index >= pd.Period("2019-01", "M")] *= 1.4
+    kw = dict(start="2018-01-01", end="2018-06-30", cfg=VintageConfig(),
+              max_h=6)
+    pa = monthly.monthly_path_backtest(a, **kw)
+    pb = monthly.monthly_path_backtest(b, **kw)
+    pd.testing.assert_series_equal(pa["pred_delta"], pb["pred_delta"])
+
+
 def test_direction_hit_rate_lookup(mdir):
     acc, n = monthly.direction_hit_rate_for(0.5, mdir)
     assert 0.0 <= acc <= 1.0 and n > 0
