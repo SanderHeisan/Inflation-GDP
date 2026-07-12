@@ -75,6 +75,8 @@ DATA_DIR = Path(__file__).resolve().parent.parent / "data"
 DATA_FILES = {
     "gdp": "gdp_mainland_q.csv",        # period (2012Q1), value
     "cpi": "cpi_monthly.csv",           # period (2012-01), value
+    "cpi_food": "cpi_food_monthly.csv",         # food sub-index (optional)
+    "cpi_imported": "cpi_imported_monthly.csv", # imported-goods proxy (optional)
     "i44": "i44_monthly.csv",           # period (2012-01), value
     "market": "market_monthly.csv",     # period, power_ore_kwh, brent_usd, usdnok
     "gdp_vintages": "gdp_vintages.csv", # quarter rows x vintage-date columns

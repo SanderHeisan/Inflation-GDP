@@ -28,6 +28,12 @@ class RawDataBundle:
     market: pd.DataFrame           # Period[M]; power_ore_kwh, brent_usd, usdnok
     gdp_vintages: pd.DataFrame | None = None  # rows Period[Q] x cols vintage Timestamp
     wage_norms: pd.Series | None = None       # int year -> settlement norm (pct)
+    # Optional CPI sub-indices: observable momentum for the two blocks whose
+    # static assumptions caused the June-2026 level miss (food, imported
+    # goods/electronics). When present, the vintage builder anchors the
+    # forward assumptions on their trailing trends instead of constants.
+    cpi_food: pd.Series | None = None          # Period[M] food sub-index
+    cpi_imported: pd.Series | None = None      # Period[M] imported-goods proxy
     source: str = "unknown"
 
     def has_vintage_panel(self) -> bool:
@@ -70,6 +76,10 @@ def load_bundle(data_dir: str | Path = btconfig.DATA_DIR) -> RawDataBundle:
         norms = pd.Series(wdf["norm_pct"].to_numpy(dtype=float),
                           index=wdf["year"].astype(int)).sort_index()
 
+    def _optional(key):
+        p = d / f[key]
+        return _read_period_series(p, "M") if p.exists() else None
+
     return RawDataBundle(
         gdp_final=_read_period_series(d / f["gdp"], "Q"),
         cpi=_read_period_series(d / f["cpi"], "M"),
@@ -77,6 +87,8 @@ def load_bundle(data_dir: str | Path = btconfig.DATA_DIR) -> RawDataBundle:
         market=market.sort_index(),
         gdp_vintages=vintages,
         wage_norms=norms,
+        cpi_food=_optional("cpi_food"),
+        cpi_imported=_optional("cpi_imported"),
         source="csv",
     )
 
@@ -151,8 +163,20 @@ def make_demo_bundle(seed: int = 7, start: str = "2004-01",
         norms[y] = float(np.clip(base + 1.3, 2.0, 6.0))
     wage_norms = pd.Series(norms)
 
+    # Sub-index demo series: food noisier around the total, imported goods
+    # softer (mirrors Norway: imported deflation through strong-NOK spells).
+    food = pd.Series(
+        cpi.to_numpy() * (1 + 0.02 * np.sin(t / 7.0)
+                          + rng.normal(0, 0.004, len(months))),
+        index=months)
+    imported = pd.Series(
+        cpi.to_numpy() * (1 - 0.0005 * t / 12
+                          + rng.normal(0, 0.003, len(months))),
+        index=months)
+
     return RawDataBundle(gdp_final=gdp, cpi=cpi, i44=i44, market=market,
                          gdp_vintages=None, wage_norms=wage_norms,
+                         cpi_food=food, cpi_imported=imported,
                          source="demo")
 
 

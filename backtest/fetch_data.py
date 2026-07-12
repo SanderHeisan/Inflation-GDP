@@ -130,6 +130,38 @@ def _total_col(groups: pd.DataFrame) -> pd.Series:
     return (groups[cols[0]] if cols else groups.iloc[:, 0]).dropna()
 
 
+def _division_col(groups: pd.DataFrame, division: str) -> pd.Series | None:
+    """COICOP division sub-index (e.g. '01' food) from a group frame whose
+    column names are table-specific codes ('01', 'JA01', '01.1', ...)."""
+    for c in groups.columns:
+        code = "".join(ch for ch in str(c) if ch.isdigit() or ch == ".")
+        if code == division:
+            return groups[c].dropna()
+    return None
+
+
+def _write_subindices(d: Path, groups: pd.DataFrame) -> None:
+    """Food and imported-goods momentum series: the observable inputs for
+    the two CPI blocks whose static assumptions caused the June-2026 level
+    miss. Best-effort - absent columns just keep the old constants."""
+    food = _division_col(groups, "01")
+    if food is not None and len(food) > 24:
+        food.rename("value").rename_axis("period").to_csv(
+            d / btconfig.DATA_FILES["cpi_food"])
+        print(f"wrote {btconfig.DATA_FILES['cpi_food']} "
+              f"(food sub-index, ends {food.index[-1]})")
+    clothing = _division_col(groups, "03")
+    furnishings = _division_col(groups, "05")
+    parts = [s for s in (clothing, furnishings) if s is not None]
+    if parts:
+        imported = pd.concat(parts, axis=1).mean(axis=1).dropna()
+        if len(imported) > 24:
+            imported.rename("value").rename_axis("period").to_csv(
+                d / btconfig.DATA_FILES["cpi_imported"])
+            print(f"wrote {btconfig.DATA_FILES['cpi_imported']} "
+                  f"(imported-goods proxy, ends {imported.index[-1]})")
+
+
 SSB_SEARCH = "https://data.ssb.no/api/v0/en/table/?query={q}"
 
 
@@ -406,6 +438,11 @@ def main(argv=None) -> None:
         except Exception:
             pass
     cpi.rename("value").rename_axis("period").to_csv(cpi_path)
+    try:
+        _write_subindices(d, cpi_groups)
+    except Exception as e:
+        print(f"(sub-index extraction failed: {e} - block assumptions "
+              "fall back to constants)")
 
     print("fetching Norges Bank I-44...")
     i44 = ds.fetch_i44()

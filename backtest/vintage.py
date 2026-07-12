@@ -133,6 +133,24 @@ def spot_carry_assumptions(bundle: RawDataBundle, asof: pd.Timestamp,
 
     cpi_yoy_last = (cpi_vintage.iloc[-1] / cpi_vintage.iloc[-13] - 1) * 100.0
 
+    def _subindex_yoy(series: pd.Series | None, default: float,
+                      lo: float, hi: float) -> float:
+        """Trailing YoY of a CPI sub-index, truncated like the CPI itself.
+        This is how observable food / imported-goods momentum (the causes
+        SSB named for the June-2026 miss) enters the forward assumptions
+        instead of a static constant."""
+        if series is None:
+            return default
+        s = truncate(series, asof, cfg.cpi_pub_lag_days)
+        if len(s) < 13:
+            return default
+        return float(np.clip((s.iloc[-1] / s.iloc[-13] - 1) * 100.0, lo, hi))
+
+    food_yoy = _subindex_yoy(bundle.cpi_food,
+                             float(np.clip(cpi_yoy_last, 0.0, 6.0)),
+                             -2.0, 8.0)
+    imported_yoy = _subindex_yoy(bundle.cpi_imported, 1.0, -3.0, 6.0)
+
     return {
         "power_recent_ore_kwh": float(spot["power_ore_kwh"]),
         "power_forward_ore_kwh": {str(p): float(spot["power_ore_kwh"])
@@ -144,9 +162,9 @@ def spot_carry_assumptions(bundle: RawDataBundle, asof: pd.Timestamp,
         "usdnok_recent": float(spot["usdnok"]),
         "usdnok_path": {str(p): float(spot["usdnok"]) for p in horizon},
         "i44_path": {},                       # flat at last observed I-44
-        "imported_goods_baseline_yoy": 1.0,
+        "imported_goods_baseline_yoy": imported_yoy,
         "wage_norm_pct": wage_norm,
-        "food_pipeline_yoy": float(np.clip(cpi_yoy_last, 0.0, 6.0)),
+        "food_pipeline_yoy": food_yoy,
         "fuel_passthrough": 0.40,
         "services_wage_haircut": 0.75,
         # Calendar seasonality of MoM prints, estimated point-in-time from
