@@ -93,6 +93,7 @@ def fetch_cpi_by_group(start_year: int = 2000,
     table = table_id or config.SSB_TABLES["cpi"]
     group_code = "Konsumgrp"
     ccode = content_code or "KpiIndMnd"
+    gvar = None
     try:
         meta = get_table_metadata(table)
         gvar = next((v for v in meta.get("variables", [])
@@ -114,11 +115,29 @@ def fetch_cpi_by_group(start_year: int = 2000,
         {"code": "ContentsCode",
          "selection": {"filter": "item", "values": [ccode]}},
     ]
-    js = _post_query(table, query)
+    try:
+        js = _post_query(table, query)
+    except requests.HTTPError:
+        # Some rebased/dataset-style tables reject the 'all' wildcard with
+        # 'Parameter error'. Retry with the explicit value list from the
+        # metadata; as a last resort drop the group dimension entirely
+        # (total-only frame - callers degrade gracefully).
+        if gvar is not None and gvar.get("values"):
+            query[0] = {"code": group_code,
+                        "selection": {"filter": "item",
+                                      "values": list(gvar["values"])}}
+            js = _post_query(table, query)
+        else:
+            js = _post_query(table, query[1:])
     df = _jsonstat_to_frame(js)
     tcol = next(c for c in df.columns if str(c).lower() in ("tid", "time"))
     df["period"] = pd.PeriodIndex(df[tcol].str.replace("M", "-"), freq="M")
-    wide = df.pivot_table(index="period", columns=group_code, values="value")
+    if group_code in df.columns:
+        wide = df.pivot_table(index="period", columns=group_code,
+                              values="value")
+    else:   # total-only fallback: no group dimension in the response
+        wide = df.groupby("period")[["value"]].first()
+        wide.columns = ["TOTAL"]
     return wide[wide.index.year >= start_year]
 
 

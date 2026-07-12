@@ -246,9 +246,8 @@ def _discover_replacement_table(
               "kept, never overwritten.")
         return None
     print(f"  ADOPTED table {best_id} ('{best_title[:70]}') - runs to "
-          f"{best.index[-1]}")
-    print(f"  -> make it permanent: set SSB_TABLES['cpi'] = {best_id!r} "
-          "in quadmap/config.py")
+          f"{best.index[-1]}; remembered for future runs")
+    _discover_replacement_table.last_adopted = best_id
     groups = None
     try:   # group frame from the adopted table keeps the power proxy fresh
         groups = ds.fetch_cpi_by_group(table_id=best_id)
@@ -257,12 +256,30 @@ def _discover_replacement_table(
     return _splice_series(old_cpi, best), groups
 
 
-def _fetch_cpi_freshest(ds) -> tuple[pd.Series, pd.DataFrame]:
+def _fetch_cpi_freshest(ds,
+                        data_dir: Path | None = None
+                        ) -> tuple[pd.Series, pd.DataFrame]:
     """Fetch the CPI index; if the default table errors or has gone stale
     (base-year rebases both freeze old tables and break ids), fall back to
     the legacy table for history, probe alternative content series, then
     search StatBank for the successor table. Whatever wins gets the old
-    history spliced on so YoY arithmetic is continuous."""
+    history spliced on so YoY arithmetic is continuous. A successful
+    discovery persists its table id so later runs skip the detour."""
+    override_file = (Path(data_dir) / ".cpi_table_override") if data_dir \
+        else None
+    if override_file is not None and override_file.exists():
+        adopted = override_file.read_text().strip()
+        try:
+            groups = ds.fetch_cpi_by_group(table_id=adopted)
+            cpi = _total_col(groups)
+            age = (pd.Timestamp.today() - cpi.index[-1].end_time).days
+            if age <= 75:
+                print(f"  using previously adopted table {adopted!r} "
+                      f"(ends {cpi.index[-1]})")
+                return cpi, groups
+        except Exception as e:
+            print(f"  previously adopted table {adopted!r} failed ({e})")
+
     default_failed = None
     try:
         groups = ds.fetch_cpi_by_group()
@@ -312,6 +329,10 @@ def _fetch_cpi_freshest(ds) -> tuple[pd.Series, pd.DataFrame]:
         result = _discover_replacement_table(ds, cpi)
         if result is not None:
             replaced, new_groups = result
+            if override_file is not None and getattr(
+                    _discover_replacement_table, "last_adopted", None):
+                override_file.write_text(
+                    _discover_replacement_table.last_adopted)
             return replaced, (new_groups if new_groups is not None
                               else groups)
     except Exception as e:
@@ -372,7 +393,7 @@ def main(argv=None) -> None:
         d / btconfig.DATA_FILES["gdp"])
 
     print(f"fetching SSB CPI ({ds.config.SSB_TABLES['cpi']})...")
-    cpi, cpi_groups = _fetch_cpi_freshest(ds)
+    cpi, cpi_groups = _fetch_cpi_freshest(ds, data_dir=d)
     cpi_path = d / btconfig.DATA_FILES["cpi"]
     if cpi_path.exists():   # manual escape hatch: never clobber fresher data
         try:

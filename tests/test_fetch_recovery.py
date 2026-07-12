@@ -160,6 +160,71 @@ def test_broken_default_table_falls_back_to_legacy_then_discovers(monkeypatch):
     assert cpi.index[0] == pd.Period("2000-01", freq="M")
 
 
+def test_adopted_table_is_persisted_and_reused(tmp_path, monkeypatch):
+    ds = _fake_ds(new_end="2026-06", new_base=50.0)
+    fetched_tables = []
+    orig = ds.fetch_cpi_by_group
+
+    def tracking_fetch(start_year=2000, content_code=None, table_id=None):
+        fetched_tables.append(table_id)
+        if table_id == "99999":
+            return _index_series("2000-01", "2026-06",
+                                 base=50.0).to_frame("TOTAL")
+        return orig(start_year, content_code)
+
+    ds.fetch_cpi_by_group = tracking_fetch
+    monkeypatch.setattr(fetch_data, "_search_ssb_tables",
+                        lambda q: ds.__search_hits__)
+
+    cpi1, _ = fetch_data._fetch_cpi_freshest(ds, data_dir=tmp_path)
+    assert (tmp_path / ".cpi_table_override").read_text() == "99999"
+
+    fetched_tables.clear()
+    cpi2, _ = fetch_data._fetch_cpi_freshest(ds, data_dir=tmp_path)
+    # second run goes straight to the remembered table - no discovery
+    assert fetched_tables == ["99999"]
+    assert cpi2.index[-1] == pd.Period("2026-06", freq="M")
+
+
+def test_wildcard_rejection_retries_with_explicit_values(monkeypatch):
+    """The 'Parameter error' on filter-all: fetch_cpi_by_group must retry
+    with the explicit group values, then total-only."""
+    import requests
+    from quadmap import data_sources as real_ds
+
+    calls = []
+
+    def fake_post(table, query):
+        calls.append([q["selection"]["filter"] for q in query])
+        if any(q["selection"]["filter"] == "all" for q in query):
+            raise requests.HTTPError("400 Parameter error")
+        return {"ok": True}
+
+    def fake_meta(table):
+        return {"variables": [
+            {"code": "KonsumgrpNy", "values": ["TOTAL", "01"],
+             "valueTexts": ["Total", "Food"]},
+            {"code": "ContentsCode", "values": ["Ind"],
+             "valueTexts": ["Consumer price index (2025=100)"]},
+            {"code": "Tid", "values": ["2026M05"], "valueTexts": ["2026M05"]},
+        ]}
+
+    def fake_frame(js):
+        return pd.DataFrame({"Tid": ["2026M04", "2026M05"],
+                             "KonsumgrpNy": ["TOTAL", "TOTAL"],
+                             "value": [120.0, 121.0]})
+
+    monkeypatch.setattr(real_ds, "_post_query", fake_post)
+    monkeypatch.setattr(real_ds, "get_table_metadata", fake_meta)
+    monkeypatch.setattr(real_ds, "_jsonstat_to_frame", fake_frame)
+
+    wide = real_ds.fetch_cpi_by_group(table_id="Kpi00")
+    assert list(wide.columns) == ["TOTAL"]
+    assert wide.index[-1] == pd.Period("2026-05", freq="M")
+    # first attempt used 'all', the retry used explicit items
+    assert calls[0][0] == "all" and calls[1][0] == "item"
+
+
 def test_splice_no_overlap_keeps_longer():
     old = _index_series("2000-01", "2025-12")
     new = _index_series("2026-01", "2026-06", base=210.0)

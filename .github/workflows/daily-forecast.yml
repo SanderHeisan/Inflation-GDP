@@ -30,13 +30,15 @@ jobs:
 
       - name: Carry over history and indicator archive from previous runs
         run: |
-          mkdir -p results
+          mkdir -p results data
           git fetch origin live-forecast --depth 1 2>/dev/null || true
           for f in forecast_history.csv indicator_snapshots.csv \
                    indicator_snapshots.tables.json; do
             git show origin/live-forecast:$f > results/$f 2>/dev/null \
               || echo "no previous $f"
           done
+          git show origin/live-forecast:cpi_table_override \
+            > data/.cpi_table_override 2>/dev/null || echo "no cpi override"
 
       - name: Snapshot indicators (point-in-time archive)
         run: python -m backtest.snapshots --out results/indicator_snapshots.csv || true
@@ -46,6 +48,11 @@ jobs:
 
       - name: Run live daily forecast
         run: python forecast.py --data-dir data --outdir results
+
+      - name: Preserve adopted CPI table id
+        run: |
+          [ -f data/.cpi_table_override ] && \
+            cp data/.cpi_table_override results/cpi_table_override || true
 
       - name: Upload results artifact
         uses: actions/upload-artifact@v4
