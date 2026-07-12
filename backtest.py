@@ -49,6 +49,9 @@ def parse_args(argv=None) -> argparse.Namespace:
     ap.add_argument("--seed", type=int, default=0,
                     help="seed for the revision-noise draws")
     ap.add_argument("--outdir", default=".", help="output directory")
+    ap.add_argument("--split", type=int, default=2019,
+                    help="calibration-validation split year: calibrate "
+                         "before it, verify from it on (0 disables)")
     return ap.parse_args(argv)
 
 
@@ -166,6 +169,20 @@ def main(argv=None) -> pd.DataFrame:
             minfl, str(outdir / "monthly_inflation_direction.png"))
         print("\n=== P(YoY inflation accelerating), print by print ===")
         print(minfl.round(3).to_string())
+
+        if args.split:
+            from backtest import validation
+            val = validation.split_validation(preds, realized_final, mdir,
+                                              split_year=args.split,
+                                              horizons=tuple(horizons))
+            if len(val):
+                val.to_csv(outdir / "calibration_validation.csv",
+                           index=False)
+                print(f"\n=== Out-of-sample check: calibrated before "
+                      f"{args.split}, verified {args.split}+ ===")
+                print(val.round(3).to_string(index=False))
+                print("(out_of_sample ~ in_sample -> probabilities are "
+                      "publishable; a collapse means overfit)")
     except Exception as e:
         print(f"\nmonthly direction backtest skipped: {e}")
 

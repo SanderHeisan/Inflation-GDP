@@ -168,6 +168,30 @@ Run `python -m backtest.fetch_data` on a networked machine to populate
 `data/` with current-vintage SSB GDP/CPI and Norges Bank I-44; market and
 vintage files are documented there too.
 
+## Roadmap (in payoff order)
+
+1. **Real Nord Pool power history** (needs sourcing) — the monthly misses
+   cluster in energy months and the power column is a flagged proxy.
+   Replace `data/market_monthly.csv` with real NO1/NO2/NO5 monthly
+   averages (ore/kWh incl VAT) back to ~2010, plus the stromstotte
+   parameter history, and delete `data/.market_is_proxy`.
+2. **Live track record** (automatic) — the daily workflow appends every
+   forecast to `forecast_history.csv` on the `live-forecast` branch;
+   after a few months this is the out-of-sample proof no backtest can be.
+3. **Growth-side indicators** (archive building automatically) — the
+   nowcast blend has sockets for Regional Network / jobs / PMI / retail,
+   but backtesting them honestly needs point-in-time data that public
+   archives don't provide. `backtest/snapshots.py` therefore records the
+   current value of each indicator daily; once the archive spans a few
+   quarters, calibrate the nowcast weights on it without leakage.
+4. **Norges Bank real-time GDP vintages** (needs a manual download) —
+   drop into `data/gdp_vintages.csv` (format in `backtest/fetch_data.py`)
+   and the quad backtest switches from simulated to true first releases.
+5. **Split-sample validation** (automatic) — every backtest run now
+   calibrates on pre-2019 data and verifies on 2019+
+   (`calibration_validation.csv`); quote the out-of-sample column, not
+   the in-sample one.
+
 ## Before production
 
 - Run `data_sources.get_table_metadata()` on each SSB table and confirm the

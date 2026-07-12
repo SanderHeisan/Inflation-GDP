@@ -28,13 +28,18 @@ jobs:
       - name: Fetch latest macro data
         run: python -m backtest.fetch_data --data-dir data
 
-      - name: Carry over forecast history from previous runs
+      - name: Carry over history and indicator archive from previous runs
         run: |
           mkdir -p results
-          git fetch origin live-forecast --depth 1 2>/dev/null && \
-            git show origin/live-forecast:forecast_history.csv \
-              > results/forecast_history.csv 2>/dev/null || \
-            echo "no previous history"
+          git fetch origin live-forecast --depth 1 2>/dev/null || true
+          for f in forecast_history.csv indicator_snapshots.csv \
+                   indicator_snapshots.tables.json; do
+            git show origin/live-forecast:$f > results/$f 2>/dev/null \
+              || echo "no previous $f"
+          done
+
+      - name: Snapshot indicators (point-in-time archive)
+        run: python -m backtest.snapshots --out results/indicator_snapshots.csv || true
 
       - name: Run walk-forward backtest (calibration)
         run: python backtest.py --start 2012 --end 2025 --horizon 4 --freq M --outdir results
