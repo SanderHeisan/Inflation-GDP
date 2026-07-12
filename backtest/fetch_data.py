@@ -258,20 +258,34 @@ def _discover_replacement_table(
 
 
 def _fetch_cpi_freshest(ds) -> tuple[pd.Series, pd.DataFrame]:
-    """Fetch the CPI index; if the default content series has gone stale
-    (typically a base-year rebase), first probe the same table's other
-    index series, then search StatBank for the successor table. Whatever
-    wins gets the old history spliced on so YoY arithmetic is continuous."""
-    groups = ds.fetch_cpi_by_group()
-    cpi = _total_col(groups)
+    """Fetch the CPI index; if the default table errors or has gone stale
+    (base-year rebases both freeze old tables and break ids), fall back to
+    the legacy table for history, probe alternative content series, then
+    search StatBank for the successor table. Whatever wins gets the old
+    history spliced on so YoY arithmetic is continuous."""
+    default_failed = None
+    try:
+        groups = ds.fetch_cpi_by_group()
+        cpi = _total_col(groups)
+    except Exception as e:
+        default_failed = e
+        print(f"  default CPI table {ds.config.SSB_TABLES['cpi']!r} "
+              f"failed ({e}) - falling back to legacy table")
+        legacy = ds.config.SSB_TABLES.get("cpi_legacy", "03013")
+        groups = ds.fetch_cpi_by_group(table_id=legacy)
+        cpi = _total_col(groups)
+
     age = (pd.Timestamp.today() - cpi.index[-1].end_time).days
     if age <= 75:
         return cpi, groups
 
-    print(f"  default CPI series ends {cpi.index[-1]} ({age} days old) - "
-          "probing alternative index series (base-year rebase?)")
+    active_table = ds.config.SSB_TABLES.get("cpi_legacy", "03013") \
+        if default_failed else ds.config.SSB_TABLES["cpi"]
+    print(f"  CPI series from table {active_table!r} ends {cpi.index[-1]} "
+          f"({age} days old) - probing alternative index series "
+          "(base-year rebase?)")
     try:
-        meta = ds.get_table_metadata(ds.config.SSB_TABLES["cpi"])
+        meta = ds.get_table_metadata(active_table)
         contents = ds._get_variable(meta, "ContentsCode") or {}
         cands = [v for v, t in zip(contents.get("values", []),
                                    contents.get("valueTexts", []))
@@ -280,7 +294,8 @@ def _fetch_cpi_freshest(ds) -> tuple[pd.Series, pd.DataFrame]:
         best, best_groups = cpi, groups
         for code in cands[:6]:
             try:
-                g = ds.fetch_cpi_by_group(content_code=code)
+                g = ds.fetch_cpi_by_group(content_code=code,
+                                          table_id=active_table)
                 s = _total_col(g)
             except Exception:
                 continue

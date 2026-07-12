@@ -11,10 +11,14 @@ so the model code itself stays mechanical.
 # run -- SSB occasionally restructures tables.
 # ---------------------------------------------------------------------------
 SSB_TABLES = {
-    # CPI: index level by COICOP consumption group. 14710 is the 2025=100
-    # rebase (history to 1920); it superseded 03013, which SSB froze at
-    # 2025M12. fetch_data auto-discovers successors if this freezes again.
-    "cpi": "14710",
+    # CPI: index level by COICOP consumption group. 'Kpi10' is the API id
+    # of the 2025=100 rebase (StatBank catalog number 14710, history to
+    # 1920) - the id verified working via POST; the numeric 14710 routes
+    # to a differently-structured endpoint and 400s. Superseded 03013,
+    # frozen at 2025M12. fetch_data falls back to the legacy table and
+    # auto-discovers successors if this one freezes or breaks again.
+    "cpi": "Kpi10",
+    "cpi_legacy": "03013",
     # CPI by delivery sector (imported vs domestically produced split) --
     # this is the table that makes the FX pass-through model easy
     "cpi_delivery_sector": "05327",

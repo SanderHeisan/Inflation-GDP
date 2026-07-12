@@ -132,6 +132,34 @@ def test_discovery_returns_groups_for_power_proxy(monkeypatch):
     assert groups.index[-1] == pd.Period("2026-06", freq="M")
 
 
+def test_broken_default_table_falls_back_to_legacy_then_discovers(monkeypatch):
+    """The 'Kpi10 vs 14710' failure mode: the configured table id 400s
+    outright. The fetch must recover via the legacy table's history and
+    then adopt the successor through discovery - never die."""
+    ds = _fake_ds(new_end="2026-06", new_base=50.0)
+    ds.config.SSB_TABLES = {"cpi": "14710", "cpi_legacy": "03013",
+                            "gdp_qna": "09190"}
+    old = _index_series("2000-01", "2025-12")
+
+    def fetch_cpi_by_group(start_year=2000, content_code=None,
+                           table_id=None):
+        if table_id is None:      # the broken configured default
+            raise RuntimeError("400 Parameter error")
+        if table_id == "03013":
+            return old.to_frame("TOTAL")
+        if table_id == "99999":
+            return _index_series("2020-01", "2026-06",
+                                 base=50.0).to_frame("TOTAL")
+        raise RuntimeError(f"unknown table {table_id}")
+
+    ds.fetch_cpi_by_group = fetch_cpi_by_group
+    monkeypatch.setattr(fetch_data, "_search_ssb_tables",
+                        lambda q: ds.__search_hits__)
+    cpi, groups = fetch_data._fetch_cpi_freshest(ds)
+    assert cpi.index[-1] == pd.Period("2026-06", freq="M")
+    assert cpi.index[0] == pd.Period("2000-01", freq="M")
+
+
 def test_splice_no_overlap_keeps_longer():
     old = _index_series("2000-01", "2025-12")
     new = _index_series("2026-01", "2026-06", base=210.0)
