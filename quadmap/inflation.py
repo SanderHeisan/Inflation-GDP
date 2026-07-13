@@ -228,9 +228,15 @@ def build_cpi_projection(cpi_hist: pd.Series, horizon_months: int,
     block_weights["services_other"] = total_w - sum(block_weights.values())
 
     # Optional calendar-seasonality overlay (assumptions['cpi_seasonality']).
-    # Off by default so existing callers see identical output.
-    seasonal = seasonal_mom_profile(cpi_hist) \
-        if assumptions.get("cpi_seasonality") else None
+    # Off by default so existing callers see identical output. A caller may
+    # supply its own profile ('cpi_seasonal_profile', e.g. estimated
+    # ex-energy so the electricity block is not double counted); otherwise
+    # the profile is estimated from the CPI history passed in.
+    seasonal = None
+    if assumptions.get("cpi_seasonality"):
+        supplied = assumptions.get("cpi_seasonal_profile")
+        seasonal = ({int(k): float(v) for k, v in supplied.items()}
+                    if supplied else seasonal_mom_profile(cpi_hist))
 
     rows = []
     level = cpi_hist.iloc[-1]

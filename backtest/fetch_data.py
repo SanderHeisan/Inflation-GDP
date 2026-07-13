@@ -213,10 +213,24 @@ def _division_col(groups: pd.DataFrame, division: str,
     return None
 
 
-def _write_subindices(d: Path, groups: pd.DataFrame) -> None:
+def _write_subindices(d: Path, groups: pd.DataFrame, ds=None) -> None:
     """Food and imported-goods momentum series: the observable inputs for
     the two CPI blocks whose static assumptions caused the June-2026 level
-    miss. Best-effort - absent columns just keep the old constants."""
+    miss. Best-effort - absent columns just keep the old constants. If the
+    active table exposes no division breakdown (Kpi10 returns TOTAL only),
+    fall back to the legacy table's divisions - stale at the rebase
+    boundary, but trailing momentum beats a constant."""
+    if len(groups.columns) < 3 and ds is not None:
+        legacy = ds.config.SSB_TABLES.get("cpi_legacy", "03013")
+        try:
+            legacy_groups = ds.fetch_cpi_by_group(table_id=legacy)
+            if len(legacy_groups.columns) >= 3:
+                print(f"  division breakdown unavailable in the active "
+                      f"table - using legacy {legacy} (ends "
+                      f"{legacy_groups.index[-1]}) for sub-indices")
+                groups = legacy_groups
+        except Exception as e:
+            print(f"  legacy sub-index fetch failed: {e}")
     food = _division_col(groups, "01", ("matvarer", "food"))
     if food is not None and len(food) > 24:
         food.rename("value").rename_axis("period").to_csv(
@@ -522,7 +536,7 @@ def main(argv=None) -> None:
             pass
     cpi.rename("value").rename_axis("period").to_csv(cpi_path)
     try:
-        _write_subindices(d, cpi_groups)
+        _write_subindices(d, cpi_groups, ds=ds)
     except Exception as e:
         print(f"(sub-index extraction failed: {e} - block assumptions "
               "fall back to constants)")

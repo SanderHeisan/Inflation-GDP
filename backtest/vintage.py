@@ -26,9 +26,69 @@ from dataclasses import dataclass, field
 import numpy as np
 import pandas as pd
 
+from quadmap import config as qconfig
+
 from . import btconfig
 from .btconfig import VintageConfig
 from .data_bundle import RawDataBundle
+
+# Electricity's approximate share of the CPI basket (per-mille weights).
+W_ELEC = qconfig.CPI_WEIGHTS_FALLBACK["electricity"] / 1000.0
+
+
+def consumer_power_price(power_ore: pd.Series) -> pd.Series:
+    """Spot -> consumer-facing price through the stromstotte formula."""
+    sub = qconfig.STROMSTOTTE
+    excess = (power_ore - sub["threshold_ore_kwh"]).clip(lower=0.0)
+    return power_ore - sub["coverage_share"] * excess
+
+
+def _month_demeaned(s: pd.Series) -> pd.Series:
+    med = s.groupby(s.index.month).transform("median")
+    return s - med
+
+
+def estimate_power_passthrough(cpi_vintage: pd.Series,
+                               power_observed: pd.Series,
+                               default: float = 0.35,
+                               window_months: int = 96) -> float:
+    """Effective monthly spot->CPI pass-through, estimated from this
+    vintage's own history. Feeding raw Nord Pool swings through the naive
+    0.55 'variable share' overshot badly in the backtest (a +2.4pp
+    predicted MoM against +0.2 realized): fixed-price contracts, hedging
+    and the subsidy damp what a spot move does to the index within the
+    month. Regressing calendar-demeaned CPI MoM on calendar-demeaned
+    consumer-price MoM (so seasonal winter power is not double counted
+    with the seasonal overlay) lets each vintage set its own coefficient."""
+    cp = consumer_power_price(power_observed)
+    df = pd.concat({"x": cp.pct_change(), "y": cpi_vintage.pct_change()},
+                   axis=1).dropna().iloc[-window_months:]
+    if len(df) < 36:
+        return default
+    xd = _month_demeaned(df["x"])
+    yd = _month_demeaned(df["y"])
+    denom = float((xd ** 2).sum())
+    if denom < 1e-6:          # e.g. flat pre-2021 proxy: no signal to fit
+        return default
+    beta = float((xd * yd).sum()) / denom
+    return float(np.clip(beta / W_ELEC, 0.05, 0.55))
+
+
+def ex_energy_seasonal_profile(cpi_vintage: pd.Series,
+                               power_observed: pd.Series,
+                               variable_share: float,
+                               years: int = 10) -> dict[int, float]:
+    """Calendar seasonality of CPI MoM with the modeled electricity
+    contribution removed - the energy block carries the actual power path,
+    so the overlay must only carry the NON-energy seasonal pattern."""
+    cp = consumer_power_price(power_observed)
+    df = pd.concat({"x": cp.pct_change(), "y": cpi_vintage.pct_change()},
+                   axis=1).dropna().iloc[-years * 12:]
+    ex = df["y"] - W_ELEC * variable_share * df["x"]
+    overall = float(ex.median())
+    return {m: float(ex[ex.index.month == m].median() - overall)
+            if (ex.index.month == m).any() else 0.0
+            for m in range(1, 13)}
 
 
 # ---------------------------------------------------------------------------
@@ -168,10 +228,15 @@ def spot_carry_assumptions(bundle: RawDataBundle, asof: pd.Timestamp,
                              -2.0, 8.0)
     imported_yoy = _subindex_yoy(bundle.cpi_imported, 1.0, -3.0, 6.0)
 
+    vs_est = estimate_power_passthrough(cpi_vintage,
+                                        observed["power_ore_kwh"])
+    seasonal_profile = ex_energy_seasonal_profile(
+        cpi_vintage, observed["power_ore_kwh"], vs_est)
+
     return {
         "power_recent_ore_kwh": float(spot["power_ore_kwh"]),
         "power_forward_ore_kwh": fwd("power_ore_kwh"),
-        "power_variable_share": 0.55,
+        "power_variable_share": vs_est,
         "brent_recent_usd": float(spot["brent_usd"]),
         "brent_forward_usd": fwd("brent_usd"),
         "usdnok_recent": float(spot["usdnok"]),
@@ -182,9 +247,10 @@ def spot_carry_assumptions(bundle: RawDataBundle, asof: pd.Timestamp,
         "food_pipeline_yoy": food_yoy,
         "fuel_passthrough": 0.40,
         "services_wage_haircut": 0.75,
-        # Calendar seasonality of MoM prints, estimated point-in-time from
-        # the vintage CPI history inside the projection.
+        # Calendar seasonality of MoM prints: the ex-energy profile, since
+        # the electricity block already carries the actual power path.
         "cpi_seasonality": True,
+        "cpi_seasonal_profile": seasonal_profile,
     }
 
 
