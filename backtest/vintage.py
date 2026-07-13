@@ -115,9 +115,26 @@ def spot_carry_assumptions(bundle: RawDataBundle, asof: pd.Timestamp,
             if first_release_date(p, cfg.market_pub_lag_days) <= asof]
     if not keep:
         raise ValueError(f"no market data observed before {asof}")
-    spot = market.loc[keep].iloc[-1]
-    last_m = keep[-1]
-    horizon = pd.period_range(last_m + 1, periods=horizon_months, freq="M")
+    observed = market.loc[keep]
+
+    # Anchor at the last CPI month: that is the price level embedded in the
+    # observed index. Months after it that are ALREADY OBSERVED in the
+    # market data (spot prices publish daily; CPI lags ~40 days behind
+    # them) enter the forward path at their actual values - this is the
+    # June-2026 lesson: the power slide into the print month was public
+    # information, and pure spot-carry (flat-at-anchor) threw it away.
+    m0 = cpi_vintage.index[-1]
+    anchor = observed.loc[m0] if m0 in observed.index else observed.iloc[-1]
+    horizon = pd.period_range(m0 + 1, periods=horizon_months, freq="M")
+
+    def fwd(col: str) -> dict:
+        path, last_val = {}, float(anchor[col])
+        for p in horizon:
+            if p in observed.index:
+                last_val = float(observed.loc[p, col])
+            path[str(p)] = last_val   # observed where known, then carried
+        return path
+    spot = anchor
 
     # Wage norm: settlement for year Y known only from spring of year Y.
     norm_cutoff_year = asof.year if asof >= pd.Timestamp(
@@ -153,14 +170,12 @@ def spot_carry_assumptions(bundle: RawDataBundle, asof: pd.Timestamp,
 
     return {
         "power_recent_ore_kwh": float(spot["power_ore_kwh"]),
-        "power_forward_ore_kwh": {str(p): float(spot["power_ore_kwh"])
-                                  for p in horizon},
+        "power_forward_ore_kwh": fwd("power_ore_kwh"),
         "power_variable_share": 0.55,
         "brent_recent_usd": float(spot["brent_usd"]),
-        "brent_forward_usd": {str(p): float(spot["brent_usd"])
-                              for p in horizon},
+        "brent_forward_usd": fwd("brent_usd"),
         "usdnok_recent": float(spot["usdnok"]),
-        "usdnok_path": {str(p): float(spot["usdnok"]) for p in horizon},
+        "usdnok_path": fwd("usdnok"),
         "i44_path": {},                       # flat at last observed I-44
         "imported_goods_baseline_yoy": imported_yoy,
         "wage_norm_pct": wage_norm,

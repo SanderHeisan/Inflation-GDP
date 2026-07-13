@@ -109,11 +109,31 @@ def make_demo_bundle(seed: int = 7, start: str = "2004-01",
         c = months.get_loc(pd.Period(center_m, freq="M"))
         return height * np.exp(-((t - c) / width) ** 2)
 
-    # CPI: 2% trend, a 2008-ish blip, a large 2022 wave, noise.
+    # Market spots first - the demo CPI is coupled to them below, the way
+    # real Norwegian CPI is coupled to power and fuel (otherwise the
+    # observed-forwards mechanism reads pure noise in demo runs).
+    power = (55.0 + bump("2022-08", 10, 160.0) + bump("2010-02", 6, 30.0)
+             + 12.0 * np.sin(2 * np.pi * (t % 12) / 12.0)   # winter seasonality
+             + rng.normal(0, 6.0, len(months))).clip(15.0)
+    brent = (70.0 + bump("2008-07", 6, 60.0) - bump("2015-12", 10, 35.0)
+             - bump("2020-04", 4, 45.0) + bump("2022-06", 8, 40.0)
+             + np.cumsum(rng.normal(0, 1.4, len(months))) * 0.3).clip(18.0)
+    usdnok = 6.2 + 0.020 * t + bump("2020-03", 3, 1.6) \
+        + np.cumsum(rng.normal(0, 0.05, len(months))) * 0.3
+
+    power_mom = np.diff(np.log(power), prepend=np.log(power[0]))
+    brent_nok_mom = np.diff(np.log(brent * usdnok),
+                            prepend=np.log(brent[0] * usdnok[0]))
+
+    # CPI: 2% trend, a 2008-ish blip, a large 2022 wave, noise - plus the
+    # energy pass-through (electricity ~4.5% weight x 0.55 spot share,
+    # fuel ~3.5% x 0.40) that the model is designed to exploit.
     mom = (0.021 / 12
            + bump("2008-07", 8, 0.02 / 12)
            + bump("2022-09", 14, 0.045 / 12)
            + 0.008 / 12 * np.sin(t / 9.0)
+           + 0.045 * 0.55 * power_mom
+           + 0.035 * 0.40 * brent_nok_mom
            + rng.normal(0, 0.0012, len(months)))
     cpi = pd.Series(85.0 * np.cumprod(1 + mom), index=months, name="cpi")
 
@@ -138,16 +158,6 @@ def make_demo_bundle(seed: int = 7, start: str = "2004-01",
     i44 = pd.Series(90.0 + 0.045 * t + np.cumsum(rng.normal(0, 0.55, len(months)))
                     + bump("2020-03", 3, 8.0),
                     index=months, name="I44")
-
-    # Market spots: power spike 2021-22, oil crash 2015 + 2020, NOK weakening.
-    power = (55.0 + bump("2022-08", 10, 160.0) + bump("2010-02", 6, 30.0)
-             + 12.0 * np.sin(2 * np.pi * (t % 12) / 12.0)   # winter seasonality
-             + rng.normal(0, 6.0, len(months))).clip(15.0)
-    brent = (70.0 + bump("2008-07", 6, 60.0) - bump("2015-12", 10, 35.0)
-             - bump("2020-04", 4, 45.0) + bump("2022-06", 8, 40.0)
-             + np.cumsum(rng.normal(0, 1.4, len(months))) * 0.3).clip(18.0)
-    usdnok = 6.2 + 0.020 * t + bump("2020-03", 3, 1.6) \
-        + np.cumsum(rng.normal(0, 0.05, len(months))) * 0.3
 
     market = pd.DataFrame({"power_ore_kwh": power, "brent_usd": brent,
                            "usdnok": usdnok}, index=months)

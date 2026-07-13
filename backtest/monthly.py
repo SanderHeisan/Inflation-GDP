@@ -178,7 +178,8 @@ def monthly_inflation_probabilities(bundle: RawDataBundle,
         bundle.cpi.index[-1].end_time + pd.Timedelta(days=11)
     v = _bv(bundle, asof, fcfg)
     if assumption_overrides:
-        v.assumptions.update(assumption_overrides)
+        from .probability import merge_assumption_overrides
+        merge_assumption_overrides(v.assumptions, assumption_overrides)
     proj = inflation.build_cpi_projection(v.cpi_index, months + 2,
                                           v.assumptions, v.i44)
     yoy = proj["yoy_pct"]

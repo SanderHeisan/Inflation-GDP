@@ -138,7 +138,13 @@ def fetch_cpi_by_group(start_year: int = 2000,
     else:   # total-only fallback: no group dimension in the response
         wide = df.groupby("period")[["value"]].first()
         wide.columns = ["TOTAL"]
-    return wide[wide.index.year >= start_year]
+    wide = wide[wide.index.year >= start_year]
+    # code -> human label map, so downstream sub-index matching survives
+    # tables whose codes carry no recognizable COICOP numbers
+    if gvar is not None:
+        wide.attrs["labels"] = dict(zip(gvar.get("values", []),
+                                        gvar.get("valueTexts", [])))
+    return wide
 
 
 def fetch_cpi_delivery_sector(start_year: int = 2000) -> pd.DataFrame:

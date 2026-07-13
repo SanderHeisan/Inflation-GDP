@@ -219,17 +219,27 @@ def main(argv=None):
         fcfg = VintageConfig(revision_mode="none")
         v = build_vintage(bundle, asof, fcfg)
         if overrides:
-            v.assumptions.update(overrides)
+            probability.merge_assumption_overrides(v.assumptions, overrides)
         proj = inflation.build_cpi_projection(v.cpi_index, 3,
                                               v.assumptions, v.i44)
         m0, m1 = v.last_cpi_month, v.last_cpi_month + 1
         staleness = (asof - m0.end_time).days
+        due = m1.end_time + pd.Timedelta(days=btconfig.CPI_PUB_LAG_DAYS + 3)
         if staleness > 45:
             print(f"\nWARNING: newest CPI in the dataset is {m0} - "
                   f"{staleness} days before the as-of date. The 'next "
                   "print' below is NOT the upcoming release; refresh data/ "
                   "(python -m backtest.fetch_data) and check its staleness "
                   "diagnostics.")
+        elif asof > due:
+            print(f"\nNOTE: the {m1} print has already been PUBLISHED "
+                  f"(due ~{due.date()}) but is not in the data table yet - "
+                  "the source is lagging the press release. Re-run in a "
+                  "day or two, or append the published index value to "
+                  "data/cpi_monthly.csv (a hand-patched file that is "
+                  "fresher than the fetch is kept). The call below "
+                  "restates the pre-release forecast; score it against "
+                  "the actual print.")
         yoy = proj["yoy_pct"]
         delta = float(yoy[m1] - yoy[m0])
         direction = "ACCELERATING" if delta > 0 else "DECELERATING"

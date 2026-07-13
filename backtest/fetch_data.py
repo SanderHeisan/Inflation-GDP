@@ -92,9 +92,13 @@ def power_proxy_from_cpi(cpi_groups: pd.DataFrame,
                          anchor_2015_ore: float = 30.0) -> pd.Series | None:
     """Rescale the CPI electricity sub-index to an ore/kWh-shaped series
     (2015 average anchored). A proxy, clearly - see module docstring."""
+    labels = cpi_groups.attrs.get("labels", {}) \
+        if hasattr(cpi_groups, "attrs") else {}
     for col in cpi_groups.columns:
         code = str(col).replace(".", "").replace("_", "")
-        if "0451" in code or "elek" in str(col).lower():
+        text = str(labels.get(col, col)).lower()
+        if "0451" in code or "elek" in text or "electricity" in text \
+                or "elek" in str(col).lower():
             idx = cpi_groups[col].dropna()
             base = idx[idx.index.year == 2015].mean()
             if base and base == base:
@@ -190,12 +194,21 @@ def _total_col(groups: pd.DataFrame) -> pd.Series:
     return (groups[cols[0]] if cols else groups.iloc[:, 0]).dropna()
 
 
-def _division_col(groups: pd.DataFrame, division: str) -> pd.Series | None:
-    """COICOP division sub-index (e.g. '01' food) from a group frame whose
-    column names are table-specific codes ('01', 'JA01', '01.1', ...)."""
+def _division_col(groups: pd.DataFrame, division: str,
+                  keywords: tuple = ()) -> pd.Series | None:
+    """COICOP division sub-index from a group frame: match by embedded
+    numeric code ('01', 'JA01', '01.1'), else by label keywords (the
+    rebased tables carry codes with no recognizable numbers - matching the
+    Norwegian/English labels is what survives)."""
     for c in groups.columns:
         code = "".join(ch for ch in str(c) if ch.isdigit() or ch == ".")
         if code == division:
+            return groups[c].dropna()
+    labels = groups.attrs.get("labels", {}) if hasattr(groups, "attrs") \
+        else {}
+    for c in groups.columns:
+        text = str(labels.get(c, c)).lower()
+        if keywords and any(k in text for k in keywords):
             return groups[c].dropna()
     return None
 
@@ -204,18 +217,18 @@ def _write_subindices(d: Path, groups: pd.DataFrame) -> None:
     """Food and imported-goods momentum series: the observable inputs for
     the two CPI blocks whose static assumptions caused the June-2026 level
     miss. Best-effort - absent columns just keep the old constants."""
-    food = _division_col(groups, "01")
+    food = _division_col(groups, "01", ("matvarer", "food"))
     if food is not None and len(food) > 24:
         food.rename("value").rename_axis("period").to_csv(
             d / btconfig.DATA_FILES["cpi_food"])
         print(f"wrote {btconfig.DATA_FILES['cpi_food']} "
               f"(food sub-index, ends {food.index[-1]})")
-    clothing = _division_col(groups, "03")
-    furnishings = _division_col(groups, "05")
-    # Division 08: information & communication in the COICOP-2018 rebase -
-    # where electronics deflation lives (ICT equipment printed -8.5 MoM in
-    # June 2026, one of the two components behind that month's miss).
-    ict = _division_col(groups, "08")
+    clothing = _division_col(groups, "03", ("klær", "clothing"))
+    furnishings = _division_col(groups, "05", ("møbler", "furnish"))
+    # Information & communication: where electronics deflation lives (ICT
+    # equipment printed -8.5 MoM in June 2026, one of the two components
+    # behind that month's miss).
+    ict = _division_col(groups, "08", ("informasjon", "communication"))
     parts = [s for s in (clothing, furnishings, ict) if s is not None]
     if parts:
         imported = pd.concat(parts, axis=1).mean(axis=1).dropna()
@@ -224,6 +237,12 @@ def _write_subindices(d: Path, groups: pd.DataFrame) -> None:
                 d / btconfig.DATA_FILES["cpi_imported"])
             print(f"wrote {btconfig.DATA_FILES['cpi_imported']} "
                   f"(imported-goods proxy, ends {imported.index[-1]})")
+    if food is None and not parts:
+        labels = groups.attrs.get("labels", {})
+        shown = [f"{c!r}={labels.get(c, '?')!r}"
+                 for c in list(groups.columns)[:10]]
+        print("sub-index columns not recognized - available columns: "
+              + "; ".join(shown))
 
 
 SSB_SEARCH = "https://data.ssb.no/api/v0/en/table/?query={q}"

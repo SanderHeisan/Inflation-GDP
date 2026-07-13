@@ -79,6 +79,21 @@ def residual_quad_probability(dg: float, di: float,
     })
 
 
+def merge_assumption_overrides(assumptions: dict, overrides: dict) -> dict:
+    """Apply live-market overrides without destroying observed months:
+    dict-valued entries (forward curves keyed by month) merge per key with
+    the override winning only where it speaks; scalars replace outright.
+    A live spot is the best guess for the future, but an already-observed
+    monthly average (e.g. the print month's actual power mean) is better
+    history than today's price - a flat replace would discard it."""
+    for k, v in overrides.items():
+        if isinstance(v, dict) and isinstance(assumptions.get(k), dict):
+            assumptions[k] = {**assumptions[k], **v}
+        else:
+            assumptions[k] = v
+    return assumptions
+
+
 def latest_full_asof(bundle: RawDataBundle,
                      cfg: VintageConfig | None = None) -> pd.Timestamp:
     """First date on which every observation in the bundle is published -
@@ -135,7 +150,8 @@ def current_quad_probabilities(bundle: RawDataBundle, preds: pd.DataFrame,
         latest_full_asof(bundle, cfg)
     vintage = build_vintage(bundle, asof, fcast_cfg)
     if assumption_overrides:
-        vintage.assumptions.update(assumption_overrides)
+        merge_assumption_overrides(vintage.assumptions,
+                                   assumption_overrides)
     if indicator_overrides:
         vintage.indicators.update(indicator_overrides)
     table = model_quad_table(vintage, max(horizons))
