@@ -47,6 +47,10 @@ from . import btconfig
 NORGES_BANK_EXR = ("https://data.norges-bank.no/api/data/EXR/M.{base}.NOK.SP"
                    "?format=sdmx-json&startPeriod={start}")
 FRED_BRENT = "https://fred.stlouisfed.org/graph/fredgraph.csv?id=DCOILBRENTEU"
+POWER_API = ("https://www.hvakosterstrommen.no/api/v1/prices/"
+             "{y}/{m:02d}-{d:02d}_{area}.json")
+POWER_AREAS = ("NO1", "NO2", "NO5")   # southern areas, most CPI-relevant
+REAL_POWER_START = "2021-12"          # hvakosterstrommen history begins
 
 # Approximate frontfag settlement norms (annual wage growth, %). These are
 # from memory of TBU/NHO-LO reporting, NOT verified figures - good enough to
@@ -98,8 +102,44 @@ def power_proxy_from_cpi(cpi_groups: pd.DataFrame,
     return None
 
 
+def area_day_mean_ore(d) -> float | None:
+    """Mean hourly spot across the southern price areas for one day, in
+    ore/kWh incl VAT, or None if not available."""
+    import requests
+    prices = []
+    for area in POWER_AREAS:
+        url = POWER_API.format(y=d.year, m=d.month, d=d.day, area=area)
+        r = requests.get(url, timeout=30)
+        if r.status_code != 200:
+            return None
+        prices.extend(h["NOK_per_kWh"] for h in r.json())
+    return (sum(prices) / len(prices)) * 100.0 * 1.25 if prices else None
+
+
+def real_power_monthly(start: str = REAL_POWER_START, end=None,
+                       sample_days=(4, 11, 18, 25),
+                       day_mean_fn=None) -> pd.Series:
+    """Real Nord Pool area prices as monthly means (sampled days), in
+    ore/kWh incl VAT. This is what replaces the CPI-subindex power proxy
+    for 2021+ - the June-2026 miss was driven by an energy move the stale
+    proxy could not see."""
+    import datetime as dt
+    day_mean_fn = day_mean_fn or area_day_mean_ore
+    end = pd.Period(end, freq="M") if end \
+        else pd.Period(dt.date.today(), freq="M") - 1
+    vals = {}
+    for m in pd.period_range(pd.Period(start, freq="M"), end, freq="M"):
+        samples = [v for dom in sample_days
+                   if (v := day_mean_fn(dt.date(m.year, m.month, dom)))
+                   is not None]
+        if samples:
+            vals[m] = sum(samples) / len(samples)
+    return pd.Series(vals, dtype=float)
+
+
 def build_market_proxy(data_dir: Path,
-                       cpi_groups: pd.DataFrame | None = None) -> None:
+                       cpi_groups: pd.DataFrame | None = None,
+                       day_mean_fn=None) -> str:
     usdnok = fetch_norges_bank_monthly("USD")
     brent = fetch_brent_monthly()
 
@@ -108,10 +148,29 @@ def build_market_proxy(data_dir: Path,
         power = power_proxy_from_cpi(cpi_groups)
     if power is None:
         print("WARNING: could not locate the CPI electricity sub-index; "
-              "using a flat 80 ore/kWh placeholder. The electricity block "
-              "will carry no signal until you supply real power history.")
+              "using a flat 80 ore/kWh placeholder for the pre-2021 years.")
         power = pd.Series(80.0, index=usdnok.index)
-    else:
+
+    mode = "proxy"
+    try:
+        print("sampling real Nord Pool area prices (2021+, a few days per "
+              "month - takes a minute)...")
+        real = real_power_monthly(day_mean_fn=day_mean_fn)
+        if len(real) >= 12:
+            overlap = power.index.intersection(real.index)
+            if len(overlap):   # scale the pre-real proxy into real units
+                ratio = float((real.loc[overlap] / power.loc[overlap]).mean())
+                pre = power.loc[power.index < real.index[0]] * ratio
+                power = pd.concat([pre, real])
+            else:
+                power = real
+            mode = "real-2021"
+            print(f"power column: REAL ore/kWh from {real.index[0]} "
+                  f"(proxy rescaled before that)")
+    except Exception as e:
+        print(f"real power sampling failed ({e}) - keeping the CPI proxy; "
+              "the electricity block stays blurry")
+    if mode == "proxy":
         print("NOTE: power_ore_kwh is a PROXY rescaled from the CPI "
               "electricity sub-index; replace with Nord Pool history for "
               "production use.")
@@ -122,6 +181,7 @@ def build_market_proxy(data_dir: Path,
         data_dir / btconfig.DATA_FILES["market"])
     print(f"wrote {btconfig.DATA_FILES['market']} "
           f"({market.index[0]}..{market.index[-1]})")
+    return mode
 
 
 def _total_col(groups: pd.DataFrame) -> pd.Series:
@@ -152,7 +212,11 @@ def _write_subindices(d: Path, groups: pd.DataFrame) -> None:
               f"(food sub-index, ends {food.index[-1]})")
     clothing = _division_col(groups, "03")
     furnishings = _division_col(groups, "05")
-    parts = [s for s in (clothing, furnishings) if s is not None]
+    # Division 08: information & communication in the COICOP-2018 rebase -
+    # where electronics deflation lives (ICT equipment printed -8.5 MoM in
+    # June 2026, one of the two components behind that month's miss).
+    ict = _division_col(groups, "08")
+    parts = [s for s in (clothing, furnishings, ict) if s is not None]
     if parts:
         imported = pd.concat(parts, axis=1).mean(axis=1).dropna()
         if len(imported) > 24:
@@ -469,8 +533,8 @@ def main(argv=None) -> None:
         print(f"MANUAL: {market_file.name} skipped - see module docstring")
     elif rebuild:
         try:
-            build_market_proxy(d, cpi_groups)
-            marker.touch()
+            mode = build_market_proxy(d, cpi_groups)
+            marker.write_text(mode)
         except Exception as e:   # non-fatal: backtest needs it, but the user
             print(f"market proxy build failed ({e}) - see module docstring "
                   "for the manual format")

@@ -34,10 +34,7 @@ from backtest import btconfig, data_bundle, monthly, plots, probability, scoring
 from quadmap import inflation
 from backtest.vintage import build_vintage
 from backtest.btconfig import VintageConfig
-from backtest.fetch_data import FRED_BRENT
-
-POWER_API = "https://www.hvakosterstrommen.no/api/v1/prices/{y}/{m:02d}-{d:02d}_{area}.json"
-POWER_AREAS = ("NO1", "NO2", "NO5")   # southern areas, most CPI-relevant
+from backtest.fetch_data import FRED_BRENT, area_day_mean_ore
 
 
 # ---------------------------------------------------------------------------
@@ -73,34 +70,20 @@ def live_i44() -> tuple[float, str]:
     return _norges_bank_daily("I44")
 
 
-def _area_day_mean_ore(d: dt.date) -> float | None:
-    """Mean hourly spot across the southern areas for one day, in ore/kWh
-    incl VAT, or None if not available."""
-    import requests
-    prices = []
-    for area in POWER_AREAS:
-        url = POWER_API.format(y=d.year, m=d.month, d=d.day, area=area)
-        r = requests.get(url, timeout=30)
-        if r.status_code != 200:
-            return None
-        prices.extend(h["NOK_per_kWh"] for h in r.json())
-    return (sum(prices) / len(prices)) * 100.0 * 1.25 if prices else None
-
-
 def live_power_ore_kwh(day: dt.date | None = None) -> tuple[float, str]:
     """Today's spot in ore/kWh incl VAT. Falls back one day if today's
     prices are not posted yet."""
     day = day or dt.date.today()
     for offset in (0, 1):
         d = day - dt.timedelta(days=offset)
-        v = _area_day_mean_ore(d)
+        v = area_day_mean_ore(d)
         if v is not None:
             return float(v), f"hvakosterstrommen.no ({d})"
     raise RuntimeError("no area prices available for today or yesterday")
 
 
 def power_proxy_scale(anchor_month: pd.Period, proxy_anchor_value: float,
-                      day_mean_fn=_area_day_mean_ore) -> float:
+                      day_mean_fn=area_day_mean_ore) -> float:
     """Bridge between proxy units and real ore/kWh.
 
     When market_monthly.csv is the CPI-subindex PROXY, its power column is
@@ -194,11 +177,15 @@ def main(argv=None):
         for n in notes:
             print("  " + n)
 
-        # Proxy-unit bridge: if the market file is the CPI-subindex proxy,
-        # a real ore/kWh spot must be rescaled into proxy units before it
-        # touches the projection, or the unit gap masquerades as a shock.
-        if "power_forward_ore_kwh" in overrides and \
-                (Path(args.data_dir) / ".market_is_proxy").exists():
+        # Proxy-unit bridge: only needed while the market file's power
+        # column is the CPI-subindex proxy. Once fetch_data has overlaid
+        # real Nord Pool prices (marker says 'real-2021'), units already
+        # match and the live spot passes through untouched.
+        marker = Path(args.data_dir) / ".market_is_proxy"
+        marker_mode = marker.read_text().strip() if marker.exists() else None
+        # empty marker = legacy proxy build (pre-dates mode tagging)
+        if "power_forward_ore_kwh" in overrides and marker_mode in ("proxy",
+                                                                    ""):
             try:
                 anchor_m = bundle.market.index[-1]
                 scale = power_proxy_scale(

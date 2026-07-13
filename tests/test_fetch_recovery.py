@@ -225,6 +225,45 @@ def test_wildcard_rejection_retries_with_explicit_values(monkeypatch):
     assert calls[0][0] == "all" and calls[1][0] == "item"
 
 
+def test_real_power_overlay_produces_real_units(tmp_path, monkeypatch):
+    """build_market_proxy with a working day-sampler must emit real
+    ore/kWh from 2021 on, rescale the proxy years onto real units, and
+    report mode 'real-2021' (which disables the live-feed bridge)."""
+    months = pd.period_range("2018-01", "2026-06", freq="M")
+    groups = pd.DataFrame(
+        {"TOTAL": np.linspace(100, 130, len(months)),
+         "JA045.1_elektrisitet": np.full(len(months), 100.0)}, index=months)
+
+    monkeypatch.setattr(fetch_data, "fetch_norges_bank_monthly",
+                        lambda base: pd.Series(10.0, index=months))
+    monkeypatch.setattr(fetch_data, "fetch_brent_monthly",
+                        lambda: pd.Series(75.0, index=months))
+    mode = fetch_data.build_market_proxy(
+        tmp_path, groups, day_mean_fn=lambda d: 120.0)
+    assert mode == "real-2021"
+    m = pd.read_csv(tmp_path / "market_monthly.csv")
+    m.index = pd.PeriodIndex(m.pop("period"), freq="M")
+    # real months carry the sampled real level...
+    assert m.loc[pd.Period("2024-06", "M"),
+                 "power_ore_kwh"] == pytest.approx(120.0)
+    # ...and pre-2021 proxy months are rescaled into the same units
+    assert m.loc[pd.Period("2019-06", "M"),
+                 "power_ore_kwh"] == pytest.approx(120.0, rel=0.05)
+
+
+def test_real_power_failure_keeps_proxy_mode(tmp_path, monkeypatch):
+    months = pd.period_range("2018-01", "2026-06", freq="M")
+    groups = pd.DataFrame({"TOTAL": np.full(len(months), 100.0)},
+                          index=months)
+    monkeypatch.setattr(fetch_data, "fetch_norges_bank_monthly",
+                        lambda base: pd.Series(10.0, index=months))
+    monkeypatch.setattr(fetch_data, "fetch_brent_monthly",
+                        lambda: pd.Series(75.0, index=months))
+    mode = fetch_data.build_market_proxy(
+        tmp_path, groups, day_mean_fn=lambda d: None)   # sampler always dry
+    assert mode == "proxy"
+
+
 def test_splice_no_overlap_keeps_longer():
     old = _index_series("2000-01", "2025-12")
     new = _index_series("2026-01", "2026-06", base=210.0)
