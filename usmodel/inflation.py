@@ -80,7 +80,13 @@ def project_shelter(cpi_hist: pd.Series, assumptions: dict,
     month, the target shelter YoY blends the lagged market-rent YoY (mostly
     already observed) with the long-run trend; converted to monthly."""
     lag = config.SHELTER_MARKET_RENT_LAG_M
-    pt, trend = config.SHELTER_PASSTHROUGH, config.SHELTER_TREND_YOY
+    # Coefficients default to the config constants but may be supplied per
+    # vintage by the backtest, which re-fits them on published history only
+    # (usbacktest.vintage.estimate_shelter_passthrough).
+    pt = float(assumptions.get("shelter_passthrough",
+                               config.SHELTER_PASSTHROUGH))
+    trend = float(assumptions.get("shelter_trend_yoy",
+                                  config.SHELTER_TREND_YOY))
 
     if market_rent is not None and len(market_rent) > lag + 12:
         mr_yoy = (market_rent / market_rent.shift(12) - 1.0) * 100.0
@@ -95,7 +101,14 @@ def project_shelter(cpi_hist: pd.Series, assumptions: dict,
                   else np.nan)
         if lagged != lagged:            # NaN -> use the recent fallback
             lagged = fallback
-        shelter_yoy = pt * lagged + (1 - pt) * trend
+        # With fitted coefficients `trend` is a regression intercept, so the
+        # relation is a + b*x; with the config constants it is the convex
+        # blend b*x + (1-b)*trend. Both reduce to the same line when
+        # a == (1-b)*trend, which is how the config pair is defined.
+        if "shelter_passthrough" in assumptions:
+            shelter_yoy = trend + pt * lagged
+        else:
+            shelter_yoy = pt * lagged + (1 - pt) * trend
         out[p] = shelter_yoy / 12.0 / 100.0
     return pd.Series(out)
 
@@ -126,7 +139,10 @@ def project_core_goods(assumptions: dict, horizon: pd.PeriodIndex,
 
 def project_supercore(assumptions: dict, horizon: pd.PeriodIndex) -> pd.Series:
     wage = assumptions.get("wage_growth_pct", 4.0)
-    annual = wage * config.SUPERCORE_WAGE_PASSTHROUGH
+    pt = float(assumptions.get("supercore_passthrough",
+                               config.SUPERCORE_WAGE_PASSTHROUGH))
+    intercept = float(assumptions.get("supercore_intercept", 0.0))
+    annual = intercept + pt * wage
     return pd.Series(annual / 12.0 / 100.0, index=horizon)
 
 
