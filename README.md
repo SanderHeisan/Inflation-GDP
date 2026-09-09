@@ -315,23 +315,18 @@ saw, and the fair test for a real-time product:
 
 | Horizon | Model | High conviction | Persistence | Base effects | Random |
 |---|---|---|---|---|---|
-| 0q (nowcast) | **60.5%** | **73.6%** | 31.6% | 57.0% | 25% |
-| +1q | 45.0% | 49.4% | 27.0% | 45.9% | 25% |
-| +2q | 47.2% | 47.6% | 25.0% | 41.7% | 25% |
-| +3q | 41.0% | 40.0% | 22.9% | 40.0% | 25% |
-| +4q | 30.4% | 32.8% | 26.5% | 33.3% | 25% |
+| 0q (nowcast) | **58.8%** | **71.8%** | 31.6% | 57.0% | 25% |
+| +1q | 45.9% | 52.1% | 27.0% | 45.9% | 25% |
+| +2q | 41.7% | 47.0% | 25.0% | 41.7% | 25% |
+| +3q | 38.1% | 42.3% | 22.9% | 40.0% | 25% |
+| +4q | 32.4% | 39.1% | 26.5% | 33.3% | 25% |
 
-Against final-vintage quads: 56.1 / 43.2 / 47.2 / 43.8 / 35.3%. Both bases,
-plus flip precision/recall and confusion matrices, are in `results_us/`.
-
-**Read this honestly.** The model beats persistence by 4–29pp and random by
-5–35pp at every horizon. It does **not** meaningfully beat the base-effects
-benchmark past the nowcast quarter: the edge runs −0.9 to +5.6pp on the
-first-release basis and +1.0 to +8.3pp on the final basis, on ~110
-observations per horizon — well inside sampling noise. Beyond one quarter the US
-quad call is base-effect arithmetic on known year-ago levels, and the
-component model adds little on top of it. The nowcast quarter is where the
-model earns its keep.
+Against final-vintage quads: 54.4 / 45.9 / 47.2 / 46.7 / 37.3%, where the
+edge over base effects is +0.0 / +8.1 / +8.3 / +3.8 / +8.8pp. The two bases
+disagree by more than the effect being measured, which is the honest summary:
+**the model beats persistence by 6–27pp and random by 7–34pp at every
+horizon, and ties the base-effects benchmark past the nowcast quarter.**
+Full tables in `results_us/`.
 
 ### 4. Why the quad hit rate sits below the direction hit rates
 
@@ -340,67 +335,148 @@ of the two axes:
 
 | Horizon | Growth direction | Inflation direction | Product | Actual quad hit |
 |---|---|---|---|---|
-| 0q | 72.8% | 79.8% | 58.1% | 60.5% |
-| +1q | 67.6% | 68.5% | 46.3% | 45.0% |
-| +2q | 68.5% | 64.8% | 44.4% | 47.2% |
-| +3q | 68.6% | 61.0% | 41.8% | 41.0% |
-| +4q | 55.9% | 63.7% | 35.6% | 30.4% |
+| 0q | 71.9% | 79.8% | 57.4% | 58.8% |
+| +1q | 70.3% | 68.5% | 48.2% | 45.9% |
+| +2q | 66.7% | 64.8% | 43.2% | 41.7% |
+| +3q | 65.7% | 61.0% | 40.1% | 38.1% |
+| +4q | 53.9% | 63.7% | 34.3% | 32.4% |
 
-(first-release basis; the two axes are near-independent, so the quad lands
-close to the product each time.)
+(first-release basis; the axes are near-independent, so the quad lands close
+to the product each time.) The second reason is that many quarters are
+decided by a move smaller than the model's own error bar: **29% of target
+quarters move their YoY inflation rate by less than 0.10pp**. Those are
+flagged `low_conviction`, and excluding them lifts the nowcast hit rate from
+58.8% to 71.8%.
 
-The second reason is that many quarters are decided by a move smaller than
-the model's own error bar: **29% of target quarters move their YoY
-inflation rate by less than 0.10pp**. Those are flagged `low_conviction`, and
-excluding them lifts the nowcast hit rate from 60.5% to 73.6%.
+## The growth axis, and where its ceiling is
 
-Growth is the binding axis — inflation calls direction 61–80% of the time
-while growth started near a coin flip — which is what the next section
-responds to.
+The first backtest showed growth was the binding axis, so it got a second
+pass. The useful output is not a bigger number — it is knowing exactly how
+big the number can get.
 
-## What the backtest changed in the model
+### The call is half-known, like the inflation one
 
-The first cut of the US model blended trailing GDP momentum with indicator
-*slots* that had no data behind them, so in practice it was momentum-only.
-`usmodel/nowcast.py` replaces that with a ridge regression from published
-monthly activity data to the current quarter's real GDP QoQ, **refitted at
-every as-of date on only the history published at that date**. Partial
-quarters are explicit: `k` is the number of months of the target quarter
-already published, and a separate fit runs per `k`, so training and
-prediction features always match in construction. At `k=0` the features are
-read one quarter back and it becomes a genuine one-quarter-ahead model.
+```
+d_growth(q) = yoy(q) - yoy(q-1)  ~=  qoq(q) - qoq(q-4)
+```
 
-The nowcast error falls as the quarter fills in, exactly as it should
-(MAE of QoQ growth, pp):
+and `qoq(q-4)` is **already published** at every horizon the quad table
+covers except +4q. So the growth call is not "what will GDP do" — it is
+"will next year's quarterly growth land above or below a number we already
+have". Exactly the structure that makes the CPI direction call work.
 
-| Months of the target quarter published | n | Fitted nowcast | Momentum |
-|---|---|---|---|
-| k=0 (one quarter ahead) | 38 | 0.89 | 1.13 |
-| k=1 | 38 | 0.59 | 1.13 |
-| k=2 | 38 | 0.47 | 1.13 |
+### Past the nowcast quarter, the other half is not forecastable
 
-The convergence path beyond the nowcast quarter is fitted too — an AR(1) on
-published QoQ growth, clipped at zero persistence because any window
-containing 2020 fits a *negative* rho that would make the projection
-oscillate instead of converge.
+Everything reasonable was tried, walk-forward and point-in-time, targeting
+`qoq(q)` at 1–5 quarters out:
 
-`python us_backtest.py --growth-variants` runs the full 2×2 and writes
-`results_us/us_growth_variants.csv`. The shipped setting was picked off that
-table, so the whole selection surface is published rather than just the
-winner:
+* geometric convergence from the nowcast (the original design)
+* a point-in-time AR(1) on published QoQ
+* direct ridge regressions fitted separately at each horizon on the
+  coincident panel (payrolls, IP, retail sales, claims, CFNAI, hours)
+* the same on a **leading** panel added for this purpose — Chicago Fed
+  financial conditions, Baa credit spread, building permits, core capital
+  goods orders, equities, real M2, housing starts
+* both panels together
 
-| Variant | Quad hit h0 | Quad hit mean | Growth dir h0 | Growth YoY MAE h0 | MAE mean |
+Past the nowcast quarter every one of them had **~zero correlation with
+realized QoQ** (−0.29 to +0.36 across horizons, straddling zero) and a
+**worse MAE than simply predicting a constant**. The leading panel is kept
+in `usmodel/nowcast.py` as `LEADING_SPEC` so the negative result stays
+reproducible rather than being a claim.
+
+That has a direct consequence: a projected path that *moves* without
+carrying information adds error uncorrelated with the truth on top of the
+one real signal, the known base. So the projection now **steps** to trend
+the moment the nowcast quarter is past, instead of gliding. Measured, growth
+direction falls monotonically as persistence rises:
+
+| Persistence carried past the nowcast quarter | Growth direction (mean) |
+|---|---|
+| **0.0 — flat at trend (shipped)** | **65.3%** |
+| 0.30 (the sample AR(1)) | 64.4% |
+| 0.50 (the original config) | 63.9% |
+
+The constant it steps to is the vintage's own **trailing 24-quarter median**
+QoQ — median, not mean, because 2020Q2/Q3 are a crash-and-rebound pair that
+drags a mean for years, and this constant is what every multi-quarter growth
+call is measured against. Using the *static* config constant instead costs
+5pp of growth direction, which is the same sensitivity the arithmetic
+predicts (a 0.2pp error in the constant costs ~1.8pp of accuracy).
+
+One thing to know before reading a live growth *level*: this estimator is
+backward-looking, and on today's data the 24-quarter median is 0.77% QoQ —
+**3.1% annualized**, well above any estimate of US potential, because the
+window is dominated by the post-2020 expansion. Windows from 12 to 40
+quarters all score within noise of each other in the backtest (63.3–65.3%
+growth direction) while implying trends of 2.7–3.1% annualized, so the
+window choice is not doing real work; but the projected growth level inherits
+whichever one is used. The quad only consumes the *direction*, and across
+that whole 0.10pp spread of constants the direction call moves by well under
+a point — which is why the level caveat does not propagate into the hit
+rates. `run_us.py` prints the trend it is using on every live run.
+
+### The ceiling
+
+If `qoq(q)` is unforecastable and the constant is well calibrated, the call
+"trend vs known base" is right `E[Φ(|Z|)] = 75%` of the time. That is a
+reference point, not a hard bound — an adaptive constant can beat it — but
+it is the right thing to measure against. Scored on the same rows as the
+model (`results_us/us_growth_ceiling.csv`):
+
+| Horizon | Reference ceiling | Model | Gap | Year-ago base published? |
+|---|---|---|---|---|
+| 0q | 73.7% | 71.9% | −1.8pp | always |
+| +1q | 73.0% | 70.3% | −2.7pp | always |
+| +2q | 69.4% | 66.7% | −2.8pp | always |
+| +3q | 74.3% | 65.7% | −8.6pp | always |
+| +4q | 70.6% | 53.9% | −16.7pp | **never** |
+
+Two readings, and they are the point of this section:
+
+1. **At 0–2 quarters the model is within 3pp of the ceiling.** There is
+   almost nothing left on the table there, and no amount of extra GDP
+   modelling will find it.
+2. **+4q is structurally different.** Its year-ago base is the as-of quarter
+   itself, which BEA has not published — so instead of a known number the
+   model must use its own nowcast, and inherits that error. The lever for
+   +4q is therefore the *nowcast*, the same lever as 0q; it is not a
+   longer-horizon modelling problem.
+
+The +3q gap is mostly an artefact of the backtest, not the model: re-run
+with `--revision-mode none` (final GDP instead of simulated first releases)
+and growth direction jumps to 78.4 / 75.0 / 71.4% at +1/+2/+3q, above the
+reference. **Simulated GDP revisions cost 5–8pp of growth-direction accuracy
+at those horizons** — which is a strong argument for getting real vintages
+(caveat 1 below) and a reason to read the growth numbers as a lower bound.
++4q is unmoved by revisions (53.9% vs 52.9%), confirming its gap is nowcast
+error and nothing else.
+
+### What actually changed
+
+`python us_backtest.py --growth-variants` writes the whole surface to
+`results_us/us_growth_variants.csv`:
+
+| Variant | Quad hit h0 | Quad hit mean | Growth dir h0 | Growth dir h≥1 | Growth YoY MAE (mean) |
 |---|---|---|---|---|---|
-| momentum + static convergence (original) | 56.1% | 44.7% | 65.8% | 1.38 | 1.80 |
-| indicators + static convergence | 60.5% | 42.4% | 72.8% | 0.89 | 1.58 |
-| momentum + fitted convergence | 56.1% | 45.3% | 65.8% | 1.38 | 1.80 |
-| **indicators + fitted convergence (shipped)** | **60.5%** | 44.8% | **72.8%** | **0.89** | **1.54** |
+| momentum nowcast + glide (original) | 56.1% | 41.9% | 65.8% | 61.1% | 1.81 |
+| fitted nowcast + glide | 58.8% | 43.4% | 71.9% | 63.2% | 1.57 |
+| fitted nowcast + static trend, flat | 58.8% | 41.7% | 71.9% | 59.1% | 1.43 |
+| **fitted nowcast + fitted trend, flat (shipped)** | **58.8%** | **43.4%** | **71.9%** | **64.1%** | **1.38** |
 
-The growth *level* forecast improves 36% at the nowcast quarter and 15% on
-average, and the nowcast-quarter quad call gains 4.4pp. The multi-quarter
-quad hit rate does not move outside noise in any of the four — consistent
-with the base-effects finding above, and the reason the mean column is not
-the thing to optimize.
+The shipped setting is best or tied on every column. Be precise about what
+moved, though:
+
+* **Error metrics improved materially and consistently.** Growth YoY MAE is
+  down 24% on average versus the original (1.81 → 1.38pp) and 21% at +4q;
+  the MAE of `d_growth` itself is down 18% at +1q. These are continuous
+  measures over 102–111 observations, so they are real.
+* **Hit rates did not move outside noise.** The effective sample is only
+  ~38 distinct target quarters — as-of dates overlap heavily — so the ±1–3pp
+  swings in quad hit rate between variants, and between the final and
+  first-release bases, are not evidence of anything. The honest claim is
+  that the growth axis is now *at* its ceiling for 0–2 quarters, not that
+  it got dramatically more accurate.
 
 ## Caveats that bound every number here
 
@@ -410,19 +486,22 @@ the thing to optimize.
    sandbox cannot clear. The default `noise` mode simulates first releases
    with a persistent per-quarter error, sigma 0.35pp of QoQ (≈1.4pp
    annualized, in line with BEA's published advance-to-latest revision
-   statistics). Every output row records the mode that produced it. Drop a
-   real vintage panel at `data/us/gdp_vintages.csv` and the harness switches
-   to `realtime` automatically; `--revision-mode none` hands the model final
-   GDP and gives the upper bound.
+   statistics). Every output row records the mode that produced it. As the
+   growth section shows, this costs 5–8pp of growth-direction accuracy at
+   +1 to +3q, so it is now the single biggest measurable distortion in the
+   backtest. Drop a real vintage panel at `data/us/gdp_vintages.csv` and the
+   harness switches to `realtime` automatically; `--revision-mode none`
+   gives the upper bound.
 2. **Indicator revisions in the nowcast training set.** Prediction features
    and the regression target are strictly point-in-time, but the training
    *features* use current-vintage payrolls and industrial production, which
-   are revised. The growth numbers are therefore a modest upper bound.
-   `backtest/snapshots.py` is accumulating a real indicator archive to close
-   this.
+   are revised. The growth numbers are therefore a modest upper bound in
+   that one respect. `backtest/snapshots.py` is accumulating a real
+   indicator archive to close this.
 3. **One inflation cycle.** 115 as-of dates, but essentially one regime
-   break. The direction call held through it; the level forecast did not.
-   Do not read 0.17pp one-month MAE as a promise for the next shock.
+   break, and only ~38 distinct target quarters for the quarterly metrics.
+   The direction call held through it; the level forecast did not. Do not
+   read 0.17pp one-month MAE as a promise for the next shock.
 4. **No live track record.** Everything above is a backtest. The Norwegian
    side appends to `forecast_history.csv` daily; the US model has no
    equivalent running yet.

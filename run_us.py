@@ -41,10 +41,15 @@ def _live_inputs(horizon_months: int):
     v = build_vintage(bundle, pd.Timestamp.today().normalize(), cfg,
                       horizon_months=horizon_months + 2)
     d = v.diagnostics
+    trend_ann = (1 + d["trend_qoq_pct"] / 100) ** 4 * 100 - 100
     note = (f"real data | CPI through {v.last_cpi_month}, GDP through "
-            f"{v.last_gdp_quarter} | shelter b={d['shelter_b']:.2f} "
-            f"a={d['shelter_a']:.2f}, supercore b={d['supercore_b']:.2f}, "
-            f"nowcast {d['nowcast_qoq_pct']:.2f}% QoQ (k={d['nowcast_k']})")
+            f"{v.last_gdp_quarter}\n"
+            f"  CPI blocks : shelter b={d['shelter_b']:.2f} a={d['shelter_a']:.2f}"
+            f"   supercore b={d['supercore_b']:.2f}"
+            f"   market rents {d['market_rent_yoy']:.1f}% YoY\n"
+            f"  growth     : nowcast {d['nowcast_qoq_pct']:.2f}% QoQ "
+            f"(k={d['nowcast_k']} months in), then flat at trend "
+            f"{d['trend_qoq_pct']:.2f}% QoQ = {trend_ann:.1f}% annualized")
     return (v.cpi_index, v.gdp_level, v.assumptions, v.aux, v.indicators,
             v.last_gdp_quarter, note)
 
@@ -85,6 +90,13 @@ def run(demo: bool = False, horizon_months: int = 15):
 
     print(f"\nDeadband for low_conviction: +/-{config.QUAD_DEADBAND_PP}pp. "
           f"Measured accuracy of these calls is in the README.")
+    if not demo:
+        print("Note: the growth path past the nowcast quarter is FLAT at the "
+              "trend above.\n  It is a trailing median, so it reflects the "
+              "last six years rather than any\n  estimate of potential - "
+              "read the projected growth LEVEL with that in mind.\n  The "
+              "quad only uses the direction, which is far less sensitive to "
+              "it.")
     return table
 
 

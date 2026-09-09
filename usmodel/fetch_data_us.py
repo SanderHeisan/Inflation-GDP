@@ -27,6 +27,13 @@ sandbox, so the US model runs on real data end to end:
         sentiment.csv      UMCSENT     U. Michigan consumer sentiment
         yield_curve.csv    T10Y3M      10y-3m spread (daily -> monthly)
         hours.csv          AWHMAN      average weekly hours, manufacturing
+        nfci.csv           NFCI        Chicago Fed financial conditions (weekly)
+        credit_spread.csv  BAA10Y      Baa corporate spread over 10y Treasury
+        permits.csv        PERMIT      building permits
+        capex_orders.csv   NEWORDER    core capital goods new orders
+        stocks.csv         NASDAQCOM   broad equity index (daily -> monthly)
+        real_m2.csv        M2REAL      real M2 money stock
+        housing_starts.csv HOUST       housing starts
 
     Zillow (public research CSVs)
         market_rent.csv    ZORI, national, smoothed, all homes+condos
@@ -83,6 +90,17 @@ FRED_SERIES = {
     "sentiment":     ("UMCSENT", "M"),     # U. Michigan consumer sentiment
     "yield_curve":   ("T10Y3M", "D"),      # 10y-3m spread, daily
     "hours":         ("AWHMAN", "M"),      # avg weekly hours, manufacturing
+    # Genuinely LEADING series. The coincident block above nowcasts the
+    # current quarter well but says nothing about growth two to four
+    # quarters out; these are the series with a documented lead on the
+    # business cycle, and they are what the multi-horizon fits lean on.
+    "nfci":          ("NFCI", "W"),        # Chicago Fed financial conditions
+    "credit_spread": ("BAA10Y", "D"),      # Baa corporate over 10y Treasury
+    "permits":       ("PERMIT", "M"),      # building permits
+    "capex_orders":  ("NEWORDER", "M"),    # core capital goods new orders
+    "stocks":        ("NASDAQCOM", "D"),   # broad equity index
+    "real_m2":       ("M2REAL", "M"),      # real M2 money stock
+    "housing_starts": ("HOUST", "M"),      # housing starts
 }
 
 # Publication lag in days for each indicator, used by the backtest's vintage
@@ -91,6 +109,9 @@ FRED_SERIES = {
 INDICATOR_PUB_LAG_DAYS = {
     "payrolls": 8, "indpro": 17, "retail": 17, "claims": 5,
     "cfnai": 26, "sentiment": 2, "yield_curve": 0, "hours": 8,
+    # leading block
+    "nfci": 5, "credit_spread": 0, "permits": 18, "capex_orders": 26,
+    "stocks": 0, "real_m2": 30, "housing_starts": 18,
 }
 
 DEFAULT_DATA_DIR = Path(__file__).resolve().parent.parent / "data" / "us"

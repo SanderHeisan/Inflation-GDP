@@ -335,10 +335,16 @@ def build_vintage(bundle: USDataBundle, asof: pd.Timestamp | str,
     # ridge nowcast refitted on this vintage's published history alone.
     panel = published_indicators(bundle, asof, cfg)
     indicators: dict = {}
+    if cfg.fit_trend:
+        trend = gdp_mod.estimate_trend_qoq(gdp)
+        if trend is not None:
+            indicators["fitted_trend_qoq"] = trend
+            diagnostics["trend_qoq_pct"] = trend * 100
     if cfg.fit_convergence:
         conv = gdp_mod.estimate_convergence(gdp)
         if conv is not None:
-            indicators["fitted_trend_qoq"], indicators["fitted_convergence"] = conv
+            indicators["fitted_trend_qoq"] = conv[0]
+            indicators["fitted_convergence"] = conv[1]
             diagnostics.update({"trend_qoq_pct": conv[0] * 100,
                                 "convergence": conv[1]})
     if cfg.use_indicator_nowcast and panel:

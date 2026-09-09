@@ -74,10 +74,18 @@ class USVintageConfig:
     # -- the flag is what makes the growth-side before/after measurable.
     use_indicator_nowcast: bool = True
 
-    # Whether the GDP convergence path (long-run QoQ and persistence) is
-    # re-estimated as an AR(1) on each vintage's published history rather
-    # than taken from usmodel.config.
-    fit_convergence: bool = True
+    # Whether the trend the projection holds past the nowcast quarter is the
+    # vintage's own trailing median QoQ rather than the static config value.
+    # On by default: that constant is what every multi-quarter growth call is
+    # measured against, so it should track the data.
+    fit_trend: bool = True
+
+    # Whether to also carry an AR(1) persistence past the nowcast quarter.
+    # OFF by default because the backtest scores it as harmful -- past the
+    # nowcast quarter US real GDP QoQ is not forecastable, so a moving path
+    # only adds noise to the known base effect. Kept switchable so
+    # `--growth-variants` can reproduce that measurement.
+    fit_convergence: bool = False
 
     def __post_init__(self):
         if self.revision_mode not in REVISION_MODES:

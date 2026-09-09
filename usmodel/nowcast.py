@@ -55,19 +55,42 @@ FEATURE_SPEC = (
     ("hours",       "diff"),
 )
 
+# Genuinely LEADING series, kept as an OPTIONAL extended panel. Adding them
+# was the obvious first attempt at forecasting growth two to four quarters
+# out. It does not work: at horizons past the nowcast quarter these carry no
+# more signal than the coincident block, which is to say none (README). They
+# stay here so `us_backtest.py --growth-variants` can reproduce that result
+# rather than leaving it as a claim.
+LEADING_SPEC = (
+    ("nfci",           "lvl"),
+    ("credit_spread",  "lvl"),
+    ("permits",        "pct"),
+    ("capex_orders",   "pct"),
+    ("stocks",         "pct"),
+    ("real_m2",        "pct"),
+    ("housing_starts", "pct"),
+)
+EXTENDED_SPEC = FEATURE_SPEC + LEADING_SPEC
+
 MIN_TRAIN_QUARTERS = 40      # ~10 years before the regression is trusted
 RIDGE_LAMBDA = 1.0           # on standardized features
 
 
-def months_available(indicators: dict[str, pd.Series],
-                     quarter: pd.Period) -> int:
-    """How many months of `quarter` are published across *every* indicator
-    (the binding one sets k, so the design matrix is never ragged)."""
-    if not indicators:
+def months_available(indicators: dict[str, pd.Series], quarter: pd.Period,
+                     spec: tuple = FEATURE_SPEC) -> int:
+    """How many months of `quarter` are published across every indicator the
+    fit actually uses (the binding one sets k, so the design matrix is never
+    ragged).
+
+    Restricted to `spec` on purpose: a slow series that is cached but unused
+    -- real M2 lands ~30 days after month end -- would otherwise drag k down
+    and cost the nowcast a month of data it really had.
+    """
+    used = [indicators[n] for n, _ in spec if n in indicators]
+    if not used:
         return 0
     months = pd.period_range(quarter.start_time, periods=3, freq="M")
-    return min(sum(1 for m in months if m in s.index)
-               for s in indicators.values())
+    return min(sum(1 for m in months if m in s.index) for s in used)
 
 
 def _quarter_means(series: pd.Series, k: int) -> tuple[pd.Series, pd.Series]:
@@ -85,16 +108,18 @@ def _quarter_means(series: pd.Series, k: int) -> tuple[pd.Series, pd.Series]:
 
 
 def feature_frame(indicators: dict[str, pd.Series], k: int,
-                  gdp_qoq: pd.Series) -> pd.DataFrame:
+                  gdp_qoq: pd.Series, spec: tuple = FEATURE_SPEC,
+                  horizon: int = 1) -> pd.DataFrame:
     """Design matrix for every quarter at once, indexed by target quarter.
 
-    For k >= 1 the features compare the first k months of the target quarter
-    with all three months of the quarter before it. For k == 0 nothing of the
-    target quarter is published yet, so the same features are read one
-    quarter further back and each row becomes a one-quarter-ahead prediction
-    carried by the leading series.
+    `horizon` is how many quarters past the last published one the target
+    sits (1 = the nowcast quarter). Features always come from the most recent
+    data available at forecast time, which is `horizon - 1` quarters before
+    the target when k >= 1, and one further back when k == 0. Training rows
+    use the same construction, so a horizon-h fit is a genuine direct-h
+    forecast rather than an iterated one.
     """
-    shift = 0 if k >= 1 else 1
+    shift = (horizon - 1) if k >= 1 else horizon
     # One common quarterly index, extended past the last published quarter so
     # the target quarter always has a row even when k == 0 (nothing of it is
     # published, and its features are read one quarter back).
@@ -102,10 +127,10 @@ def feature_frame(indicators: dict[str, pd.Series], k: int,
                  if s is not None and not s.empty)
     first_q = min(s.index[0].asfreq("Q") for s in indicators.values()
                   if s is not None and not s.empty)
-    qidx = pd.period_range(first_q, last_q + 2, freq="Q")
+    qidx = pd.period_range(first_q, last_q + horizon + 2, freq="Q")
 
     cols: dict[str, pd.Series] = {}
-    for name, kind in FEATURE_SPEC:
+    for name, kind in spec:
         s = indicators.get(name)
         if s is None or s.empty:
             return pd.DataFrame()
@@ -128,15 +153,16 @@ def feature_frame(indicators: dict[str, pd.Series], k: int,
     # Re-labelling the index (rather than shifting values) keeps the row for
     # the target quarter, whose predecessor IS published.
     momentum = gdp_qoq.copy()
-    momentum.index = momentum.index + 1
+    momentum.index = momentum.index + shift + 1
     cols["momentum"] = momentum
     return pd.DataFrame(cols).dropna()
 
 
 def quarter_features(indicators: dict[str, pd.Series], quarter: pd.Period,
-                     k: int, gdp_qoq: pd.Series) -> dict[str, float] | None:
+                     k: int, gdp_qoq: pd.Series, spec: tuple = FEATURE_SPEC,
+                     horizon: int = 1) -> dict[str, float] | None:
     """One feature row, or None when any input is missing."""
-    frame = feature_frame(indicators, k, gdp_qoq)
+    frame = feature_frame(indicators, k, gdp_qoq, spec, horizon)
     if frame.empty or quarter not in frame.index:
         return None
     return frame.loc[quarter].to_dict()
@@ -163,7 +189,8 @@ def _fit_ridge(X: np.ndarray, y: np.ndarray, lam: float = RIDGE_LAMBDA):
 def fit_nowcast(gdp_level: pd.Series, indicators: dict[str, pd.Series],
                 target_quarter: pd.Period | None = None,
                 min_train: int = MIN_TRAIN_QUARTERS,
-                lam: float = RIDGE_LAMBDA) -> dict | None:
+                lam: float = RIDGE_LAMBDA,
+                spec: tuple = FEATURE_SPEC) -> dict | None:
     """Nowcast `target_quarter`'s real GDP QoQ from published data alone.
 
     gdp_level  : published real GDP levels (already vintage-truncated)
@@ -176,9 +203,12 @@ def fit_nowcast(gdp_level: pd.Series, indicators: dict[str, pd.Series],
         return None
     target_quarter = target_quarter or (gdp_level.index[-1] + 1)
     gdp_qoq = (gdp_level.pct_change() * 100).dropna()
-    k = months_available(indicators, target_quarter)
+    horizon = (target_quarter - gdp_level.index[-1]).n
+    if horizon < 1:
+        return None
+    k = months_available(indicators, gdp_level.index[-1] + 1, spec)
 
-    frame = feature_frame(indicators, k, gdp_qoq)
+    frame = feature_frame(indicators, k, gdp_qoq, spec, horizon)
     if frame.empty or target_quarter not in frame.index:
         return None
     train = frame.loc[frame.index.intersection(gdp_qoq.index)]

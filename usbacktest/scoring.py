@@ -184,6 +184,50 @@ def confusion_by_horizon(preds: pd.DataFrame, realized: pd.DataFrame,
             for h in horizons}
 
 
+def growth_direction_ceiling(bundle: USDataBundle, preds: pd.DataFrame,
+                             window: int = 24) -> pd.DataFrame:
+    """How good the growth-direction call could possibly be, per horizon.
+
+    Past the nowcast quarter, d_growth(q) = yoy(q) - yoy(q-1) ~= qoq(q) -
+    qoq(q-4), and qoq(q-4) is already published for most horizons. So the
+    call is "will next year's QoQ land above or below a number we already
+    know". If qoq(q) is genuinely unforecastable -- which is what every
+    experiment in this repo found past the nowcast quarter -- the best
+    available prediction is `trend - qoq(q-4)`, and how often THAT is right
+    is the ceiling. For iid qoq the closed form is E[Phi(|Z|)] = 75%.
+
+    Scored on the same (as-of, horizon, target) rows the model was scored
+    on, using the true year-ago QoQ, so the model's gap to this column is
+    the part of the growth axis that is actually still on the table.
+    `base_published_share` says how often that year-ago quarter was really
+    in the vintage: where it is 0 the base is itself a model estimate, and
+    the ceiling is not reachable without a better nowcast.
+    """
+    qoq = bundle.gdp.pct_change().dropna()
+    rows = []
+    for _, r in preds.iterrows():
+        target = pd.Period(r["target_quarter"], freq="Q")
+        base, last = target - 4, pd.Period(r["last_gdp_quarter"], freq="Q")
+        if base not in qoq.index or target not in qoq.index:
+            continue
+        trend = float(qoq[qoq.index <= last].tail(window).median())
+        rows.append({
+            "horizon": int(r["horizon"]),
+            "hit": np.sign(trend - float(qoq[base]))
+            == np.sign(float(qoq[target] - qoq[base])),
+            "base_published": base <= last,
+        })
+    df = pd.DataFrame(rows)
+    if df.empty:
+        return pd.DataFrame()
+    out = df.groupby("horizon").agg(n=("hit", "size"),
+                                    ceiling=("hit", "mean"),
+                                    base_published_share=("base_published",
+                                                          "mean"))
+    out["closed_form_ceiling"] = 0.75
+    return out
+
+
 def axis_accuracy(preds: pd.DataFrame, realized: pd.DataFrame
                   ) -> pd.DataFrame:
     """Per-horizon accuracy of the two YoY *levels* the quad is built from,

@@ -1,8 +1,30 @@
 """
-US real-GDP projection: nowcast + geometric convergence to trend, then
-compound onto the last level so the YoY path falls out against known
-year-ago levels. Same mechanics as quadmap/gdp.py, with US constants and
-US nowcast indicators (ISM, payrolls, retail).
+US real-GDP projection: nowcast the first unpublished quarter, hold the rest
+flat at trend, and compound onto the last level so the YoY path falls out
+against known year-ago levels.
+
+Why flat rather than a converging path. The quad needs the sign of
+
+    d_growth(q) = yoy(q) - yoy(q-1) ~= qoq(q) - qoq(q-4)
+
+and qoq(q-4) is already PUBLISHED for most of the horizons the quad table
+covers. So the growth call is "will next year's QoQ come in above or below a
+number we already know". Backtesting says the first half of that is the only
+part with any signal: past the nowcast quarter, every projected-QoQ variant
+tried here -- geometric convergence, a point-in-time AR(1), and direct ridge
+regressions at each horizon on a coincident panel, a leading panel (financial
+conditions, credit spreads, permits, capex orders, equities, real M2, housing
+starts) and both together -- had essentially zero correlation with realized
+QoQ and did worse than a constant. A path that moves without carrying
+information just adds noise to the known base effect, so the projection
+stops moving once the nowcast quarter is past.
+
+That leaves a hard ceiling, and it is worth stating: with zero QoQ skill and
+a perfectly calibrated constant, the growth-direction call is right
+E[Phi(|Z|)] = 75% of the time. Measured on the 2017-2026 sample the ceiling
+is 73.7%. Chasing growth accuracy above that requires forecasting quarterly
+GDP two to four quarters out, which nothing in this repo (or the literature)
+can do.
 """
 from __future__ import annotations
 
@@ -42,25 +64,43 @@ def nowcast_qoq(gdp_level: pd.Series, indicators: dict) -> float:
     return sum(w[k] * v for k, v in used.items()) / total_w
 
 
+def estimate_trend_qoq(gdp_level: pd.Series,
+                       window: int = config.GDP_TREND_WINDOW_Q) -> float | None:
+    """Trailing MEDIAN of published QoQ growth (decimal) -- the constant the
+    projection holds past the nowcast quarter, and therefore the number every
+    multi-quarter growth call is measured against.
+
+    Median rather than mean because 2020Q2/2020Q3 are a crash-and-rebound
+    pair that drags a mean for years; the median ignores them. Returns None
+    when there is not enough published history."""
+    qoq = gdp_level.pct_change().dropna()
+    if len(qoq) < 8:
+        return None
+    return float(np.clip(qoq.tail(window).median(), 0.0, 0.015))
+
+
 def estimate_convergence(gdp_level: pd.Series,
                          min_quarters: int = 40) -> tuple[float, float] | None:
-    """AR(1) of published QoQ growth: (long-run mean, persistence). Lets the
-    convergence path be read off the vintage's own history instead of the
-    config constants. Returns None when history is too short.
+    """(trend, persistence) for the projected path.
 
-    The estimate is deliberately clipped: a window containing the 2020 crash
-    and rebound fits a NEGATIVE persistence, which would have the projection
-    oscillate rather than converge."""
+    Persistence is measured as an AR(1) on published QoQ and clipped to
+    [0, 0.9], but the shipped default ignores it (config.GDP_CONVERGENCE = 0)
+    because the backtest scores it as harmful -- see the module docstring.
+    The estimator is kept so `--growth-variants` can reproduce that result.
+    """
+    trend = estimate_trend_qoq(gdp_level)
+    if trend is None:
+        return None
     qoq = gdp_level.pct_change().dropna()
     if len(qoq) < min_quarters:
-        return None
+        return trend, config.GDP_CONVERGENCE
     x, y = qoq.shift(1).dropna(), qoq.iloc[1:]
     idx = x.index.intersection(y.index)
     if len(idx) < min_quarters or float(x[idx].var()) < 1e-12:
-        return None
+        return trend, config.GDP_CONVERGENCE
     rho = float(np.polyfit(x[idx].to_numpy(float), y[idx].to_numpy(float),
                            1)[0])
-    return float(np.clip(qoq.mean(), 0.0, 0.015)), float(np.clip(rho, 0.0, 0.9))
+    return trend, float(np.clip(rho, 0.0, 0.9))
 
 
 def project_gdp(gdp_level: pd.Series, indicators: dict,
@@ -68,9 +108,11 @@ def project_gdp(gdp_level: pd.Series, indicators: dict,
     """Extend the real-GDP level and compute the YoY path. Returns a frame
     indexed by Period[Q] with level, qoq_pct, yoy_pct, projected.
 
-    The path is nowcast(q+1) then geometric convergence toward trend. Pass
-    indicators['fitted_trend_qoq'] / ['fitted_convergence'] to use a
-    point-in-time AR(1) estimate instead of the config constants."""
+    The path is nowcast(q+1), then trend from q+2 on. With the shipped
+    config.GDP_CONVERGENCE = 0 that is a step, not a glide -- deliberately,
+    see the module docstring. Pass indicators['fitted_trend_qoq'] /
+    ['fitted_convergence'] to override either with a point-in-time
+    estimate."""
     q1 = nowcast_qoq(gdp_level, indicators)
     trend = float(indicators.get("fitted_trend_qoq", config.GDP_TREND_QOQ))
     conv = float(indicators.get("fitted_convergence", config.GDP_CONVERGENCE))

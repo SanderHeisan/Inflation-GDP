@@ -14,6 +14,8 @@ Writes to results_us/:
     us_cpi_errors.csv             CPI YoY/MoM MAE vs naive benchmarks
     us_cpi_direction.csv          next-print direction hit rate by conviction
     us_confusion_h*.csv           confusion matrices per horizon
+    us_growth_variants.csv        --growth-variants: the growth-side 2x2
+    us_growth_ceiling.csv         per-horizon ceiling for the growth call
 """
 from __future__ import annotations
 
@@ -32,21 +34,26 @@ from usmodel import data_bundle
 
 def growth_variants(bundle, start, end, horizon, cfg, real_first, real_final
                     ) -> pd.DataFrame:
-    """The growth-side before/after. Both switches are independently
-    principled and both are point-in-time, so this table exists to show the
-    whole selection surface rather than only the setting that shipped: the
-    fitted nowcast is a large, unambiguous win on the growth *level* and on
-    the nowcast quarter, and none of the four settings moves the
-    multi-quarter quad hit rate outside sampling noise."""
+    """The growth-side selection surface, published rather than just its
+    winner. Two independent switches: whether the nowcast quarter uses the
+    fitted activity-indicator regression, and whether the path past it
+    glides (geometric convergence from the nowcast) or steps straight to a
+    trend re-estimated per vintage. Effective sample is only ~38 distinct
+    target quarters, so treat differences of a couple of points as noise."""
     variants = {
-        "momentum + static conv":
-            replace(cfg, use_indicator_nowcast=False, fit_convergence=False),
-        "indicators + static conv":
-            replace(cfg, use_indicator_nowcast=True, fit_convergence=False),
-        "momentum + fitted conv":
-            replace(cfg, use_indicator_nowcast=False, fit_convergence=True),
-        "indicators + fitted conv (shipped)":
-            replace(cfg, use_indicator_nowcast=True, fit_convergence=True),
+        # the original: momentum-only nowcast, geometric glide to a static trend
+        "momentum nowcast + glide (original)":
+            replace(cfg, use_indicator_nowcast=False, fit_trend=False,
+                    fit_convergence=True),
+        "fitted nowcast + glide":
+            replace(cfg, use_indicator_nowcast=True, fit_trend=False,
+                    fit_convergence=True),
+        "fitted nowcast + static trend, flat":
+            replace(cfg, use_indicator_nowcast=True, fit_trend=False,
+                    fit_convergence=False),
+        "fitted nowcast + fitted trend, flat (shipped)":
+            replace(cfg, use_indicator_nowcast=True, fit_trend=True,
+                    fit_convergence=False),
     }
     rows = {}
     for name, vcfg in variants.items():
@@ -59,6 +66,7 @@ def growth_variants(bundle, start, end, horizon, cfg, real_first, real_final
             "quad_hit_h0": sc["hit_rate"][0],
             "quad_hit_mean": sc["hit_rate"].mean(),
             "growth_dir_h0": sc["growth_dir_hit"][0],
+            "growth_dir_h1plus": sc["growth_dir_hit"][1:].mean(),
             "growth_dir_mean": sc["growth_dir_hit"].mean(),
             "mae_growth_yoy_h0": ax["mae_growth_yoy_pp"][0],
             "mae_growth_yoy_mean": ax["mae_growth_yoy_pp"].mean(),
@@ -138,6 +146,19 @@ def main() -> None:
     print("\n=== Same, vs FIRST-RELEASE realized quads (the real-time truth) ===")
     print(summary.loc["first_release"].reindex(columns=show).round(3)
           .to_string())
+
+    ceil = scoring.growth_direction_ceiling(bundle, preds)
+    gdir = summary.loc[("first_release", "model"), "growth_dir_hit"]
+    ceil["model"] = gdir
+    ceil["gap"] = ceil["model"] - ceil["ceiling"]
+    ceil.to_csv(out / "us_growth_ceiling.csv")
+    print("\n=== Growth-direction call vs its structural ceiling ===")
+    print("  d_growth(q) ~= qoq(q) - qoq(q-4), and the year-ago term is")
+    print("  already published at most horizons, so the call is 'trend vs a")
+    print("  known base'. With no skill on qoq(q) -- which is what the")
+    print("  experiments found past the nowcast quarter -- that IS the best")
+    print("  available call, and how often it is right is the ceiling.")
+    print(ceil.round(3).to_string())
 
     axis = scoring.axis_accuracy(preds, real_final)
     axis.to_csv(out / "us_axis_accuracy.csv")

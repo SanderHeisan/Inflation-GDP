@@ -101,8 +101,20 @@ GDP_NOWCAST_WEIGHTS = {
     "payrolls":          0.20,   # nonfarm payroll momentum
     "retail":            0.15,   # real retail sales momentum
 }
-GDP_TREND_QOQ = 0.0045           # ~1.8% annualized potential (per quarter)
-GDP_CONVERGENCE = 0.5
+GDP_TREND_QOQ = 0.0045           # ~1.8% annualized potential (per quarter);
+                                 # only a fallback -- the trend is normally
+                                 # re-estimated per vintage, see below.
+# Trend is the trailing MEDIAN of published QoQ over this window. The median,
+# not the mean: the 2020 crash-and-rebound pair drags a mean badly, and the
+# constant is what every multi-quarter growth call is measured against.
+GDP_TREND_WINDOW_Q = 24
+# Persistence carried past the nowcast quarter. Measured to be worth ZERO:
+# beyond the current quarter US real GDP QoQ is not forecastable (see the
+# README's growth-axis section), so any non-constant path adds error that is
+# uncorrelated with the truth to a call whose only real signal is the KNOWN
+# year-ago QoQ. Backtested, direction accuracy falls monotonically as this
+# rises: 0.653 at 0.0, 0.644 at 0.30, 0.639 at 0.50 (the old default).
+GDP_CONVERGENCE = 0.0
 
 # Publication lags (calendar days): US CPI ~13 days after month end, the
 # BEA advance GDP estimate ~28 days after quarter end (heavily revised
