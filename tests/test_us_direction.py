@@ -60,7 +60,7 @@ def test_reversal_call_points_toward_the_mean(ar1_level):
     cold_calls = gdir.qoq_direction_calls(cold)
     assert hot_calls.iloc[0]["direction"] == "decelerating"
     assert cold_calls.iloc[0]["direction"] == "accelerating"
-    assert hot_calls.iloc[0]["grade"] == "call"
+    assert hot_calls.iloc[0]["grade"] == "single"      # no consumer vote given
 
 
 def test_zigzag_lean_is_the_opposite_of_the_call(ar1_level):
@@ -120,3 +120,64 @@ def test_summaries_exclude_abstentions_from_hit_rates():
     assert by_h.loc[("growth_qoq", 0), "hit"] == 1.0
     by_c = direction.summarize_by_conviction(df)
     assert by_c.loc[("growth_qoq", "ALL calls"), "n"] == 2
+
+
+# ---------------------------------------------------------------------------
+# The consumer's vote and the consumer state
+# ---------------------------------------------------------------------------
+
+def _pce_from_qoq(qoq_pct, start="2005-01"):
+    """Monthly real PCE whose quarterly means grow by the given QoQ path."""
+    months = pd.period_range(start, periods=3 * len(qoq_pct), freq="M")
+    q_level = 100.0 * np.cumprod(1 + np.asarray(qoq_pct) / 100)
+    return pd.Series(np.repeat(q_level, 3), index=months)
+
+
+def test_pce_vote_points_toward_the_consumer_median(ar1_level):
+    last = ar1_level.index[-1]
+    hot = _pce_from_qoq([0.6] * 40 + [2.0])          # last quarter ran hot
+    cold = _pce_from_qoq([0.6] * 40 + [-0.5])        # last quarter ran cold
+    # align the synthetic PCE so its last quarter is the last GDP quarter
+    for s in (hot, cold):
+        s.index = pd.period_range(end=last.asfreq("M", "end"), periods=len(s),
+                                  freq="M")
+    assert gdir.pce_reversal_vote(hot, last) < 0
+    assert gdir.pce_reversal_vote(cold, last) > 0
+    assert gdir.pce_reversal_vote(None, last) is None
+
+
+def test_two_votes_grade_by_agreement(ar1_level):
+    q = (ar1_level.pct_change() * 100).dropna()
+    hot_gdp = _level_from_qoq(pd.concat([q, pd.Series(
+        [2.5], index=[q.index[-1] + 1])]))
+    last = hot_gdp.index[-1]
+    pce_hot = _pce_from_qoq([0.6] * 40 + [2.0])
+    pce_cold = _pce_from_qoq([0.6] * 40 + [-0.5])
+    for s in (pce_hot, pce_cold):
+        s.index = pd.period_range(end=last.asfreq("M", "end"), periods=len(s),
+                                  freq="M")
+    agree = gdir.qoq_direction_calls(hot_gdp, real_pce=pce_hot)
+    split = gdir.qoq_direction_calls(hot_gdp, real_pce=pce_cold)
+    single = gdir.qoq_direction_calls(hot_gdp)
+    assert agree.iloc[0]["grade"] == "call"
+    assert agree.iloc[0]["direction"] == "decelerating"
+    assert agree.iloc[0]["backtest_hit"] == gdir.HIT_AGREE
+    assert split.iloc[0]["grade"] == "split"
+    assert split.iloc[0]["backtest_hit"] == gdir.HIT_SPLIT
+    assert single.iloc[0]["grade"] == "single"
+    assert np.isnan(single.iloc[0]["pce_vote_pp"])
+
+
+def test_consumer_state_flags_a_stretched_consumer(ar1_level):
+    last = ar1_level.index[-1]
+    calm = _pce_from_qoq([0.6] * 44 + [0.6] * 4)
+    boom = _pce_from_qoq([0.6] * 44 + [1.8] * 4)     # last year far above norm
+    for s in (calm, boom):
+        s.index = pd.period_range(end=last.asfreq("M", "end"), periods=len(s),
+                                  freq="M")
+    calm_state = gdir.consumer_state({"real_pce": calm}, last)["real_pce"]
+    boom_state = gdir.consumer_state({"real_pce": boom}, last)["real_pce"]
+    assert not calm_state["stretched"]
+    assert boom_state["stretched"]
+    assert boom_state["pctl_10y"] >= gdir.STRETCH_PCTL
+    assert gdir.consumer_state({}, last) == {}

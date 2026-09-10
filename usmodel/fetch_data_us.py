@@ -101,6 +101,13 @@ FRED_SERIES = {
     "stocks":        ("NASDAQCOM", "D"),   # broad equity index
     "real_m2":       ("M2REAL", "M"),      # real M2 money stock
     "housing_starts": ("HOUST", "M"),      # housing starts
+    # Consumer block: the direct spending series (real PCE is ~68% of GDP;
+    # retail sales above is a nominal, goods-heavy proxy), real disposable
+    # income and the saving rate. Used both as nowcast inputs and for the
+    # 'stretched consumer' extremity signal.
+    "real_pce":      ("PCEC96", "M"),      # real personal consumption expenditures
+    "real_income":   ("DSPIC96", "M"),     # real disposable personal income
+    "saving_rate":   ("PSAVERT", "M"),     # personal saving rate, %
 }
 
 # Publication lag in days for each indicator, used by the backtest's vintage
@@ -112,6 +119,8 @@ INDICATOR_PUB_LAG_DAYS = {
     # leading block
     "nfci": 5, "credit_spread": 0, "permits": 18, "capex_orders": 26,
     "stocks": 0, "real_m2": 30, "housing_starts": 18,
+    # personal income & outlays lands ~30 days after month end
+    "real_pce": 30, "real_income": 30, "saving_rate": 30,
 }
 
 DEFAULT_DATA_DIR = Path(__file__).resolve().parent.parent / "data" / "us"

@@ -29,7 +29,7 @@ def _demo_inputs(horizon_months: int):
     assumptions = data_bundle.assumptions_from_bundle(bundle)
     aux = {"market_rent": bundle.market_rent, "dollar": bundle.dollar}
     return (bundle.cpi, bundle.gdp, assumptions, aux, {},
-            bundle.gdp.index[-1], "synthetic demo")
+            bundle.gdp.index[-1], "synthetic demo", {}, None)
 
 
 def _live_inputs(horizon_months: int):
@@ -51,18 +51,56 @@ def _live_inputs(horizon_months: int):
             f"  growth     : nowcast {d['nowcast_qoq_pct']:.2f}% QoQ "
             f"(k={d['nowcast_k']} months in), then flat at trend "
             f"{d['trend_qoq_pct']:.2f}% QoQ = {trend_ann:.1f}% annualized")
+    consumer = growth_direction.consumer_state(v.indicator_panel,
+                                               v.last_gdp_quarter)
+    real_pce = v.indicator_panel.get("real_pce")
     return (v.cpi_index, v.gdp_level, v.assumptions, v.aux, v.indicators,
-            v.last_gdp_quarter, note)
+            v.last_gdp_quarter, note, consumer, real_pce)
+
+
+def _consumer_block(c: dict) -> str:
+    """Where the consumer stands against its own trailing decade, with the
+    realized base rates behind each flag (growth_direction.consumer_state)."""
+    if not c:
+        return "  (no consumer data in this bundle)"
+    lines = []
+    if "real_pce" in c:
+        p = c["real_pce"]
+        flag = (" STRETCHED (top decile: next-quarter GDP QoQ lower 70%, "
+                "YoY decelerating 70-75% historically)" if p["stretched"]
+                else " depressed (bottom decile)" if p["depressed"] else "")
+        lines.append(f"  real consumer spending : {p['yoy_pct']:+.2f}% YoY "
+                     f"({p['latest_month']}); last quarter {p['last_quarter_saar_pct']:+.1f}% "
+                     f"ann. vs trailing median "
+                     f"{((1 + p['trailing_median_qoq_pct'] / 100) ** 4 - 1) * 100:+.1f}%; "
+                     f"10y percentile {p['pctl_10y']:.0%}{flag}")
+    if "sentiment" in c:
+        sn = c["sentiment"]
+        flag = (" elevated (top decile: no historical signal)" if sn["elevated"]
+                else " depressed (bottom decile: next-quarter GDP QoQ HIGHER 63% historically)"
+                if sn["depressed"] else "")
+        lines.append(f"  consumer sentiment     : {sn['level']:.1f} ({sn['latest_month']}); "
+                     f"10y percentile {sn['pctl_10y']:.0%}{flag}")
+    if "real_income" in c:
+        i = c["real_income"]
+        lines.append(f"  real disposable income : {i['yoy_pct']:+.2f}% YoY "
+                     f"({i['latest_month']}); 10y percentile {i['pctl_10y']:.0%}")
+    if "saving_rate" in c:
+        sv = c["saving_rate"]
+        lines.append(f"  saving rate            : {sv['level_pct']:.1f}% "
+                     f"({sv['latest_month']}); 10y percentile {sv['pctl_10y']:.0%}")
+    return "\n".join(lines)
 
 
 def _direction_block(table, gdp_hist, gdp_full, cpi_full, last_real,
-                     trend_qoq_pct=None) -> str:
+                     trend_qoq_pct=None, real_pce=None) -> str:
     """The four direction calls for the current quarter and the next, each
     with its conviction and the backtested hit rate for that kind of call
     (README, 'Direction calls'). Growth on a QoQ basis abstains past q+2."""
     cpi_q = cpi_full["cpi_index"].groupby(cpi_full.index.asfreq("Q")).mean()
     infl_qoq_d = (cpi_q.pct_change() * 100).diff()
-    gd = growth_direction.qoq_direction_calls(gdp_hist, trend_qoq_pct)
+    gd = growth_direction.qoq_direction_calls(gdp_hist, trend_qoq_pct,
+                                              real_pce)
     lines = [f"{'quarter':8s} {'growth YoY':>22s} {'growth QoQ':>22s} "
              f"{'inflation YoY':>22s} {'inflation QoQ':>22s}"]
 
@@ -86,15 +124,28 @@ def _direction_block(table, gdp_hist, gdp_full, cpi_full, last_real,
         iq_grade = "strong" if iq is not None and abs(iq) >= 0.25 else "weak"
         lines.append(f"{str(tq):8s} {fmt(gy, gy_grade)} {fmt(gq, gq_grade)} "
                      f"{fmt(iy, iy_grade)} {fmt(iq, iq_grade)}")
+    if not gd.empty:
+        r = gd.iloc[0]
+        votes = (f"  growth QoQ votes for {gd.index[0]}: GDP reversal "
+                 f"{r['gdp_vote_pp']:+.2f}pp")
+        if r["pce_vote_pp"] == r["pce_vote_pp"]:
+            votes += (f", real-PCE reversal {r['pce_vote_pp']:+.2f}pp -> "
+                      f"{'AGREE: call' if r['grade'] == 'call' else 'SPLIT: coin flip'}"
+                      f" ({r['backtest_hit']:.0%} backtested)")
+        lines.append(votes)
     lines.append("  backtested hit rates by call and conviction: "
                  "results_us/us_direction_conviction.csv")
     return "\n".join(lines)
 
 
 def run(demo: bool = False, horizon_months: int = 15):
-    cpi_hist, gdp_hist, assumptions, aux, indicators, last_real, note = (
-        _demo_inputs(horizon_months) if demo else _live_inputs(horizon_months))
+    (cpi_hist, gdp_hist, assumptions, aux, indicators, last_real, note,
+     consumer, real_pce) = (_demo_inputs(horizon_months) if demo
+                            else _live_inputs(horizon_months))
     print(f"\nUS GIP Quad Map | {note}")
+    if not demo:
+        print("\n=== The consumer (published data, vs its own trailing decade) ===")
+        print(_consumer_block(consumer))
 
     # --- Inflation: bottom-up component projection -> YoY path
     cpi_full = inflation.build_cpi_projection(cpi_hist, horizon_months,
@@ -123,7 +174,8 @@ def run(demo: bool = False, horizon_months: int = 15):
     print("\n=== Direction calls (accelerating / decelerating) ===")
     trend = indicators.get("fitted_trend_qoq")
     print(_direction_block(table, gdp_hist, gdp_full, cpi_full, last_real,
-                           trend * 100 if trend is not None else None))
+                           trend * 100 if trend is not None else None,
+                           real_pce))
 
     print("\n=== Next 6 CPI prints (bottom-up decomposition, MoM %) ===")
     cols = ["mom_pct", "contrib_gasoline", "contrib_shelter",

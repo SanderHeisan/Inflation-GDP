@@ -91,9 +91,14 @@ def direction_backtest(bundle: USDataBundle, start: str, end: str,
                 cf["yoy_pct"].dropna()).diff(),
             "inflation_qoq": (cpi_q.pct_change() * 100).diff(),
         }
-        # the sequential growth call: its own model, published data only
+        # the sequential growth call: its own model, published data only,
+        # with the consumer's vote from the vintage's real PCE
         gd = growth_direction.qoq_direction_calls(
-            v.gdp_level, v.diagnostics.get("trend_qoq_pct"))
+            v.gdp_level, v.diagnostics.get("trend_qoq_pct"),
+            v.indicator_panel.get("real_pce"))
+        cstate = growth_direction.consumer_state(v.indicator_panel,
+                                                 v.last_gdp_quarter)
+        stretched = bool(cstate.get("real_pce", {}).get("stretched", False))
 
         for h in range(max_horizon + 1):
             tq = aq + h
@@ -123,6 +128,7 @@ def direction_backtest(bundle: USDataBundle, start: str, end: str,
                     "hit": float(np.sign(p) == np.sign(r)) if made else np.nan,
                     "conviction_pp": abs(p) if made else np.nan,
                     "covid_target": tq in COVID_TARGETS,
+                    "consumer_stretched": stretched,
                 })
     df = pd.DataFrame(rows)
     if df.empty:
@@ -166,6 +172,40 @@ def summarize_by_horizon(df: pd.DataFrame) -> pd.DataFrame:
                          if call in hit_ex.index and h in hit_ex.columns
                          else np.nan})
     return pd.DataFrame(tidy).set_index(["call", "horizon"])
+
+
+def summarize_by_grade(df: pd.DataFrame) -> pd.DataFrame:
+    """Hit rate of the sequential-growth call by its grade: the two votes
+    agreeing ('call'), disagreeing ('split'), the zigzag ('lean')."""
+    made = df[(df["call"] == "growth_qoq") & df["made_call"]].copy()
+    made["hit"] = made["hit"].astype(float)
+    rows = []
+    for grade, sub in made.groupby("grade"):
+        rows.append({"grade": grade, "n": len(sub),
+                     "share": len(sub) / len(made),
+                     "hit": float(sub["hit"].mean()),
+                     "hit_ex_covid": float(
+                         sub[~sub["covid_target"]]["hit"].mean())})
+    return pd.DataFrame(rows).set_index("grade")
+
+
+def summarize_stretch(df: pd.DataFrame) -> pd.DataFrame:
+    """The stretched-consumer flag as a supporting signal on the growth YoY
+    call: hit rate when the flag is on and the model says decelerating,
+    versus everything else."""
+    made = df[(df["call"] == "growth_yoy") & df["made_call"]].copy()
+    made["hit"] = made["hit"].astype(float)
+    on_down = made[made["consumer_stretched"] & (made["pred_delta"] < 0)]
+    on_up = made[made["consumer_stretched"] & (made["pred_delta"] > 0)]
+    off = made[~made["consumer_stretched"]]
+    return pd.DataFrame([
+        {"condition": "stretched & model says decelerating", "n": len(on_down),
+         "hit": float(on_down["hit"].mean()) if len(on_down) else np.nan},
+        {"condition": "stretched & model says accelerating", "n": len(on_up),
+         "hit": float(on_up["hit"].mean()) if len(on_up) else np.nan},
+        {"condition": "not stretched", "n": len(off),
+         "hit": float(off["hit"].mean()) if len(off) else np.nan},
+    ]).set_index("condition")
 
 
 def summarize_by_conviction(df: pd.DataFrame) -> pd.DataFrame:

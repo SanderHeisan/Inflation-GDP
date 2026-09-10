@@ -30,7 +30,8 @@ DATA_DIR = Path(__file__).resolve().parent.parent / "data" / "us"
 INDICATOR_NAMES = ("payrolls", "indpro", "retail", "claims", "cfnai",
                    "sentiment", "yield_curve", "hours",
                    "nfci", "credit_spread", "permits", "capex_orders",
-                   "stocks", "real_m2", "housing_starts")
+                   "stocks", "real_m2", "housing_starts",
+                   "real_pce", "real_income", "saving_rate")
 
 
 @dataclass

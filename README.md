@@ -357,7 +357,7 @@ conviction, so you know when to trust one:
 | Call | Question it answers |
 |---|---|
 | growth, YoY basis | is YoY GDP growth accelerating or decelerating? (the quad's growth axis) |
-| growth, QoQ basis | will this quarter's sequential growth print above or below last quarter's? |
+| growth, QoQ basis | will this quarter's sequential growth print above or below last quarter's? (two reversal votes: GDP and real PCE) |
 | inflation, YoY basis | is the quarterly-average CPI YoY rate accelerating or decelerating? (the quad's inflation axis) |
 | inflation, QoQ basis | is the sequential quarterly CPI pace picking up or slowing? |
 
@@ -366,8 +366,8 @@ ex-COVID targets in brackets):
 
 | Horizon | growth YoY | growth QoQ | inflation YoY | inflation QoQ |
 |---|---|---|---|---|
-| 0q (current) | 64.9% (63.5) | **73.7% (81.2)** | **81.7%** | **87.0%** |
-| +1q | 64.9% (64.5) | 56.8% (54.8) *lean* | 71.9% | 63.2% |
+| 0q (current) | 64.9% (63.5) | **71%** blended; **73–79% when votes agree** | **81.7%** | **87.0%** |
+| +1q | 64.9% (64.5) | 51–57% *weak lean* | 71.9% | 63.2% |
 | +2q | 66.7% (66.7) | no call | 68.5% | 60.4% |
 | +3q | 68.6% (69.0) | no call | 64.8% | 52.8% |
 | +4q | 56.9% (54.8) | no call | 65.7% | 51.4% |
@@ -392,9 +392,9 @@ How to read that:
   0.50`, and `run_us.py` labels growth-YoY calls *strong* or *weak* on it.
   The ceiling analysis below is why: the call's only real signal is a known
   base effect, and either that base is far from trend or it isn't.
-* **Growth QoQ is a different model, and it abstains.** See next.
+* **Growth QoQ is a different model, graded by agreement, and it abstains.** See next.
 
-### Growth on a QoQ basis: the reversal call
+### Growth on a QoQ basis: two reversal votes
 
 This was the "try something else" that worked. The activity-indicator
 nowcast, which cuts the QoQ *level* error substantially, turns out to be a
@@ -408,23 +408,73 @@ printed above trend is followed by a lower print ~72% of the time, from
 published data alone.** `usmodel/growth_direction.py` fits a point-in-time
 AR(1) on published QoQ growth (winsorized at 3 MADs so 2020Q2/Q3 cannot own
 it) and calls the current quarter as reversal toward the AR mean. Blending
-the nowcast in only dilutes it (74% at 0% nowcast weight, 68% at 100%).
+the nowcast in only dilutes it.
 
-| Sequential-growth call for the current quarter | Hit | ex-COVID |
+A second vote comes from the consumer. Real personal consumption is ~68% of
+GDP, its quarterly growth mean-reverts the same way, and it is published
+monthly — so the last full quarter of real PCE growth against its own
+trailing median is an independent reversal signal, known before GDP is. The
+call is graded by whether the two votes agree:
+
+| Current-quarter sequential-growth call | final GDP | simulated revisions | ex-COVID |
+|---|---|---|---|
+| nowcast vs last print (what the level path implies) | 68% | 68% | 68% |
+| GDP reversal vote alone | 63% | 63–76% across seeds | 66–81% |
+| real-PCE reversal vote alone | 68% | 68% | 75% |
+| **both votes agree (~2 in 3 months) — graded "call"** | **73%** | **79%** | **81–91%** |
+| votes split — graded "coin flip" | 67% | 30% | — |
+
+Two honesty notes. The single GDP-vote number depends on the revision
+assumption — 63% on final data, 63–76% across simulated-revision seeds, and
+an earlier version of this README quoted the top of that range. The
+agreement call does not: 73–79% whichever way revisions are simulated, which
+is what makes it the call. And the split grade is unreliable in *both*
+directions on a dozen distinct quarters, so it is labelled a coin flip rather
+than given a number it has not earned.
+
+One quarter further out the same structure gives a *zigzag* lean — ΔQoQ
+alternates in sign, so the lean for q+1 is the opposite of the call for q —
+measured at **51% on final data** (57% under simulated revisions): close to
+nothing, labelled weak. Past that, nothing tested beats a coin flip (direct
+regressions, AR(2)–AR(4), iterated glides, all 37–58% across horizons and
+windows), so **the model abstains rather than manufacture a number**.
+Inflation on a QoQ basis was checked for the same reversal structure; the
+bottom-up CPI path already beats it, so inflation is unchanged.
+
+### The consumer: what extremes actually predict
+
+The natural next question is whether a *stretched* consumer — spending or
+confidence at a high — is a warning. Measured on the realized record
+(1995–2026, ex-COVID, quarterly, each series against the top and bottom
+decile of its own trailing decade), the answer splits:
+
+| Series at an extreme | Next-quarter GDP QoQ lower | Next-quarter YoY growth decelerating |
 |---|---|---|
-| nowcast vs last print (what the level path implies) | 67.5% | 67.7% |
-| **published-data reversal (shipped)** | **73.7%** | **81.2%** |
-| both agree (82% of months) | 75.3% | — |
+| base rate | 51% | 55% |
+| **real PCE growth, top decile** | **70–86%** | **70%** |
+| consumer sentiment, top decile | 47% (no signal) | 53% |
+| consumer sentiment, **bottom** decile | **37%** (i.e. growth picks up) | 63% |
+| retail sales YoY, top decile | 50% | 62% |
+| real disposable income, top decile | 33% (growth picks up) | 33% |
+| saving rate, top decile | 47% | 53% |
 
-One quarter further out the same structure gives a weak *zigzag* lean —
-ΔQoQ alternates in sign, so the lean for q+1 is the opposite of the call
-for q — measured at 57%, labelled `lean`, and worth exactly that. Past
-that, nothing tested beats a coin flip (direct regressions, AR(2)–AR(4),
-iterated glides, all 37–58% across horizons and windows), so **the model
-abstains rather than manufacture a number**: the table says "no call", and
-so does the live output. Inflation on a QoQ basis was checked for the same
-reversal structure; the bottom-up CPI path already beats it, so inflation
-is unchanged.
+So the intuition is right for **spending** and wrong for **confidence**:
+stretched spending growth reverts and drags GDP with it; a confidence high
+predicts nothing, and it is a confidence *low* that carries signal, in the
+other direction. Strong income growth is a *tailwind* (income leads
+spending). Walk-forward, the stretched-spending flag does not help the
+sequential call as an override (63%, worse than the reversal), but on the
+**YoY axis** it is a real upgrade: when real PCE growth is in its top decile
+*and* the model already says decelerating, the call is right **79–84%** of
+the time against 64–66% otherwise (`results_us/us_consumer_stretch.csv`).
+Adding PCE and the saving rate to the nowcast regression makes it *worse*
+(PCE only starts in 2007, so the fit window is short and COVID-heavy), so
+they stay out of it.
+
+`growth_direction.consumer_state` reports the block as a reader wants it —
+spending, sentiment, income and saving against their own trailing decade,
+each flag carrying its base rate — and `run_us.py` prints it above the
+direction calls.
 
 The live block, `python run_us.py`:
 
@@ -607,7 +657,9 @@ moved, though:
 ## Next, in payoff order
 
 1. **Real GDP vintages** — the biggest credibility upgrade available, and it
-   is one manual download away.
+   is one manual download away. The sequential-growth call's single-vote
+   number swings 63–76% with the simulated-revision seed; real vintages
+   would settle it.
 2. **A better nowcast of the current quarter** — it is now the lever for
    every growth call that is still short of its ceiling (+4q YoY, and the
    sign of the current quarter's deviation from trend, which the present
