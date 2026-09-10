@@ -36,6 +36,7 @@ from dataclasses import dataclass, field
 import numpy as np
 import pandas as pd
 
+from quadmap import quads
 from usmodel import config as uconfig, gdp as gdp_mod, nowcast
 from usmodel.data_bundle import USDataBundle
 from usmodel.fetch_data_us import INDICATOR_PUB_LAG_DAYS
@@ -133,8 +134,8 @@ def estimate_shelter_passthrough(cpi_shelter: pd.Series,
     vintage is too short to fit (ZORI history is what binds early on)."""
     if cpi_shelter is None or market_rent is None:
         return default, uconfig.SHELTER_TREND_YOY
-    sh = (cpi_shelter / cpi_shelter.shift(12) - 1.0) * 100.0
-    mr = (market_rent / market_rent.shift(12) - 1.0) * 100.0
+    sh = quads.calendar_pct_change(cpi_shelter, 12)
+    mr = quads.calendar_pct_change(market_rent, 12)
     mr.index = mr.index + lag                       # align driver to target
     df = pd.concat({"y": sh, "x": mr}, axis=1).dropna()
     if len(df) < 24 or float(df["x"].var()) < 1e-6:
@@ -156,8 +157,8 @@ def estimate_supercore_passthrough(cpi_supercore: pd.Series,
     history only."""
     if cpi_supercore is None or wages is None:
         return default, 0.0
-    sc = (cpi_supercore / cpi_supercore.shift(12) - 1.0) * 100.0
-    wg = (wages / wages.shift(12) - 1.0) * 100.0
+    sc = quads.calendar_pct_change(cpi_supercore, 12)
+    wg = quads.calendar_pct_change(wages, 12)
     df = pd.concat({"y": sc, "x": wg}, axis=1).dropna()
     if len(df) < 36 or float(df["x"].var()) < 1e-6:
         return default, 0.0
@@ -186,7 +187,10 @@ def _yoy_last(series: pd.Series, default: float,
               lo: float, hi: float) -> float:
     if series is None or len(series) < 13:
         return default
-    return float(np.clip((series.iloc[-1] / series.iloc[-13] - 1) * 100.0,
+    last = series.index[-1]
+    if (last - 12) not in series.index:
+        return default
+    return float(np.clip((series.iloc[-1] / series[last - 12] - 1) * 100.0,
                          lo, hi))
 
 

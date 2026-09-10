@@ -37,7 +37,7 @@ def realized_quads_final(bundle: USDataBundle) -> pd.DataFrame:
     """Quad per quarter from current-vintage data."""
     g_yoy = (bundle.gdp.pct_change(4) * 100).dropna()
     i_yoy_q = quads.monthly_to_quarterly_yoy(
-        (bundle.cpi.pct_change(12) * 100).dropna())
+        quads.calendar_pct_change(bundle.cpi, 12).dropna())
     return quads.classify(g_yoy, i_yoy_q)
 
 
@@ -60,7 +60,7 @@ def realized_quads_first_release(bundle: USDataBundle,
             continue
         g_yoy = (v.gdp_level.pct_change(4) * 100).dropna()
         i_yoy_q = quads.monthly_to_quarterly_yoy(
-            (v.cpi_index.pct_change(12) * 100).dropna())
+            quads.calendar_pct_change(v.cpi_index, 12).dropna())
         table = quads.classify(g_yoy, i_yoy_q)
         if q in table.index:
             rows[q] = table.loc[q]

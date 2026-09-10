@@ -54,7 +54,7 @@ def realized_deltas(bundle: USDataBundle) -> dict[str, pd.Series]:
     cpi_q = bundle.cpi.groupby(bundle.cpi.index.asfreq("Q")).mean()
     i_qoq = (cpi_q.pct_change() * 100).dropna()
     i_yoy = quads.monthly_to_quarterly_yoy(
-        (bundle.cpi.pct_change(12) * 100).dropna())
+        quads.calendar_pct_change(bundle.cpi, 12).dropna())
     return {"growth_yoy": g_yoy.diff().dropna(),
             "growth_qoq": g_qoq.diff().dropna(),
             "inflation_yoy": i_yoy.diff().dropna(),

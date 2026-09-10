@@ -267,15 +267,15 @@ conviction = |predicted change in YoY|:
 
 | Conviction bucket | Share of months | Hit rate |
 |---|---|---|
-| ALL months | 100% | **83.2%** |
+| ALL months | 100% | **84.3%** |
 | coin-flip (<0.05pp) | 19% | 59.1% |
-| lean (0.05–0.15pp) | 26% | 82.8% |
-| call (0.15–0.30pp) | 23% | **92.3%** |
-| high conviction (>0.30pp) | 32% | **91.7%** |
-| callable (≥0.05pp) | 81% | **89.0%** |
+| lean (0.05–0.15pp) | 24% | 85.7% |
+| call (0.15–0.30pp) | 25% | **93.1%** |
+| high conviction (>0.30pp) | 31% | **91.7%** |
+| callable (≥0.05pp) | 81% | **90.3%** |
 
 The buckets are the product: on the 81% of months where the model leans at
-all, it is right 89% of the time, and the coin-flip bucket is honestly
+all, it is right 90% of the time, and the coin-flip bucket is honestly
 labelled as such. No calendar year in the sample scores below 70%.
 
 Why this works is arithmetic, not magic: next month's YoY change is roughly
@@ -289,10 +289,10 @@ two naive benchmarks built from the same vintage:
 
 | Horizon | Model MAE | Re-scored vs NSA | Random walk | Seasonal naive | Skill vs RW |
 |---|---|---|---|---|---|
-| 1 month | **0.17** | 0.17 | 0.30 | 0.21 | 44% |
-| 3 months | **0.46** | 0.46 | 0.66 | 0.51 | 30% |
-| 6 months | **0.82** | 0.83 | 1.03 | 0.88 | 21% |
-| 12 months | **1.53** | 1.54 | 1.78 | 1.78 | 14% |
+| 1 month | **0.16** | 0.17 | 0.30 | 0.21 | 45% |
+| 3 months | **0.45** | 0.45 | 0.67 | 0.50 | 33% |
+| 6 months | **0.81** | 0.81 | 1.04 | 0.87 | 22% |
+| 12 months | **1.50** | 1.51 | 1.76 | 1.77 | 15% |
 
 MoM error is a flat ~0.16–0.21pp at every horizon, so the growing YoY error
 is accumulated monthly error rather than a model that decays. The NSA column
@@ -303,7 +303,7 @@ rests on revised seasonal factors.
 
 By calendar year the one-print-ahead YoY error is 0.09–0.15pp in normal
 years and peaks at **0.38pp in 2021**. That shows up as a negative bias
-growing with horizon (−0.05pp at 1 month, −0.77pp at 12): across 2017–2026
+growing with horizon (−0.05pp at 1 month, −0.75pp at 12): across 2017–2026
 the model under-forecasts US inflation, because a mean-reverting component
 model cannot anticipate a regime break. It was late to the surge, like
 everyone else.
@@ -366,26 +366,26 @@ ex-COVID targets in brackets):
 
 | Horizon | growth YoY | growth QoQ | inflation YoY | inflation QoQ |
 |---|---|---|---|---|
-| 0q (current) | 64.9% (63.5) | **73.7% (81.2)** | **80.0% (79.4)** | **85.2% (83.5)** |
-| +1q | 64.9% (64.5) | 56.8% (54.8) *lean* | 69.3% (66.7) | 64.9% (64.6) |
-| +2q | 66.7% (66.7) | no call | 65.8% (62.4) | 60.4% (60.2) |
-| +3q | 68.6% (69.0) | no call | 62.0% (57.8) | 52.8% (57.8) |
-| +4q | 56.9% (54.8) | no call | 62.9% (58.6) | 51.4% (57.5) |
+| 0q (current) | 64.9% (63.5) | **73.7% (81.2)** | **81.7%** | **87.0%** |
+| +1q | 64.9% (64.5) | 56.8% (54.8) *lean* | 71.9% | 63.2% |
+| +2q | 66.7% (66.7) | no call | 68.5% | 60.4% |
+| +3q | 68.6% (69.0) | no call | 64.8% | 52.8% |
+| +4q | 56.9% (54.8) | no call | 65.7% | 51.4% |
 
 Hit rate by conviction, all horizons pooled (`us_direction_conviction.csv`):
 
 | Conviction | growth YoY | inflation YoY | inflation QoQ |
 |---|---|---|---|
-| <0.10pp | 64.4% | 49.1% | 53.9% |
-| 0.10–0.25pp | 60.0% | 70.1% | 75.0% |
-| 0.25–0.50pp | 49.3% | 66.4% | **85.7%** |
-| >0.50pp | **78.2%** | **82.4%** | 76.6% |
+| <0.10pp | 64.4% | 47.5% | 53.6% |
+| 0.10–0.25pp | 60.0% | 77.6% | 76.5% |
+| 0.25–0.50pp | 49.3% | 66.7% | **86.2%** |
+| >0.50pp | **78.2%** | **82.4%** | 75.6% |
 
 How to read that:
 
 * **Inflation grades cleanly.** Both inflation calls get better as conviction
   rises, so the conviction number is a usable trust dial — the same
-  property the monthly CPI print call has (83% overall, 89% when it leans).
+  property the monthly CPI print call has (84% overall, 90% when it leans).
 * **Growth YoY is two-regime, not graded.** Above 0.50pp it is right ~80%
   of the time (81% ex-COVID); below that it is 50–64% regardless of size.
   So the flag for growth is a single threshold, `YOY_HIGH_CONVICTION_PP =
@@ -431,9 +431,9 @@ The live block, `python run_us.py`:
 ```
 === Direction calls (accelerating / decelerating) ===
 quarter              growth YoY             growth QoQ          inflation YoY          inflation QoQ
-2026Q3   down  0.49pp      weak   up  0.15pp      call down  0.46pp    strong down  1.28pp    strong
-2026Q4     up  0.66pp    strong down  0.19pp      lean down  0.25pp      weak   up  0.43pp    strong
-2027Q1     up  0.26pp      weak                no call down  0.36pp    strong down  0.06pp      weak
+2026Q3   down  0.49pp      weak   up  0.15pp      call down  0.58pp    strong down  1.29pp    strong
+2026Q4     up  0.66pp    strong down  0.41pp      lean down  0.00pp      weak   up  0.42pp    strong
+2027Q1     up  0.26pp      weak                no call down  0.32pp    strong down  0.06pp      weak
 ```
 
 ## The growth axis, and where its ceiling is
@@ -568,6 +568,16 @@ moved, though:
 
 ## Caveats that bound every number here
 
+0. **October 2025 does not exist.** BLS never published that month's CPI
+   (the autumn 2025 shutdown) and FRED carries it as missing. A positional
+   12-row shift then silently reads every 12-month rate spanning the hole
+   as a 13-month one — the live July 2026 YoY read 3.54% where the true
+   rate is 3.30%. Two defenses now hold: the loader fills an isolated
+   missing month by geometric interpolation and records it on the bundle
+   (`bundle.filled`), and every YoY in the model and the scorer is computed
+   by calendar alignment (`quads.calendar_pct_change`), so a hole can only
+   ever yield NaN, never a wrong number. October 2026's YoY rests on the
+   filled base and is flagged wherever it is printed.
 1. **Simulated GDP vintages.** BEA revises real GDP heavily, and both
    archives of what a quarter looked like on release day — ALFRED and the
    Philadelphia Fed Real-Time Data Set — sit behind bot protection this

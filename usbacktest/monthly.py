@@ -37,6 +37,7 @@ from dataclasses import replace
 import numpy as np
 import pandas as pd
 
+from quadmap import quads
 from usmodel import inflation
 from usmodel.data_bundle import USDataBundle
 
@@ -53,7 +54,7 @@ ERROR_HORIZONS = (1, 3, 6, 12)
 
 
 def _yoy(series: pd.Series) -> pd.Series:
-    return (series.pct_change(12) * 100).dropna()
+    return quads.calendar_pct_change(series, 12).dropna()
 
 
 def monthly_backtest(bundle: USDataBundle, start: str, end: str,
@@ -64,7 +65,7 @@ def monthly_backtest(bundle: USDataBundle, start: str, end: str,
     # nowcast at every as-of date.
     cfg = replace(cfg or USVintageConfig(), use_indicator_nowcast=False)
     real_yoy = _yoy(bundle.cpi)
-    real_mom = (bundle.cpi.pct_change() * 100).dropna()
+    real_mom = quads.calendar_pct_change(bundle.cpi, 1).dropna()
     real_yoy_nsa = _yoy(bundle.cpi_nsa) if bundle.cpi_nsa is not None else None
 
     rows = []
@@ -80,7 +81,8 @@ def monthly_backtest(bundle: USDataBundle, start: str, end: str,
 
         # Benchmarks from the same vintage.
         rw_yoy = float(_yoy(v.cpi_index).iloc[-1])
-        trail_mom = float(v.cpi_index.pct_change().tail(12).mean() * 100)
+        trail_mom = float(quads.calendar_pct_change(v.cpi_index, 1)
+                          .tail(12).mean())
 
         for h in ERROR_HORIZONS:
             m = m0 + h
@@ -122,7 +124,7 @@ def direction_backtest(bundle: USDataBundle, start: str, end: str,
     """The one-print-ahead YoY direction call, with its known hurdle."""
     cfg = replace(cfg or USVintageConfig(), use_indicator_nowcast=False)
     real_yoy = _yoy(bundle.cpi)
-    real_mom = (bundle.cpi.pct_change() * 100).dropna()
+    real_mom = quads.calendar_pct_change(bundle.cpi, 1).dropna()
 
     rows = []
     for asof in asof_dates(start, end, "M"):

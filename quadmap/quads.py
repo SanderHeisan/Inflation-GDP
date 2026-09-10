@@ -22,6 +22,17 @@ QUAD_LABELS = {1: "Goldilocks", 2: "Reflation",
                3: "Stagflation", 4: "Disinflation"}
 
 
+def calendar_pct_change(series: pd.Series, periods: int) -> pd.Series:
+    """Percent change against the value `periods` PERIODS earlier by the
+    calendar, not by row position. `Series.pct_change(12)` counts rows, so a
+    single missing month (BLS skipped October 2025) silently turns every
+    12-month rate spanning it into a 13-month one. Aligning on the index
+    makes the rate NaN where the base is genuinely absent instead."""
+    base = series.copy()
+    base.index = base.index + periods
+    return (series / base.reindex(series.index) - 1.0) * 100.0
+
+
 def monthly_to_quarterly_yoy(cpi_yoy_monthly: pd.Series) -> pd.Series:
     """Quarterly CPI YoY = average of the three monthly YoY prints."""
     q = cpi_yoy_monthly.copy()

@@ -53,6 +53,9 @@ class USDataBundle:
     # Growth-side activity indicators (Period[M]), keyed by the names in
     # fetch_data_us.INDICATOR_PUB_LAG_DAYS.
     indicators: dict[str, pd.Series] = field(default_factory=dict)
+    # {series name: [months filled by interpolation]} -- see
+    # fill_single_month_gaps; empty when the data had no holes.
+    filled: dict[str, list[str]] = field(default_factory=dict)
     source: str = "unknown"
 
     def has_vintage_panel(self) -> bool:
@@ -66,6 +69,36 @@ def _read_series(path: Path, freq: str) -> pd.Series:
                                           freq=freq)).dropna()
 
 
+def fill_single_month_gaps(series: pd.Series,
+                           max_gap: int = 1) -> tuple[pd.Series, list[str]]:
+    """Complete a monthly index and fill isolated holes of up to `max_gap`
+    months by geometric interpolation, returning the filled months.
+
+    Why this exists: BLS never published the October 2025 CPI (the autumn
+    2025 shutdown), and FRED carries the month as missing. Every positional
+    12-row shift downstream then silently turned into a 13-month change for
+    any window spanning the hole -- the live YoY read 3.54% where the true
+    12-month rate was 3.30%. A geometric fill (the standard analyst
+    treatment, and what the two-month change BLS did publish implies) keeps
+    base effects on a calendar footing; the filled months are recorded on
+    the bundle so any output can flag them. Longer gaps are left as NaN
+    rather than invented."""
+    if series.empty or series.index.freqstr not in ("M", "ME"):
+        return series, []
+    full = pd.period_range(series.index[0], series.index[-1], freq="M")
+    if len(full) == len(series):
+        return series, []
+    out = series.reindex(full)
+    missing = out.index[out.isna()]
+    filled = []
+    for m in missing:
+        prev, nxt = m - 1, m + 1
+        if prev in series.index and nxt in series.index and max_gap >= 1:
+            out[m] = float(np.sqrt(series[prev] * series[nxt]))
+            filled.append(str(m))
+    return out.dropna(), filled
+
+
 def load_bundle(data_dir: Path | str = DATA_DIR,
                 start: str | None = "2004-01") -> USDataBundle:
     """Load the real cached US series. Raises if the required files are
@@ -77,11 +110,19 @@ def load_bundle(data_dir: Path | str = DATA_DIR,
         raise FileNotFoundError(
             f"missing {missing} in {d} - run `python -m usmodel.fetch_data_us`")
 
-    def opt(name: str, freq: str = "M") -> pd.Series | None:
-        p = d / f"{name}.csv"
-        return _read_series(p, freq) if p.exists() else None
+    filled: dict[str, list[str]] = {}
 
-    cpi = _read_series(d / "cpi.csv", "M")
+    def monthly(name: str) -> pd.Series | None:
+        p = d / f"{name}.csv"
+        if not p.exists():
+            return None
+        series, gaps = fill_single_month_gaps(_read_series(p, "M"))
+        if gaps:
+            filled[name] = gaps
+        return series
+
+    opt = monthly
+    cpi = monthly("cpi")
     gdp = _read_series(d / "gdp.csv", "Q")
     if start:
         cpi = cpi[cpi.index >= pd.Period(start, "M")]
@@ -97,10 +138,10 @@ def load_bundle(data_dir: Path | str = DATA_DIR,
 
     return USDataBundle(
         cpi=cpi, gdp=gdp,
-        wti=_read_series(d / "wti.csv", "M"),
-        dollar=_read_series(d / "dollar.csv", "M"),
-        wages=_read_series(d / "wages.csv", "M"),
-        market_rent=_read_series(d / "market_rent.csv", "M"),
+        wti=monthly("wti"),
+        dollar=monthly("dollar"),
+        wages=monthly("wages"),
+        market_rent=monthly("market_rent"),
         cpi_nsa=opt("cpi_nsa"), cpi_core=opt("cpi_core"),
         cpi_shelter=opt("cpi_shelter"), cpi_supercore=opt("cpi_supercore"),
         cpi_food=opt("cpi_food"),
@@ -108,6 +149,7 @@ def load_bundle(data_dir: Path | str = DATA_DIR,
         gdp_vintages=panel,
         indicators={k: s for k in INDICATOR_NAMES
                     if (s := opt(k)) is not None and len(s)},
+        filled=filled,
         source=f"real ({d})")
 
 

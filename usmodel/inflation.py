@@ -31,6 +31,8 @@ from __future__ import annotations
 import numpy as np
 import pandas as pd
 
+from quadmap import quads
+
 from . import config
 
 
@@ -89,7 +91,7 @@ def project_shelter(cpi_hist: pd.Series, assumptions: dict,
                                   config.SHELTER_TREND_YOY))
 
     if market_rent is not None and len(market_rent) > lag + 12:
-        mr_yoy = (market_rent / market_rent.shift(12) - 1.0) * 100.0
+        mr_yoy = quads.calendar_pct_change(market_rent, 12)
     else:
         mr_yoy = None
     fallback = assumptions.get("market_rent_yoy_recent", trend)
@@ -128,7 +130,7 @@ def project_core_goods(assumptions: dict, horizon: pd.PeriodIndex,
     path = assumptions.get("dollar_path", {})
     for p in horizon:
         dxy.loc[p] = float(path.get(str(p), dxy.iloc[-1]))
-    dxy_12m = dxy.pct_change(12) * 100.0    # % change, positive = stronger $
+    dxy_12m = quads.calendar_pct_change(dxy, 12)   # %, positive = stronger $
 
     out = {}
     for p in horizon:
@@ -198,7 +200,9 @@ def build_cpi_projection(cpi_hist: pd.Series, horizon_months: int,
 
     proj = pd.DataFrame(rows).set_index("period")
     full = pd.concat([cpi_hist.rename("cpi_index").to_frame(), proj])
-    full["yoy_pct"] = (full["cpi_index"] / full["cpi_index"].shift(12) - 1) * 100
-    if "mom_pct" not in full:
-        full["mom_pct"] = full["cpi_index"].pct_change() * 100
+    # Calendar-aligned, not positional: a missing month in the history
+    # (October 2025) must not turn the 12-month rate into a 13-month one.
+    full["yoy_pct"] = quads.calendar_pct_change(full["cpi_index"], 12)
+    full["mom_pct"] = full["mom_pct"].where(
+        full["mom_pct"].notna(), quads.calendar_pct_change(full["cpi_index"], 1))
     return full
