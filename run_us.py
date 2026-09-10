@@ -20,7 +20,8 @@ import argparse
 import pandas as pd
 
 from quadmap import quads
-from usmodel import config, data_bundle, gdp as gdp_mod, inflation
+from usmodel import (config, data_bundle, gdp as gdp_mod,
+                     growth_direction, inflation)
 
 
 def _demo_inputs(horizon_months: int):
@@ -54,6 +55,42 @@ def _live_inputs(horizon_months: int):
             v.last_gdp_quarter, note)
 
 
+def _direction_block(table, gdp_hist, gdp_full, cpi_full, last_real,
+                     trend_qoq_pct=None) -> str:
+    """The four direction calls for the current quarter and the next, each
+    with its conviction and the backtested hit rate for that kind of call
+    (README, 'Direction calls'). Growth on a QoQ basis abstains past q+2."""
+    cpi_q = cpi_full["cpi_index"].groupby(cpi_full.index.asfreq("Q")).mean()
+    infl_qoq_d = (cpi_q.pct_change() * 100).diff()
+    gd = growth_direction.qoq_direction_calls(gdp_hist, trend_qoq_pct)
+    lines = [f"{'quarter':8s} {'growth YoY':>22s} {'growth QoQ':>22s} "
+             f"{'inflation YoY':>22s} {'inflation QoQ':>22s}"]
+
+    def fmt(delta, grade="call"):
+        if delta is None or delta != delta:
+            return f"{'no call':>22s}"
+        arrow = "up" if delta > 0 else "down"
+        return f"{arrow:>4s} {abs(delta):5.2f}pp {grade:>9s}"
+
+    for tq in [last_real + 1, last_real + 2, last_real + 3]:
+        if tq not in table.index:
+            continue
+        gy = table.loc[tq, "d_growth"]
+        gy_grade = ("strong" if abs(gy)
+                    >= growth_direction.YOY_HIGH_CONVICTION_PP else "weak")
+        gq, gq_grade = ((gd.loc[tq, "delta_pp"], gd.loc[tq, "grade"])
+                        if not gd.empty and tq in gd.index else (None, ""))
+        iy = table.loc[tq, "d_inflation"]
+        iy_grade = "strong" if abs(iy) >= 0.30 else "weak"
+        iq = infl_qoq_d.get(tq, None)
+        iq_grade = "strong" if iq is not None and abs(iq) >= 0.25 else "weak"
+        lines.append(f"{str(tq):8s} {fmt(gy, gy_grade)} {fmt(gq, gq_grade)} "
+                     f"{fmt(iy, iy_grade)} {fmt(iq, iq_grade)}")
+    lines.append("  backtested hit rates by call and conviction: "
+                 "results_us/us_direction_conviction.csv")
+    return "\n".join(lines)
+
+
 def run(demo: bool = False, horizon_months: int = 15):
     cpi_hist, gdp_hist, assumptions, aux, indicators, last_real, note = (
         _demo_inputs(horizon_months) if demo else _live_inputs(horizon_months))
@@ -82,6 +119,11 @@ def run(demo: bool = False, horizon_months: int = 15):
     if len(flips):
         print("\n=== Quad flips (the tradeable events) ===")
         print(flips[["quad", "label", "projected"]].to_string())
+
+    print("\n=== Direction calls (accelerating / decelerating) ===")
+    trend = indicators.get("fitted_trend_qoq")
+    print(_direction_block(table, gdp_hist, gdp_full, cpi_full, last_real,
+                           trend * 100 if trend is not None else None))
 
     print("\n=== Next 6 CPI prints (bottom-up decomposition, MoM %) ===")
     cols = ["mom_pct", "contrib_gasoline", "contrib_shelter",

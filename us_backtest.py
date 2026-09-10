@@ -16,6 +16,9 @@ Writes to results_us/:
     us_confusion_h*.csv           confusion matrices per horizon
     us_growth_variants.csv        --growth-variants: the growth-side 2x2
     us_growth_ceiling.csv         per-horizon ceiling for the growth call
+    us_direction.csv              the four direction calls: hit by call x horizon
+    us_direction_conviction.csv   the same by conviction bucket
+    us_direction_calls.csv        every direction call made (or abstained)
 """
 from __future__ import annotations
 
@@ -26,7 +29,7 @@ import pandas as pd
 
 from dataclasses import replace
 
-from usbacktest import monthly, scoring
+from usbacktest import direction, monthly, scoring
 from usbacktest.btconfig import BACKTEST_START, RESULTS_DIR, USVintageConfig
 from usbacktest.engine import run_backtest
 from usmodel import data_bundle
@@ -176,12 +179,31 @@ def main() -> None:
     print("\n=== CPI forecast error, pp (MAE of YoY at h months ahead) ===")
     print(err_summary.round(3).to_string())
 
-    direction = monthly.direction_backtest(bundle, args.start, end, cfg)
-    dir_summary = monthly.summarize_direction(direction)
+    cpi_dir = monthly.direction_backtest(bundle, args.start, end, cfg)
+    dir_summary = monthly.summarize_direction(cpi_dir)
     dir_summary.to_csv(out / "us_cpi_direction.csv")
-    direction.to_csv(out / "us_cpi_direction_calls.csv", index=False)
+    cpi_dir.to_csv(out / "us_cpi_direction_calls.csv", index=False)
     print("\n=== Next CPI print: YoY direction call by conviction ===")
     print(dir_summary.round(3).to_string())
+
+    # ---- Direction calls: growth and inflation, QoQ and YoY ---------------
+    dcalls = direction.direction_backtest(bundle, args.start, end,
+                                          args.horizon, cfg)
+    dcalls.to_csv(out / "us_direction_calls.csv", index=False)
+    by_h = direction.summarize_by_horizon(dcalls)
+    by_h.to_csv(out / "us_direction.csv")
+    by_c = direction.summarize_by_conviction(dcalls)
+    by_c.to_csv(out / "us_direction_conviction.csv")
+    print("\n=== Direction calls: hit rate by horizon (call share in brackets) ===")
+    wide = by_h["hit"].unstack("horizon")
+    share = by_h["call_share"].unstack("horizon")
+    disp = (wide * 100).round(1).astype(str) + " (" + \
+        (share * 100).round(0).astype(int).astype(str) + "%)"
+    disp = disp.mask(wide.isna(), "no call")
+    disp.index = [direction.CALL_LABELS[c] for c in disp.index]
+    print(disp.to_string())
+    print("\n=== Direction calls: hit rate by conviction (all horizons) ===")
+    print(by_c.round(3).to_string())
 
     if args.growth_variants:
         print("\n=== Growth-side variants (first-release truth) ===")

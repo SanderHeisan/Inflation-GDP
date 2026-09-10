@@ -348,6 +348,94 @@ quarters move their YoY inflation rate by less than 0.10pp**. Those are
 flagged `low_conviction`, and excluding them lifts the nowcast hit rate from
 58.8% to 71.8%.
 
+## Direction calls — the product
+
+Hitting the level is not the job; calling the *direction* is. So the four
+calls a subscriber actually uses are backtested as calls, each with its
+conviction, so you know when to trust one:
+
+| Call | Question it answers |
+|---|---|
+| growth, YoY basis | is YoY GDP growth accelerating or decelerating? (the quad's growth axis) |
+| growth, QoQ basis | will this quarter's sequential growth print above or below last quarter's? |
+| inflation, YoY basis | is the quarterly-average CPI YoY rate accelerating or decelerating? (the quad's inflation axis) |
+| inflation, QoQ basis | is the sequential quarterly CPI pace picking up or slowing? |
+
+Hit rate by horizon, 2017–2026, final-vintage truth (`results_us/us_direction.csv`;
+ex-COVID targets in brackets):
+
+| Horizon | growth YoY | growth QoQ | inflation YoY | inflation QoQ |
+|---|---|---|---|---|
+| 0q (current) | 64.9% (63.5) | **73.7% (81.2)** | **80.0% (79.4)** | **85.2% (83.5)** |
+| +1q | 64.9% (64.5) | 56.8% (54.8) *lean* | 69.3% (66.7) | 64.9% (64.6) |
+| +2q | 66.7% (66.7) | no call | 65.8% (62.4) | 60.4% (60.2) |
+| +3q | 68.6% (69.0) | no call | 62.0% (57.8) | 52.8% (57.8) |
+| +4q | 56.9% (54.8) | no call | 62.9% (58.6) | 51.4% (57.5) |
+
+Hit rate by conviction, all horizons pooled (`us_direction_conviction.csv`):
+
+| Conviction | growth YoY | inflation YoY | inflation QoQ |
+|---|---|---|---|
+| <0.10pp | 64.4% | 49.1% | 53.9% |
+| 0.10–0.25pp | 60.0% | 70.1% | 75.0% |
+| 0.25–0.50pp | 49.3% | 66.4% | **85.7%** |
+| >0.50pp | **78.2%** | **82.4%** | 76.6% |
+
+How to read that:
+
+* **Inflation grades cleanly.** Both inflation calls get better as conviction
+  rises, so the conviction number is a usable trust dial — the same
+  property the monthly CPI print call has (83% overall, 89% when it leans).
+* **Growth YoY is two-regime, not graded.** Above 0.50pp it is right ~80%
+  of the time (81% ex-COVID); below that it is 50–64% regardless of size.
+  So the flag for growth is a single threshold, `YOY_HIGH_CONVICTION_PP =
+  0.50`, and `run_us.py` labels growth-YoY calls *strong* or *weak* on it.
+  The ceiling analysis below is why: the call's only real signal is a known
+  base effect, and either that base is far from trend or it isn't.
+* **Growth QoQ is a different model, and it abstains.** See next.
+
+### Growth on a QoQ basis: the reversal call
+
+This was the "try something else" that worked. The activity-indicator
+nowcast, which cuts the QoQ *level* error substantially, turns out to be a
+coin flip — **50%** — on the *sign* of this quarter's deviation from trend.
+It knows roughly where the quarter lands, not which side of trend. So every
+sequential-direction call routed through the nowcast collapses toward 50%.
+
+What does work is the oldest fact about US GDP: quarterly growth
+mean-reverts hard (autocorrelation of ΔQoQ ≈ −0.43), so **a quarter that
+printed above trend is followed by a lower print ~72% of the time, from
+published data alone.** `usmodel/growth_direction.py` fits a point-in-time
+AR(1) on published QoQ growth (winsorized at 3 MADs so 2020Q2/Q3 cannot own
+it) and calls the current quarter as reversal toward the AR mean. Blending
+the nowcast in only dilutes it (74% at 0% nowcast weight, 68% at 100%).
+
+| Sequential-growth call for the current quarter | Hit | ex-COVID |
+|---|---|---|
+| nowcast vs last print (what the level path implies) | 67.5% | 67.7% |
+| **published-data reversal (shipped)** | **73.7%** | **81.2%** |
+| both agree (82% of months) | 75.3% | — |
+
+One quarter further out the same structure gives a weak *zigzag* lean —
+ΔQoQ alternates in sign, so the lean for q+1 is the opposite of the call
+for q — measured at 57%, labelled `lean`, and worth exactly that. Past
+that, nothing tested beats a coin flip (direct regressions, AR(2)–AR(4),
+iterated glides, all 37–58% across horizons and windows), so **the model
+abstains rather than manufacture a number**: the table says "no call", and
+so does the live output. Inflation on a QoQ basis was checked for the same
+reversal structure; the bottom-up CPI path already beats it, so inflation
+is unchanged.
+
+The live block, `python run_us.py`:
+
+```
+=== Direction calls (accelerating / decelerating) ===
+quarter              growth YoY             growth QoQ          inflation YoY          inflation QoQ
+2026Q3   down  0.49pp      weak   up  0.15pp      call down  0.46pp    strong down  1.28pp    strong
+2026Q4     up  0.66pp    strong down  0.19pp      lean down  0.25pp      weak   up  0.43pp    strong
+2027Q1     up  0.26pp      weak                no call down  0.36pp    strong down  0.06pp      weak
+```
+
 ## The growth axis, and where its ceiling is
 
 The first backtest showed growth was the binding axis, so it got a second
@@ -510,9 +598,12 @@ moved, though:
 
 1. **Real GDP vintages** — the biggest credibility upgrade available, and it
    is one manual download away.
-2. **Growth beyond the nowcast quarter** — where the model is near a coin
-   flip and where base effects are not beaten. A quarter-ahead factor model
-   on the same indicator panel is the obvious next attempt.
+2. **A better nowcast of the current quarter** — it is now the lever for
+   every growth call that is still short of its ceiling (+4q YoY, and the
+   sign of the current quarter's deviation from trend, which the present
+   nowcast gets right only 50% of the time). Higher-frequency inputs
+   (weekly claims, daily financial conditions, card-spend proxies) are the
+   obvious next attempt; longer-horizon GDP modelling is not.
 3. **A live US forecast loop** mirroring `forecast.py`, appending every call
    to a history file — the proof no backtest can supply.
 4. **Core CPI as a second target.** The Fed steers on core; `CPILFESL` is
