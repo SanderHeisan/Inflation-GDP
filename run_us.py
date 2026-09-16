@@ -91,6 +91,28 @@ def _consumer_block(c: dict) -> str:
                 if sn["depressed"] else "")
         lines.append(f"  consumer sentiment     : {sn['level']:.1f} ({sn['latest_month']}); "
                      f"10y percentile {sn['pctl_10y']:.0%}{flag}")
+    if "net_worth" in c:
+        n = c["net_worth"]
+        flag = (" ELEVATED (top quintile: growth YoY decelerating 3-4q later "
+                "61-68% historically)" if n["elevated"] else
+                " depressed (bottom quintile: decelerating only 32-36%)"
+                if n["depressed"] else "")
+        lines.append(f"  household net worth    : ${n['level_tn']:.1f}T "
+                     f"({n['latest_quarter']}), {n['qoq_change_tn']:+.1f}T on the "
+                     f"quarter, {n['yoy_pct']:+.1f}% YoY; 10y percentile "
+                     f"{n['pctl_10y']:.0%}{flag}")
+    if "mortgage_30y" in c:
+        m = c["mortgage_30y"]
+        flag = (" falling (bottom quintile: growth accelerating 2-3q later 75-79%)"
+                if m["falling"] else " rising (top quintile: weak signal, 57%)"
+                if m["rising"] else "")
+        lines.append(f"  30y mortgage rate      : {m['level_pct']:.2f}% "
+                     f"({m['latest_month']}), {m['chg_4q_pp']:+.2f}pp over 4q; "
+                     f"10y percentile of the change {m['pctl_10y']:.0%}{flag}")
+    if "fed_funds" in c:
+        f = c["fed_funds"]
+        lines.append(f"  fed funds              : {f['level_pct']:.2f}% "
+                     f"({f['latest_month']}), {f['chg_4q_pp']:+.2f}pp over 4q")
     if "real_income" in c:
         i = c["real_income"]
         lines.append(f"  real disposable income : {i['yoy_pct']:+.2f}% YoY "

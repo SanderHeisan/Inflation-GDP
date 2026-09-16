@@ -34,7 +34,8 @@ INDICATOR_NAMES = ("payrolls", "indpro", "retail", "claims", "cfnai",
                    "real_pce", "real_income", "saving_rate",
                    "real_pce_durables", "real_pce_nondurables",
                    "real_pce_services", "real_retail", "consumer_credit",
-                   "gasoline_retail")
+                   "gasoline_retail", "fed_funds", "treasury_10y",
+                   "mortgage_30y", "household_net_worth")
 
 
 @dataclass
@@ -117,10 +118,14 @@ def load_bundle(data_dir: Path | str = DATA_DIR,
 
     filled: dict[str, list[str]] = {}
 
+    QUARTERLY = {"household_net_worth"}
+
     def monthly(name: str) -> pd.Series | None:
         p = d / f"{name}.csv"
         if not p.exists():
             return None
+        if name in QUARTERLY:
+            return _read_series(p, "Q")
         series, gaps = fill_single_month_gaps(_read_series(p, "M"))
         if gaps:
             filled[name] = gaps

@@ -504,6 +504,20 @@ Adding PCE and the saving rate to the nowcast regression makes it *worse*
 (PCE only starts in 2007, so the fit window is short and COVID-heavy), so
 they stay out of it.
 
+**Wealth and rates.** Household net worth YoY is the one financial driver
+with a measured lead on growth: in the top quintile of its trailing decade
+it is followed by growth YoY *decelerating* 3–4 quarters later **61–68%** of
+the time (1990–2026 ex-COVID, base ~50%), in the bottom quintile only
+32–36%. A falling 30-year mortgage rate (bottom quintile of its 4-quarter
+change) precedes growth *accelerating* 2–3 quarters later 75–79%; a rising
+one carries little (54–57%), and the fed funds rate's 4-quarter change
+carries less. Walk-forward 2017–2026 the net-worth flag does not beat the
+base-effect growth call as an override (that call sits at its ceiling at
+2–3 quarters), so it is reported next to the call with its base rate rather
+than applied. The sheet also shows the quad each quarter would fall into
+under alternative growth paths — the year-ago QoQ is a known *hurdle*, so
+"what growth does the Quad 4 case need" is a number, not a narrative.
+
 `growth_direction.consumer_state` reports the block as a reader wants it —
 spending, sentiment, income and saving against their own trailing decade,
 each flag carrying its base rate — and `run_us.py` prints it above the

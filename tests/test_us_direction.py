@@ -181,3 +181,25 @@ def test_consumer_state_flags_a_stretched_consumer(ar1_level):
     assert boom_state["stretched"]
     assert boom_state["pctl_10y"] >= gdir.STRETCH_PCTL
     assert gdir.consumer_state({}, last) == {}
+
+
+def test_consumer_state_flags_elevated_net_worth(ar1_level):
+    last = ar1_level.index[-1]
+    quarters = pd.period_range(end=last, periods=60, freq="Q")
+    calm = pd.Series(100e6 * np.cumprod([1.01] * 60), index=quarters)
+    boom = calm.copy(); boom.iloc[-4:] = boom.iloc[-5] * np.cumprod([1.04] * 4)
+    assert not gdir.consumer_state({"household_net_worth": calm}, last)[
+        "net_worth"]["elevated"]
+    st = gdir.consumer_state({"household_net_worth": boom}, last)["net_worth"]
+    assert st["elevated"] and st["pctl_10y"] >= 0.8
+    assert st["qoq_change_tn"] > 0
+
+
+def test_consumer_state_reads_rates(ar1_level):
+    last = ar1_level.index[-1]
+    months = pd.period_range(end=last.asfreq("M", "end"), periods=120, freq="M")
+    mort = pd.Series(np.linspace(7.0, 5.0, 120), index=months)   # falling
+    ff = pd.Series(np.linspace(5.0, 4.0, 120), index=months)
+    st = gdir.consumer_state({"mortgage_30y": mort, "fed_funds": ff}, last)
+    assert st["mortgage_30y"]["chg_4q_pp"] < 0
+    assert st["fed_funds"]["chg_4q_pp"] < 0

@@ -119,6 +119,13 @@ FRED_SERIES = {
     # follows the pump price almost one for one, and this is public every
     # Monday -- a far better nowcast of the gasoline block than a WTI rule.
     "gasoline_retail":      ("GASREGW", "W"),
+    # Financial conditions on the household: policy rate, long rate, mortgage
+    # rate, net worth. Shown with their measured lead (or lack of one) on
+    # growth; the rate channel is the one with a documented 2-4 quarter lag.
+    "fed_funds":            ("FEDFUNDS", "M"),
+    "treasury_10y":         ("DGS10", "D"),
+    "mortgage_30y":         ("MORTGAGE30US", "W"),
+    "household_net_worth":  ("TNWBSHNO", "Q"),
 }
 
 # Publication lag in days for each indicator, used by the backtest's vintage
@@ -134,6 +141,8 @@ INDICATOR_PUB_LAG_DAYS = {
     "real_pce": 30, "real_income": 30, "saving_rate": 30,
     "real_pce_durables": 30, "real_pce_nondurables": 30, "real_pce_services": 30,
     "real_retail": 17, "consumer_credit": 37, "gasoline_retail": 0,
+    "fed_funds": 1, "treasury_10y": 0, "mortgage_30y": 0,
+    "household_net_worth": 75,
 }
 
 DEFAULT_DATA_DIR = Path(__file__).resolve().parent.parent / "data" / "us"

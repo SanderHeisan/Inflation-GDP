@@ -187,6 +187,12 @@ def consumer_state(indicators: dict[str, pd.Series],
       sentiment in its top decile        -> no signal (47-60%)
       sentiment in its bottom decile     -> next-quarter GDP QoQ HIGHER 63%
       real income growth in top decile   -> next-quarter GDP QoQ HIGHER 67%
+      net worth YoY in top quintile      -> growth YoY decelerating 3-4
+                                            quarters later 61-68%
+      net worth YoY in bottom quintile   -> ... decelerating only 32-36%
+      mortgage rate down over 4q (bottom quintile) -> growth YoY
+                                            accelerating 2-3q later 75-79%
+      fed funds up over 4q (top quintile) -> decelerating 54-57% (weak)
     """
     out: dict = {}
     pce = indicators.get("real_pce")
@@ -236,6 +242,39 @@ def consumer_state(indicators: dict[str, pd.Series],
             "pctl_10y": _trailing_pctl(yoy.groupby(yoy.index.asfreq("Q")).mean())}
     if detail:
         out["detail"] = detail
+    # Wealth and rates. Household net worth YoY is the one financial driver
+    # with a measured lead on growth: top quintile of its trailing decade ->
+    # growth YoY decelerating 3-4 quarters later 61-68% of the time
+    # (1990-2026 ex-COVID, base ~50%); bottom quintile -> 32-36%. Walk-forward
+    # 2017-2026 it does not beat the base-effect call as an override (the
+    # call is at its ceiling there), so it is reported, not applied.
+    nw = indicators.get("household_net_worth")
+    if nw is not None and len(nw) > 24:
+        yoy = (nw.pct_change(4) * 100).dropna()
+        pctl = _trailing_pctl(yoy)
+        out["net_worth"] = {"latest_quarter": str(nw.index[-1]),
+                            "level_tn": float(nw.iloc[-1]) / 1e6,
+                            "qoq_change_tn": float(nw.iloc[-1] - nw.iloc[-2]) / 1e6,
+                            "yoy_pct": float(yoy.iloc[-1]), "pctl_10y": pctl,
+                            "elevated": bool(pctl >= 0.8),
+                            "depressed": bool(pctl <= 0.2)}
+    mort = indicators.get("mortgage_30y")
+    if mort is not None and len(mort) > 60:
+        mq = mort.groupby(mort.index.asfreq("Q")).mean()
+        chg = mq.diff(4).dropna()
+        out["mortgage_30y"] = {"latest_month": str(mort.index[-1]),
+                               "level_pct": float(mort.iloc[-1]),
+                               "chg_4q_pp": float(chg.iloc[-1]),
+                               "pctl_10y": _trailing_pctl(chg),
+                               "falling": bool(_trailing_pctl(chg) <= 0.2),
+                               "rising": bool(_trailing_pctl(chg) >= 0.8)}
+    ff = indicators.get("fed_funds")
+    if ff is not None and len(ff) > 60:
+        fq = ff.groupby(ff.index.asfreq("Q")).mean(); chg = fq.diff(4).dropna()
+        out["fed_funds"] = {"latest_month": str(ff.index[-1]),
+                            "level_pct": float(ff.iloc[-1]),
+                            "chg_4q_pp": float(chg.iloc[-1]),
+                            "pctl_10y": _trailing_pctl(chg)}
     sent = indicators.get("sentiment")
     if sent is not None and len(sent) > 12:
         pctl = _trailing_pctl(sent.groupby(sent.index.asfreq("Q")).mean())
