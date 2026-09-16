@@ -166,6 +166,33 @@ def estimate_supercore_passthrough(cpi_supercore: pd.Series,
     return float(np.clip(b, 0.0, 2.0)), float(np.clip(a, -3.0, 6.0))
 
 
+def estimate_gasoline_seasonal(cpi_gasoline: pd.Series | None,
+                               pump: pd.Series | None, years: int = 15
+                               ) -> tuple[dict[int, float], float]:
+    """BLS's seasonal factor on gasoline, read off published data: the
+    median gap by calendar month between the SA gasoline index's MoM and
+    the retail pump price's MoM (pp), and the slope of the former on the
+    latter after that seasonal is removed. Point-in-time: both inputs are
+    vintage-truncated. Returns ({month: pp}, slope); empty/1.0 when there
+    is not enough history."""
+    if cpi_gasoline is None or pump is None or cpi_gasoline.empty or pump.empty:
+        return {}, 1.0
+    g = quads.calendar_pct_change(cpi_gasoline, 1)
+    pmom = quads.calendar_pct_change(pump, 1)
+    df = pd.concat({"g": g, "p": pmom}, axis=1).dropna().iloc[-years * 12:]
+    df = df[~df.index.isin(pd.period_range("2020-03", "2020-06", freq="M"))]
+    if len(df) < 48:
+        return {}, 1.0
+    gap = df["g"] - df["p"]
+    seasonal = {m: float(gap[df.index.month == m].median())
+                for m in range(1, 13) if (df.index.month == m).any()}
+    adj = df["g"] - pd.Series([seasonal.get(m, 0.0) for m in df.index.month],
+                              index=df.index)
+    denom = float((df["p"] ** 2).sum())
+    slope = float((adj * df["p"]).sum() / denom) if denom > 1e-9 else 1.0
+    return seasonal, float(np.clip(slope, 0.5, 1.2))
+
+
 # ---------------------------------------------------------------------------
 # Point-in-time assumptions (observed-then-carried)
 # ---------------------------------------------------------------------------
@@ -199,8 +226,14 @@ def vintage_assumptions(bundle: USDataBundle, asof: pd.Timestamp,
                         horizon_months: int = 20) -> tuple[dict, dict]:
     """Assumptions dict as it could have been written on `asof`, plus the
     calibration diagnostics that produced it."""
-    wti = truncate(bundle.wti, asof, cfg.market_pub_lag_days)
-    dollar = truncate(bundle.dollar, asof, cfg.market_pub_lag_days)
+    # A live run may see the month in progress for daily/weekly series.
+    market_lag = -31 if cfg.live_partial_month else cfg.market_pub_lag_days
+    wti = truncate(bundle.wti, asof, market_lag)
+    dollar = truncate(bundle.dollar, asof, market_lag)
+    pump = truncate((bundle.indicators or {}).get("gasoline_retail"), asof,
+                    market_lag)
+    cpi_gasoline = truncate(getattr(bundle, "cpi_gasoline", None), asof,
+                            cfg.cpi_pub_lag_days)
     wages = truncate(bundle.wages, asof, cfg.wage_pub_lag_days)
     rent = truncate(bundle.market_rent, asof, cfg.rent_pub_lag_days)
     cpi_food = truncate(bundle.cpi_food, asof, cfg.cpi_pub_lag_days)
@@ -219,6 +252,11 @@ def vintage_assumptions(bundle: USDataBundle, asof: pd.Timestamp,
     horizon = pd.period_range(m0 + 1, periods=horizon_months, freq="M")
     wti_path = _observed_then_carried(wti, m0, horizon)
     dollar_path = _observed_then_carried(dollar, m0, horizon)
+    # observed months only (unlike the carried WTI/dollar paths): the block
+    # treats the months in this dict as known and the rest as flat-SA.
+    pump_path = ({str(p): float(pump.loc[p]) for p in horizon if p in pump.index}
+                 if not pump.empty and m0 in pump.index else {})
+    gas_seasonal, gas_slope = estimate_gasoline_seasonal(cpi_gasoline, pump)
 
     wage_yoy = _yoy_last(wages, 3.5, 0.0, 9.0)
     rent_yoy = _yoy_last(rent, uconfig.SHELTER_TREND_YOY, -6.0, 20.0)
@@ -238,6 +276,11 @@ def vintage_assumptions(bundle: USDataBundle, asof: pd.Timestamp,
         "dollar_recent": float(dollar.loc[m0]) if m0 in dollar.index
         else float(dollar.iloc[-1]),
         "dollar_path": dollar_path,
+        "gasoline_pump_recent": (float(pump.loc[m0]) if not pump.empty
+                                 and m0 in pump.index else None),
+        "gasoline_pump_path": pump_path,
+        "gasoline_seasonal": gas_seasonal,
+        "gasoline_pump_slope": gas_slope,
         "wage_growth_pct": wage_yoy,
         "market_rent_yoy_recent": rent_yoy,
         "food_pipeline_yoy": food_yoy,
@@ -249,6 +292,9 @@ def vintage_assumptions(bundle: USDataBundle, asof: pd.Timestamp,
         "supercore_intercept": sc_a,
     }
     diagnostics = {
+        "gasoline_pump_months_observed": int((pump.index > m0).sum())
+        if not pump.empty else 0,
+        "gasoline_pump_slope": gas_slope,
         "shelter_b": sh_b, "shelter_a": sh_a,
         "supercore_b": sc_b, "supercore_a": sc_a,
         "wage_yoy": wage_yoy, "market_rent_yoy": rent_yoy,

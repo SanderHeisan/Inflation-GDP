@@ -42,6 +42,14 @@ class USVintageConfig:
     # usmodel.fetch_data_us.INDICATOR_PUB_LAG_DAYS.
     indicator_pub_lag_days: dict = field(default_factory=dict)
 
+    # LIVE runs only: let daily/weekly market series (WTI, the dollar, the
+    # retail pump price) contribute the month in progress as a partial
+    # monthly mean. That is genuinely public information on the day -- a
+    # $14 September oil move is not a forecast -- and it is what a live
+    # forecast is for. The backtest keeps this off: its as-of dates are
+    # month-ends, where the month is complete anyway.
+    live_partial_month: bool = False
+
     # GDP revision handling:
     #   'realtime' - replay a true vintage panel (data/us/gdp_vintages.csv)
     #   'noise'    - simulate first releases: current-vintage QoQ plus a

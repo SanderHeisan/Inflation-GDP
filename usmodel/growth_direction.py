@@ -209,6 +209,33 @@ def consumer_state(indicators: dict[str, pd.Series],
             "stretched": bool(pctl >= STRETCH_PCTL),
             "depressed": bool(pctl <= 1 - STRETCH_PCTL),
         }
+    # What the consumer is buying, and the timelier reads.
+    detail = {}
+    for key, label in (("real_pce_durables", "durable goods"),
+                       ("real_pce_nondurables", "nondurable goods"),
+                       ("real_pce_services", "services"),
+                       ("real_retail", "real retail sales")):
+        ser = indicators.get(key)
+        if ser is None or len(ser) < 16:
+            continue
+        yoy = ((ser / ser.shift(12) - 1) * 100).dropna()
+        m3 = ((ser / ser.shift(3)) ** 4 - 1) * 100          # 3m annualized
+        detail[key] = {"label": label, "latest_month": str(ser.index[-1]),
+                       "yoy_pct": float(yoy.iloc[-1]),
+                       "m3_ann_pct": float(m3.dropna().iloc[-1]),
+                       "pctl_10y": _trailing_pctl(
+                           yoy.groupby(yoy.index.asfreq("Q")).mean())}
+    cred = indicators.get("consumer_credit")
+    if cred is not None and len(cred) > 16:
+        yoy = ((cred / cred.shift(12) - 1) * 100).dropna()
+        detail["consumer_credit"] = {
+            "label": "consumer credit outstanding",
+            "latest_month": str(cred.index[-1]), "yoy_pct": float(yoy.iloc[-1]),
+            "m3_ann_pct": float((((cred / cred.shift(3)) ** 4 - 1) * 100)
+                                .dropna().iloc[-1]),
+            "pctl_10y": _trailing_pctl(yoy.groupby(yoy.index.asfreq("Q")).mean())}
+    if detail:
+        out["detail"] = detail
     sent = indicators.get("sentiment")
     if sent is not None and len(sent) > 12:
         pctl = _trailing_pctl(sent.groupby(sent.index.asfreq("Q")).mean())

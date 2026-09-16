@@ -240,7 +240,9 @@ python run_us.py --demo            # synthetic pipeline smoke test
 |---|---|---|
 | CPI-U SA / NSA / core, plus shelter, gasoline, food, energy, supercore | FRED (BLS) | the CPI blocks; NSA is the unrevised scoring check |
 | Real GDP (GDPC1) | FRED (BEA) | the growth axis |
-| WTI, broad trade-weighted dollar | FRED, daily → monthly mean | gasoline and core-goods blocks |
+| WTI, broad trade-weighted dollar | FRED, daily → monthly mean | the oil rule, and the core-goods block |
+| **Retail gasoline, regular (EIA weekly)** | FRED | the gasoline block, directly |
+| Real PCE (total, durables, nondurables, services), real retail sales, real income, saving rate, consumer credit | FRED | the consumer block and the second growth vote |
 | Average hourly earnings | FRED (BLS) | supercore block |
 | **ZORI market rents** | Zillow research CSVs | the shelter block — the model's biggest edge |
 | Payrolls, industrial production, retail sales, initial claims, CFNAI, U. Mich sentiment, 10y–3m spread, manufacturing hours | FRED | the GDP nowcast |
@@ -267,20 +269,51 @@ conviction = |predicted change in YoY|:
 
 | Conviction bucket | Share of months | Hit rate |
 |---|---|---|
-| ALL months | 100% | **84.3%** |
-| coin-flip (<0.05pp) | 19% | 59.1% |
-| lean (0.05–0.15pp) | 24% | 85.7% |
-| call (0.15–0.30pp) | 25% | **93.1%** |
-| high conviction (>0.30pp) | 31% | **91.7%** |
-| callable (≥0.05pp) | 81% | **90.3%** |
+| ALL months | 100% | **89.7%** |
+| coin-flip (<0.05pp) | 13% | 66.7% |
+| lean (0.05–0.15pp) | 27% | 90.3% |
+| call (0.15–0.30pp) | 33% | **89.5%** |
+| high conviction (>0.30pp) | 28% | **100%** (32 of 32) |
+| callable (≥0.05pp) | 87% | **93.1%** |
 
-The buckets are the product: on the 81% of months where the model leans at
-all, it is right 90% of the time, and the coin-flip bucket is honestly
-labelled as such. No calendar year in the sample scores below 70%.
+The buckets are the product: on the 87% of months where the model leans at
+all, it is right 93% of the time, and the coin-flip bucket is honestly
+labelled as such.
 
 Why this works is arithmetic, not magic: next month's YoY change is roughly
 next month's MoM minus the *already published* MoM from a year ago, so only
 one monthly number needs forecasting and the hurdle is known in advance.
+
+### Oil, the pump, and the month in progress
+
+Crude to headline is the Hedgeye rule — **3 bps of headline CPI per $1/bbl**
+move in monthly-average WTI — and the data confirms it: 3.1 bps same-month
+on 2000–2026 (2.2 bps once the prior month's move is included). But the
+gasoline index follows the *pump* price, which lags crude by weeks and is
+public every Monday (EIA regular, `GASREGW`), and the two can diverge for a
+month: in August 2026 WTI's monthly average rose $3 while the BLS gasoline
+index rose 3.9%. So the gasoline block now runs off the retail pump price
+for every month with an observed price, with BLS's seasonal factor added
+back — that factor is large, about −4.5pp in March/April and +2 to +4pp in
+September–December (`usbacktest.vintage.estimate_gasoline_seasonal`, fitted
+point-in-time). Past the observed months the SA block is flat: an unobserved
+pump price is expected to follow its own seasonal, which the SA index
+removes. The WTI rule stays as the fallback and as the cross-check printed
+on the sheet.
+
+That change is worth a lot on the call that matters most: one-month YoY MAE
+**0.164 → 0.131pp**, next-print direction **84% → 90%** overall and 93% when
+the model leans, and **32 of 32** on high-conviction months. It costs
+nothing at longer horizons.
+
+Live runs also now see the month in progress. A live forecast's whole job is
+"what is happening now", and a $14 September oil move is public
+information on the day, not a forecast — so `USVintageConfig(live_partial_month=True)`
+lets the daily and weekly market series (WTI, the dollar, the pump price)
+contribute their partial-month mean. The backtest keeps this off: its as-of
+dates are month-ends, where the month is complete anyway. The published
+10 September call carried August's oil flat and missed September's rise
+entirely; that is the gap this closes.
 
 ### 2. CPI level accuracy
 
@@ -289,12 +322,12 @@ two naive benchmarks built from the same vintage:
 
 | Horizon | Model MAE | Re-scored vs NSA | Random walk | Seasonal naive | Skill vs RW |
 |---|---|---|---|---|---|
-| 1 month | **0.16** | 0.17 | 0.30 | 0.21 | 45% |
-| 3 months | **0.45** | 0.45 | 0.67 | 0.50 | 33% |
-| 6 months | **0.81** | 0.81 | 1.04 | 0.87 | 22% |
-| 12 months | **1.50** | 1.51 | 1.76 | 1.77 | 15% |
+| 1 month | **0.13** | 0.13 | 0.30 | 0.21 | 56% |
+| 3 months | **0.45** | 0.45 | 0.67 | 0.51 | 32% |
+| 6 months | **0.80** | 0.80 | 1.04 | 0.87 | 23% |
+| 12 months | **1.50** | 1.51 | 1.75 | 1.75 | 15% |
 
-MoM error is a flat ~0.16–0.21pp at every horizon, so the growing YoY error
+MoM error is a flat ~0.13–0.21pp at every horizon, so the growing YoY error
 is accumulated monthly error rather than a model that decays. The NSA column
 matters for honesty: the model projects the seasonally adjusted index, whose
 factors BLS revises every February, so each YoY figure is re-scored against
@@ -315,14 +348,14 @@ saw, and the fair test for a real-time product:
 
 | Horizon | Model | High conviction | Persistence | Base effects | Random |
 |---|---|---|---|---|---|
-| 0q (nowcast) | **58.8%** | **71.8%** | 31.6% | 57.0% | 25% |
+| 0q (nowcast) | **64.0%** | **70.0%** | 28.9% | 57.0% | 25% |
 | +1q | 45.9% | 52.1% | 27.0% | 45.9% | 25% |
 | +2q | 41.7% | 47.0% | 25.0% | 41.7% | 25% |
 | +3q | 38.1% | 42.3% | 22.9% | 40.0% | 25% |
-| +4q | 32.4% | 39.1% | 26.5% | 33.3% | 25% |
+| +4q | 29.4% | 35.4% | 26.5% | 30.4% | 25% |
 
-Against final-vintage quads: 54.4 / 45.9 / 47.2 / 46.7 / 37.3%, where the
-edge over base effects is +0.0 / +8.1 / +8.3 / +3.8 / +8.8pp. The two bases
+Against final-vintage quads: 57.0 / 45.9 / 47.2 / 46.7 / 35.3%, where the
+edge over base effects is +2.6 / +8.1 / +8.3 / +3.8 / +9.8pp. The two bases
 disagree by more than the effect being measured, which is the honest summary:
 **the model beats persistence by 6–27pp and random by 7–34pp at every
 horizon, and ties the base-effects benchmark past the nowcast quarter.**
@@ -335,7 +368,7 @@ of the two axes:
 
 | Horizon | Growth direction | Inflation direction | Product | Actual quad hit |
 |---|---|---|---|---|
-| 0q | 71.9% | 79.8% | 57.4% | 58.8% |
+| 0q | 71.9% | 86.8% | 62.4% | 64.0% |
 | +1q | 70.3% | 68.5% | 48.2% | 45.9% |
 | +2q | 66.7% | 64.8% | 43.2% | 41.7% |
 | +3q | 65.7% | 61.0% | 40.1% | 38.1% |
@@ -346,7 +379,7 @@ to the product each time.) The second reason is that many quarters are
 decided by a move smaller than the model's own error bar: **29% of target
 quarters move their YoY inflation rate by less than 0.10pp**. Those are
 flagged `low_conviction`, and excluding them lifts the nowcast hit rate from
-58.8% to 71.8%.
+64.0% to 70.0%.
 
 ## Direction calls — the product
 
@@ -366,11 +399,11 @@ ex-COVID targets in brackets):
 
 | Horizon | growth YoY | growth QoQ | inflation YoY | inflation QoQ |
 |---|---|---|---|---|
-| 0q (current) | 64.9% (63.5) | **71%** blended; **73–79% when votes agree** | **81.7%** | **87.0%** |
-| +1q | 64.9% (64.5) | 51–57% *weak lean* | 71.9% | 63.2% |
-| +2q | 66.7% (66.7) | no call | 68.5% | 60.4% |
+| 0q (current) | 64.9% (63.5) | **66–71%** blended; **73–79% when votes agree** | **87.1%** | **86.2%** |
+| +1q | 64.9% (64.5) | 51–57% *weak lean* | 71.1% | 66.7% |
+| +2q | 66.7% (66.7) | no call | 68.5% | 55.0% |
 | +3q | 68.6% (69.0) | no call | 64.8% | 52.8% |
-| +4q | 56.9% (54.8) | no call | 65.7% | 51.4% |
+| +4q | 56.9% (54.8) | no call | 63.8% | 50.5% |
 
 Hit rate by conviction, all horizons pooled (`us_direction_conviction.csv`):
 
@@ -385,7 +418,7 @@ How to read that:
 
 * **Inflation grades cleanly.** Both inflation calls get better as conviction
   rises, so the conviction number is a usable trust dial — the same
-  property the monthly CPI print call has (84% overall, 90% when it leans).
+  property the monthly CPI print call has (90% overall, 93% when it leans).
 * **Growth YoY is two-regime, not graded.** Above 0.50pp it is right ~80%
   of the time (81% ex-COVID); below that it is 50–64% regardless of size.
   So the flag for growth is a single threshold, `YOY_HIGH_CONVICTION_PP =

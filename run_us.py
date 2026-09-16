@@ -38,7 +38,9 @@ def _live_inputs(horizon_months: int):
     from usbacktest.vintage import build_vintage
 
     bundle = data_bundle.load_bundle()
-    cfg = USVintageConfig(revision_mode="none")   # current vintage is the live one
+    # current vintage is the live one; and a live run may use the month in
+    # progress for oil, the dollar and the pump price (see btconfig)
+    cfg = USVintageConfig(revision_mode="none", live_partial_month=True)
     v = build_vintage(bundle, pd.Timestamp.today().normalize(), cfg,
                       horizon_months=horizon_months + 2)
     d = v.diagnostics
@@ -50,7 +52,11 @@ def _live_inputs(horizon_months: int):
             f"   market rents {d['market_rent_yoy']:.1f}% YoY\n"
             f"  growth     : nowcast {d['nowcast_qoq_pct']:.2f}% QoQ "
             f"(k={d['nowcast_k']} months in), then flat at trend "
-            f"{d['trend_qoq_pct']:.2f}% QoQ = {trend_ann:.1f}% annualized")
+            f"{d['trend_qoq_pct']:.2f}% QoQ = {trend_ann:.1f}% annualized\n"
+            f"  energy     : WTI ${v.assumptions['wti_recent']:.0f} at the last CPI "
+            f"month, {d['gasoline_pump_months_observed']} later month(s) of pump "
+            f"prices observed (incl. the month in progress); "
+            f"pump slope {d['gasoline_pump_slope']:.2f}")
     consumer = growth_direction.consumer_state(v.indicator_panel,
                                                v.last_gdp_quarter)
     real_pce = v.indicator_panel.get("real_pce")
@@ -74,6 +80,10 @@ def _consumer_block(c: dict) -> str:
                      f"ann. vs trailing median "
                      f"{((1 + p['trailing_median_qoq_pct'] / 100) ** 4 - 1) * 100:+.1f}%; "
                      f"10y percentile {p['pctl_10y']:.0%}{flag}")
+    for key, r in c.get("detail", {}).items():
+        lines.append(f"    {r['label']:24s}: {r['yoy_pct']:+.1f}% YoY, "
+                     f"{r['m3_ann_pct']:+.1f}% 3m ann. ({r['latest_month']}); "
+                     f"10y percentile {r['pctl_10y']:.0%}")
     if "sentiment" in c:
         sn = c["sentiment"]
         flag = (" elevated (top decile: no historical signal)" if sn["elevated"]

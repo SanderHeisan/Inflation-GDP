@@ -31,7 +31,10 @@ INDICATOR_NAMES = ("payrolls", "indpro", "retail", "claims", "cfnai",
                    "sentiment", "yield_curve", "hours",
                    "nfci", "credit_spread", "permits", "capex_orders",
                    "stocks", "real_m2", "housing_starts",
-                   "real_pce", "real_income", "saving_rate")
+                   "real_pce", "real_income", "saving_rate",
+                   "real_pce_durables", "real_pce_nondurables",
+                   "real_pce_services", "real_retail", "consumer_credit",
+                   "gasoline_retail")
 
 
 @dataclass
@@ -47,6 +50,7 @@ class USDataBundle:
     cpi_nsa: pd.Series | None = None
     cpi_core: pd.Series | None = None
     cpi_shelter: pd.Series | None = None
+    cpi_gasoline: pd.Series | None = None
     cpi_supercore: pd.Series | None = None
     cpi_food: pd.Series | None = None
     cpi_energy: pd.Series | None = None
@@ -144,7 +148,8 @@ def load_bundle(data_dir: Path | str = DATA_DIR,
         wages=monthly("wages"),
         market_rent=monthly("market_rent"),
         cpi_nsa=opt("cpi_nsa"), cpi_core=opt("cpi_core"),
-        cpi_shelter=opt("cpi_shelter"), cpi_supercore=opt("cpi_supercore"),
+        cpi_shelter=opt("cpi_shelter"), cpi_gasoline=opt("cpi_gasoline"),
+        cpi_supercore=opt("cpi_supercore"),
         cpi_food=opt("cpi_food"),
         cpi_energy=opt("cpi_energy"),
         gdp_vintages=panel,

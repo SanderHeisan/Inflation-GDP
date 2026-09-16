@@ -108,6 +108,17 @@ FRED_SERIES = {
     "real_pce":      ("PCEC96", "M"),      # real personal consumption expenditures
     "real_income":   ("DSPIC96", "M"),     # real disposable personal income
     "saving_rate":   ("PSAVERT", "M"),     # personal saving rate, %
+    # Consumer detail: what the consumer is buying, in real terms, plus the
+    # timelier real retail sales and consumer credit.
+    "real_pce_durables":    ("PCEDGC96", "M"),
+    "real_pce_nondurables": ("PCENDC96", "M"),
+    "real_pce_services":    ("PCESC96", "M"),
+    "real_retail":          ("RRSFS", "M"),    # real retail & food services sales
+    "consumer_credit":      ("TOTALSL", "M"),  # total consumer credit outstanding
+    # Retail gasoline, weekly (EIA regular, $/gal). The BLS gasoline index
+    # follows the pump price almost one for one, and this is public every
+    # Monday -- a far better nowcast of the gasoline block than a WTI rule.
+    "gasoline_retail":      ("GASREGW", "W"),
 }
 
 # Publication lag in days for each indicator, used by the backtest's vintage
@@ -121,6 +132,8 @@ INDICATOR_PUB_LAG_DAYS = {
     "stocks": 0, "real_m2": 30, "housing_starts": 18,
     # personal income & outlays lands ~30 days after month end
     "real_pce": 30, "real_income": 30, "saving_rate": 30,
+    "real_pce_durables": 30, "real_pce_nondurables": 30, "real_pce_services": 30,
+    "real_retail": 17, "consumer_credit": 37, "gasoline_retail": 0,
 }
 
 DEFAULT_DATA_DIR = Path(__file__).resolve().parent.parent / "data" / "us"

@@ -50,28 +50,71 @@ def _wti_path(assumptions: dict, horizon: pd.PeriodIndex) -> pd.Series:
     return pd.concat([anchor, pd.Series(out)])
 
 
+def _pump_path(assumptions: dict, horizon: pd.PeriodIndex) -> pd.Series | None:
+    """Retail gasoline ($/gal, monthly mean) over the horizon: observed months
+    at their actual values (the current partial month included in a live
+    run), then flat at the last observation. None when no pump data."""
+    path = assumptions.get("gasoline_pump_path")
+    anchor = assumptions.get("gasoline_pump_recent")
+    if not path or anchor is None:
+        return None
+    out, prev = {}, float(anchor)
+    for p in horizon:
+        prev = float(path.get(str(p), prev))
+        out[p] = prev
+    return pd.concat([pd.Series({horizon[0] - 1: float(anchor)}),
+                      pd.Series(out)])
+
+
 def project_energy(assumptions: dict, horizon: pd.PeriodIndex,
                    weights: dict) -> dict[str, pd.Series]:
-    """Gasoline from WTI via the oil pass-through, plus a mild electricity /
-    other-energy drift. The gasoline block MoM is set so the *headline*
-    contribution equals OIL_HEADLINE_BPS_PER_DOLLAR bps per $1/bbl move."""
+    """Gasoline block, plus a mild electricity / other-energy drift.
+
+    Preferred driver: the RETAIL PUMP PRICE (EIA weekly regular, monthly
+    mean). The BLS gasoline index follows it almost one for one (corr 0.87
+    on 2000-2026 monthly changes) once BLS's seasonal factor is added back --
+    and that factor is large: about -4.5pp in March/April and +2 to +4pp in
+    September-December. The pump price is public every Monday, so the
+    month in progress is mostly known before the CPI for it prints; the
+    WTI rule alone missed the August 2026 gasoline jump (+3.9%) because the
+    monthly-average crude move was small.
+
+    Fallback: the Hedgeye rule -- OIL_HEADLINE_BPS_PER_DOLLAR bps of headline
+    per $1/bbl move in monthly-average WTI (measured at 3.1 bps same-month on
+    2000-2026), split same/next month. Used when no pump data is supplied.
+    """
     total_w = sum(weights.values())
     gas_share = weights["gasoline"] / total_w
+    seasonal = assumptions.get("gasoline_seasonal", {}) or {}
+    slope = float(assumptions.get("gasoline_pump_slope", 1.0))
 
-    wti = _wti_path(assumptions, horizon)
-    dwti = wti.diff().reindex(horizon)
-    bps = config.OIL_HEADLINE_BPS_PER_DOLLAR
-    # headline contribution (fraction of index) = bps/1e4 * dWTI; carried
-    # into the gasoline block by dividing out its weight share.
-    headline_frac = (bps / 1e4) * dwti
-    same, carry = config.OIL_SAME_MONTH_SHARE, 1 - config.OIL_SAME_MONTH_SHARE
-    gas_headline = headline_frac * same + headline_frac.shift(1).fillna(0) * carry
-    gasoline = gas_headline / gas_share
+    pump = _pump_path(assumptions, horizon)
+    if pump is not None:
+        observed = set(assumptions.get("gasoline_pump_path", {}).keys())
+        pump_mom = (pump / pump.shift(1) - 1.0).reindex(horizon).fillna(0.0)
+        # The seasonal factor is added back only for months whose pump price
+        # is actually observed. An unobserved pump price is expected to
+        # follow its own seasonal, which the SA index removes -- so past the
+        # observed months the SA gasoline block is flat, not seasonal.
+        gasoline = pd.Series(
+            [slope * float(pump_mom[p])
+             + (seasonal.get(p.month, 0.0) / 100.0 if str(p) in observed
+                else 0.0)
+             for p in horizon], index=horizon)
+    else:
+        wti = _wti_path(assumptions, horizon)
+        dwti = wti.diff().reindex(horizon)
+        bps = config.OIL_HEADLINE_BPS_PER_DOLLAR
+        headline_frac = (bps / 1e4) * dwti
+        same = config.OIL_SAME_MONTH_SHARE
+        gas_headline = (headline_frac * same
+                        + headline_frac.shift(1).fillna(0) * (1 - same))
+        gasoline = (gas_headline / gas_share).fillna(0.0)
+        gasoline = gasoline + pd.Series(
+            [seasonal.get(p.month, 0.0) / 100.0 for p in horizon], index=horizon)
 
-    # Electricity + other energy: small positive drift with winter tilt.
-    elec = pd.Series([0.002 / 12 + (0.004 if p.month in (1, 2, 7, 8) else 0)
-                      * 0 for p in horizon], index=horizon)
-    return {"gasoline": gasoline.fillna(0.0), "electricity": elec,
+    elec = pd.Series(0.002 / 12, index=horizon)
+    return {"gasoline": gasoline, "electricity": elec,
             "energy_other": elec.copy()}
 
 
