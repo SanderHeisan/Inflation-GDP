@@ -112,18 +112,22 @@ def project_gdp(gdp_level: pd.Series, indicators: dict,
     config.GDP_CONVERGENCE = 0 that is a step, not a glide -- deliberately,
     see the module docstring. Pass indicators['fitted_trend_qoq'] /
     ['fitted_convergence'] to override either with a point-in-time
-    estimate."""
+    estimate, and indicators['rate_drag_qoq'] ({quarter: decimal}) to add
+    the rate channel's drag (usmodel.rates) to every quarter past the
+    nowcast quarter -- the nowcast itself already sees the rate environment
+    through its indicators, so the drag is not applied there."""
     q1 = nowcast_qoq(gdp_level, indicators)
     trend = float(indicators.get("fitted_trend_qoq", config.GDP_TREND_QOQ))
     conv = float(indicators.get("fitted_convergence", config.GDP_CONVERGENCE))
-
-    path, qoq = [], q1
-    for _ in range(horizon_quarters):
-        path.append(qoq)
-        qoq = trend + (qoq - trend) * conv
+    drag = indicators.get("rate_drag_qoq")      # {Period[Q]: decimal}, optional
 
     last = gdp_level.index[-1]
     horizon = pd.period_range(last + 1, periods=horizon_quarters, freq="Q")
+    path, base = [q1], q1
+    for tq in horizon[1:]:
+        base = trend + (base - trend) * conv
+        extra = float(drag.get(tq, 0.0)) if drag is not None else 0.0
+        path.append(base + extra)
     level, proj = gdp_level.iloc[-1], []
     for g in path:
         level = level * (1.0 + g)

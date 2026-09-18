@@ -346,19 +346,23 @@ everyone else.
 Against **first-release** realized quads — what a real-time reader actually
 saw, and the fair test for a real-time product:
 
-| Horizon | Model | High conviction | Persistence | Base effects | Random |
-|---|---|---|---|---|---|
-| 0q (nowcast) | **64.0%** | **70.0%** | 28.9% | 57.0% | 25% |
-| +1q | 45.9% | 52.1% | 27.0% | 45.9% | 25% |
-| +2q | 41.7% | 47.0% | 25.0% | 41.7% | 25% |
-| +3q | 38.1% | 42.3% | 22.9% | 40.0% | 25% |
-| +4q | 29.4% | 35.4% | 26.5% | 30.4% | 25% |
+| Horizon | Model, flat growth path | Model as shipped (rate channel on) | High conviction (shipped) | Persistence | Base effects | Random |
+|---|---|---|---|---|---|---|
+| 0q (nowcast) | **64.0%** | **64.0%** | **70.4%** | 28.9% | 57.0% | 25% |
+| +1q | 45.9% | 35.1% | 41.8% | 27.0% | 45.9% | 25% |
+| +2q | 41.7% | 36.1% | 36.5% | 25.0% | 41.7% | 25% |
+| +3q | 38.1% | 35.2% | 35.7% | 22.9% | 40.0% | 25% |
+| +4q | 29.4% | 29.4% | 32.3% | 26.5% | 30.4% | 25% |
 
-Against final-vintage quads: 57.0 / 45.9 / 47.2 / 46.7 / 35.3%, where the
-edge over base effects is +2.6 / +8.1 / +8.3 / +3.8 / +9.8pp. The two bases
-disagree by more than the effect being measured, which is the honest summary:
-**the model beats persistence by 6–27pp and random by 7–34pp at every
-horizon, and ties the base-effects benchmark past the nowcast quarter.**
+Two model columns because the shipped model carries the **rate channel**
+(policy-rate hikes as a drag on the growth path, on by request — see
+[The rate channel](#the-rate-channel)), and the backtest measures it on and
+off on identical vintages. Against final-vintage quads the flat path scores
+57.0 / 45.9 / 47.2 / 46.7 / 35.3% (edge over base effects +2.6 / +8.1 / +8.3
+/ +3.8 / +9.8pp) and the shipped model 57.0 / 40.5 / 41.7 / 43.8 / 35.3%.
+The honest summary: **the flat path beats persistence by 6–27pp and random
+by 7–34pp at every horizon and ties the base-effects benchmark past the
+nowcast quarter; the rate channel gives back 3–11pp of that at +1 to +3q.**
 Full tables in `results_us/`.
 
 ### 4. Why the quad hit rate sits below the direction hit rates
@@ -366,20 +370,21 @@ Full tables in `results_us/`.
 The quad is the AND of two calls, so it can only be as good as the product
 of the two axes:
 
-| Horizon | Growth direction | Inflation direction | Product | Actual quad hit |
+| Horizon | Growth direction (shipped / flat path) | Inflation direction | Product (shipped) | Actual quad hit (shipped) |
 |---|---|---|---|---|
-| 0q | 71.9% | 86.8% | 62.4% | 64.0% |
-| +1q | 70.3% | 68.5% | 48.2% | 45.9% |
-| +2q | 66.7% | 64.8% | 43.2% | 41.7% |
-| +3q | 65.7% | 61.0% | 40.1% | 38.1% |
-| +4q | 53.9% | 63.7% | 34.3% | 32.4% |
+| 0q | 71.9% / 71.9% | 86.8% | 62.4% | 64.0% |
+| +1q | 56.8% / 70.3% | 70.3% | 39.9% | 35.1% |
+| +2q | 61.1% / 66.7% | 67.6% | 41.3% | 36.1% |
+| +3q | 62.9% / 65.7% | 63.8% | 40.1% | 35.2% |
+| +4q | 52.0% / 53.9% | 63.7% | 33.1% | 29.4% |
 
 (first-release basis; the axes are near-independent, so the quad lands close
-to the product each time.) The second reason is that many quarters are
-decided by a move smaller than the model's own error bar: **29% of target
-quarters move their YoY inflation rate by less than 0.10pp**. Those are
-flagged `low_conviction`, and excluding them lifts the nowcast hit rate from
-64.0% to 70.0%.
+to the product each time — which is also why the rate channel's growth cost
+shows up almost one for one in the quad.) The second reason is that many
+quarters are decided by a move smaller than the model's own error bar: **29%
+of target quarters move their YoY inflation rate by less than 0.10pp**.
+Those are flagged `low_conviction`, and excluding them lifts the nowcast hit
+rate from 64.0% to 70.4%.
 
 ## Direction calls — the product
 
@@ -397,30 +402,34 @@ conviction, so you know when to trust one:
 Hit rate by horizon, 2017–2026, final-vintage truth (`results_us/us_direction.csv`;
 ex-COVID targets in brackets):
 
-| Horizon | growth YoY | growth QoQ | inflation YoY | inflation QoQ |
-|---|---|---|---|---|
-| 0q (current) | 64.9% (63.5) | **66–71%** blended; **73–79% when votes agree** | **87.1%** | **86.2%** |
-| +1q | 64.9% (64.5) | 51–57% *weak lean* | 71.1% | 66.7% |
-| +2q | 66.7% (66.7) | no call | 68.5% | 55.0% |
-| +3q | 68.6% (69.0) | no call | 64.8% | 52.8% |
-| +4q | 56.9% (54.8) | no call | 63.8% | 50.5% |
+| Horizon | growth YoY (shipped) | growth YoY (flat path) | growth QoQ | inflation YoY | inflation QoQ |
+|---|---|---|---|---|---|
+| 0q (current) | 64.9% (63.5) | 64.9% (63.5) | **66–71%** blended; **73–79% when votes agree** | **87.1%** | **86.2%** |
+| +1q | 62.2% (61.3) | 64.9% (64.5) | 51–57% *weak lean* | 71.1% | 66.7% |
+| +2q | 61.1% (60.0) | 66.7% (66.7) | no call | 68.5% | 55.0% |
+| +3q | 65.7% (65.5) | 68.6% (69.0) | no call | 64.8% | 52.8% |
+| +4q | 54.9% (51.2) | 56.9% (54.8) | no call | 63.8% | 50.5% |
+
+(Shipped = with the rate channel; flat path = `config.RATE_CHANNEL_ENABLED =
+False`. Only the growth-YoY column moves between the two.)
 
 Hit rate by conviction, all horizons pooled (`us_direction_conviction.csv`):
 
-| Conviction | growth YoY | inflation YoY | inflation QoQ |
-|---|---|---|---|
-| <0.10pp | 64.4% | 47.5% | 53.6% |
-| 0.10–0.25pp | 60.0% | 77.6% | 76.5% |
-| 0.25–0.50pp | 49.3% | 66.7% | **86.2%** |
-| >0.50pp | **78.2%** | **82.4%** | 75.6% |
+| Conviction | growth YoY (shipped) | growth YoY (flat path) | inflation YoY | inflation QoQ |
+|---|---|---|---|---|
+| <0.10pp | 56.8% | 64.4% | 47.5% | 53.6% |
+| 0.10–0.25pp | 62.9% | 60.0% | 77.6% | 76.5% |
+| 0.25–0.50pp | 39.7% | 49.3% | 66.7% | **86.2%** |
+| >0.50pp | **78.3%** | **78.2%** | **82.4%** | 75.6% |
 
 How to read that:
 
 * **Inflation grades cleanly.** Both inflation calls get better as conviction
   rises, so the conviction number is a usable trust dial — the same
   property the monthly CPI print call has (90% overall, 93% when it leans).
-* **Growth YoY is two-regime, not graded.** Above 0.50pp it is right ~80%
-  of the time (81% ex-COVID); below that it is 50–64% regardless of size.
+* **Growth YoY is two-regime, not graded.** Above 0.50pp it is right ~78%
+  of the time (78–81% ex-COVID) — with or without the rate channel, which
+  never touches a strong call; below that it is 40–64% regardless of size.
   So the flag for growth is a single threshold, `YOY_HIGH_CONVICTION_PP =
   0.50`, and `run_us.py` labels growth-YoY calls *strong* or *weak* on it.
   The ceiling analysis below is why: the call's only real signal is a known
@@ -609,19 +618,22 @@ reference point, not a hard bound — an adaptive constant can beat it — but
 it is the right thing to measure against. Scored on the same rows as the
 model (`results_us/us_growth_ceiling.csv`):
 
-| Horizon | Reference ceiling | Model | Gap | Year-ago base published? |
-|---|---|---|---|---|
-| 0q | 73.7% | 71.9% | −1.8pp | always |
-| +1q | 73.0% | 70.3% | −2.7pp | always |
-| +2q | 69.4% | 66.7% | −2.8pp | always |
-| +3q | 74.3% | 65.7% | −8.6pp | always |
-| +4q | 70.6% | 53.9% | −16.7pp | **never** |
+| Horizon | Reference ceiling | Model, flat path | Gap | Model as shipped (rate channel) | Year-ago base published? |
+|---|---|---|---|---|---|
+| 0q | 73.7% | 71.9% | −1.8pp | 71.9% | always |
+| +1q | 73.0% | 70.3% | −2.7pp | 56.8% | always |
+| +2q | 69.4% | 66.7% | −2.8pp | 61.1% | always |
+| +3q | 74.3% | 65.7% | −8.6pp | 62.9% | always |
+| +4q | 70.6% | 53.9% | −16.7pp | 52.0% | **never** |
 
-Two readings, and they are the point of this section:
+Three readings, and they are the point of this section:
 
-1. **At 0–2 quarters the model is within 3pp of the ceiling.** There is
+1. **At 0–2 quarters the flat path is within 3pp of the ceiling.** There is
    almost nothing left on the table there, and no amount of extra GDP
-   modelling will find it.
+   modelling will find it. The shipped model sits 8–16pp below it at +1 to
+   +3q — that gap is the rate channel, measured in the section after next,
+   and it is there because the mechanism was asked for, not because it
+   scored.
 2. **+4q is structurally different.** Its year-ago base is the as-of quarter
    itself, which BEA has not published — so instead of a known number the
    model must use its own nowcast, and inherits that error. The lever for
@@ -644,13 +656,17 @@ error and nothing else.
 
 | Variant | Quad hit h0 | Quad hit mean | Growth dir h0 | Growth dir h≥1 | Growth YoY MAE (mean) |
 |---|---|---|---|---|---|
-| momentum nowcast + glide (original) | 56.1% | 41.9% | 65.8% | 61.1% | 1.81 |
-| fitted nowcast + glide | 58.8% | 43.4% | 71.9% | 63.2% | 1.57 |
-| fitted nowcast + static trend, flat | 58.8% | 41.7% | 71.9% | 59.1% | 1.43 |
-| **fitted nowcast + fitted trend, flat (shipped)** | **58.8%** | **43.4%** | **71.9%** | **64.1%** | **1.38** |
+| momentum nowcast + glide (original) | 58.8% | 43.0% | 65.8% | 61.1% | 1.81 |
+| fitted nowcast + glide | 64.0% | 43.8% | 71.9% | 63.2% | 1.57 |
+| fitted nowcast + static trend, flat | 64.0% | 43.1% | 71.9% | 59.1% | 1.43 |
+| **fitted nowcast + fitted trend, flat** | **64.0%** | **43.8%** | **71.9%** | **64.1%** | **1.38** |
+| fitted nowcast + fitted trend + rate channel (shipped) | 64.0% | 40.0% | 71.9% | 58.2% | 1.45 |
 
-The shipped setting is best or tied on every column. Be precise about what
-moved, though:
+The flat fitted-trend path is best or tied on every column; the shipped
+setting is that path with the rate channel's drag on top, at the
+subscriber's request, and gives back 4pp of quad hit and 6pp of growth
+direction past the nowcast quarter for it. Be precise about what moved in
+the growth-side work itself, though:
 
 * **Error metrics improved materially and consistently.** Growth YoY MAE is
   down 24% on average versus the original (1.81 → 1.38pp) and 21% at +4q;
@@ -662,6 +678,83 @@ moved, though:
   first-release bases, are not evidence of anything. The honest claim is
   that the growth axis is now *at* its ceiling for 0–2 quarters, not that
   it got dramatically more accurate.
+
+### The rate channel
+
+Rate hikes slow the economy with a lag, and the growth path now carries
+that: `usmodel/rates.py`, on by request (`config.RATE_CHANNEL_ENABLED`).
+For every quarter past the nowcast quarter
+
+```
+qoq(q) = trend + beta * [ff(q-2) - ff(q-6)]
+```
+
+where `ff` is the quarterly mean of the effective fed funds rate — observed
+where published, then the market-implied path (`config.POLICY_RATE_PATH`,
+dated steps read off the curve; **live runs only**, the backtest holds the
+rate flat because there is no futures history in the repo, so a live path
+can never leak into it), then flat — and `beta` is re-fitted point-in-time
+at every vintage on 1960+ with the **sign imposed** (a hike never adds to
+growth) and the **size estimated**: about −0.10pp of quarterly growth per
+1pp of hikes over the window. The nowcast quarter is left to the indicator
+fit, which already sees the rate environment.
+
+**What the data say** (real GDP 1960–2026 ex-COVID, fed funds quarterly
+means; `usmodel/rates.py` docstring):
+
+| Sample | Slope of QoQ on the 2–6q window, pp per 1pp | Correlation |
+|---|---|---|
+| 1960+ | **−0.10** | −0.26 |
+| 1985+ | +0.05 | +0.15 |
+| 1995+ | +0.07 | +0.20 |
+| 2005+ | +0.14 | +0.39 |
+
+A free distributed lag on the full sample puts the drag at lags 2–8 (sum
+−0.70pp per 1pp step, largest coefficient at lag 2, t = −4.4): a level
+effect of roughly −0.4% to −0.7% two years out, the same sign and timing as
+FRB/US at the low end of its size. But it is a **1960–1984 fact**. From 1985
+on the slope is zero to positive — the Fed hikes into strength and the
+strength outlasts the hikes; 2022–23 is the loudest example — and mortgage
+and 10-year windows behave the same way. After a top-quintile 8-quarter
+rise in the policy rate, growth ran below its trailing trend 54–59% of the
+time over the following 1–5 quarters (1965–2026): a lean, not a law.
+
+**Walk-forward, in the repo's own backtest** (`results_us/us_rate_channel.csv`,
+on vs off on identical vintages, simulated first releases):
+
+| | Rate channel on (shipped) | Off (flat path) |
+|---|---|---|
+| Growth YoY direction, 0 / +1 / +2 / +3 / +4q | 64.9 / 62.2 / 61.1 / 65.7 / 54.9% | 64.9 / 64.9 / 66.7 / 68.6 / 56.9% |
+| Quad hit, mean over horizons (first release) | 40.0% | 43.8% |
+| Growth YoY MAE, mean over horizons | 1.45pp | 1.38pp |
+| Growth calls the drag reversed | 34 of 540 | — |
+| Hit rate on those 34 rows | **29.4%** | **70.6%** |
+| Strong (≥0.50pp) growth calls | 78.3% | 78.2% |
+
+The channel touches only marginal calls — the strong ones are identical —
+and when it flips one it is wrong more than twice as often as right. Where:
+2018 and 2023, both hiking cycles into expansions that kept going; as of
+September 2023 the drag projected 2024 growth at 1.9–2.2% YoY against a
+realized 2.8–3.4%. On final GDP instead of simulated first releases the
+picture is the same (36% vs 64% on the reversed rows; growth direction 67.6
+/ 63.9 / 67.6% against 73.0 / 69.4 / 74.3% at +1/+2/+3q).
+
+**What it says today** (18 September 2026: fed funds 3.63% through
+mid-September, then the September hike and the curve's path to 4.63% by
+July 2027): the 2024–26 cuts are still a tailwind of about +0.3pp
+annualized through 2027Q1; the drag turns negative in 2027Q2 (−0.1pp) and
+reaches −0.3 to −0.4pp annualized in 2027Q3–Q4. That moves no projected
+quad before 2027Q4, where it turns a deadband Quad 4 into a clear one. A
+Quad 4 in 2027Q2 needs growth under 1.5% annualized — four times the drag
+the channel can deliver by then with the lag the data support. `run_us.py`
+prints the path, the drag and the quad with and without it every run.
+
+So the channel is in, sized by the data, with its cost stated: it is the
+mechanism that was asked for, and it costs 3–6pp of growth-direction
+accuracy at 1–3 quarters. `config.RATE_CHANNEL_ENABLED = False` restores
+the flat path; `config.RATE_SENSITIVITY_OVERRIDE` pins the size (−0.20 for
+FRB/US-strength transmission); `python us_backtest.py` measures both
+settings on every run, and `tests/test_us_rates.py` pins the mechanics.
 
 ## Caveats that bound every number here
 
@@ -700,6 +793,14 @@ moved, though:
 4. **No live track record.** Everything above is a backtest. The Norwegian
    side appends to `forecast_history.csv` daily; the US model has no
    equivalent running yet.
+5. **The rate channel's forward path is an input, not data.** The
+   market-implied steps in `config.POLICY_RATE_PATH` were read off a curve
+   dated 2026-09-18; they are replaced by the daily effective rate as it
+   prints and go stale as the curve moves. And the channel itself is on
+   because it was asked for: measured, it lowers the growth-direction and
+   quad hit rates at +1 to +3q (section above). Every number in this README
+   is quoted for the model as shipped, with the flat-path number beside it
+   where the two differ.
 
 ## Next, in payoff order
 
@@ -717,3 +818,8 @@ moved, though:
    to a history file — the proof no backtest can supply.
 4. **Core CPI as a second target.** The Fed steers on core; `CPILFESL` is
    already cached and the block structure supports it.
+5. **A rate channel that scores.** The mechanical drag does not. The
+   candidates are conditional forms — the drag only once the real policy
+   rate is restrictive, or routed through credit conditions (NFCI, spreads)
+   rather than the rate itself — but each is one modern cycle of evidence,
+   and real GDP vintages should come first.

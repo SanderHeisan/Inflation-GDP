@@ -9,6 +9,8 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from pathlib import Path
 
+from usmodel import config as uconfig
+
 # ---------------------------------------------------------------------------
 # Publication lags (calendar days after the reference period ends). A value
 # for period P is in the information set at as-of date D only if
@@ -94,6 +96,18 @@ class USVintageConfig:
     # only adds noise to the known base effect. Kept switchable so
     # `--growth-variants` can reproduce that measurement.
     fit_convergence: bool = False
+
+    # The rate channel (usmodel.rates): the change in the policy rate over
+    # the year ending two quarters before each target quarter, as a drag on
+    # the growth path past the nowcast quarter, with the sensitivity
+    # re-fitted point-in-time on 1960+ at every vintage. Default follows
+    # usmodel.config; the backtest measures it on and off.
+    rate_channel: bool = uconfig.RATE_CHANNEL_ENABLED
+    # LIVE runs only: dated market-implied steps in the policy rate
+    # ({'YYYY-MM-DD': rate}) that extend the path forward. The backtest
+    # holds the rate flat at its last observation -- there is no futures
+    # history in the repo, so a live path can never leak into it.
+    policy_rate_path: dict | None = None
 
     def __post_init__(self):
         if self.revision_mode not in REVISION_MODES:

@@ -125,3 +125,47 @@ GDP_PUB_LAG_DAYS = 28
 # Quad deadband (percentage points of YoY acceleration): below this the
 # quarter is flagged low-conviction. Shared convention with the NO model.
 QUAD_DEADBAND_PP = 0.10
+
+# ---------------------------------------------------------------------------
+# The rate channel (usmodel.rates): policy-rate changes as a drag on the
+# growth path past the nowcast quarter. Priced in on request; its measured
+# cost to the growth-direction call is stated in the README rather than
+# hidden -- turn it off here to get the flat path back.
+# ---------------------------------------------------------------------------
+RATE_CHANNEL_ENABLED = True
+# Hikes over the year ending two quarters before the target quarter: the
+# 1960-2026 distributed lag puts the drag at lags 2-8 with the largest
+# single coefficient at lag 2, and this window is its parsimonious form.
+RATE_LAG_QUARTERS = (2, 6)
+# The sample the sensitivity is fitted on, point-in-time. 1985+ alone has
+# NO measurable drag (the slope is zero to positive), so the fit must reach
+# back to the Volcker era to find the effect the channel encodes.
+RATE_FIT_START = "1960Q1"
+RATE_FIT_EXCLUDE = ("2020Q1", "2020Q2", "2020Q3", "2020Q4", "2021Q1", "2021Q2")
+# pp of quarterly growth per 1pp of policy-rate change over the window. The
+# sign is IMPOSED (a hike never adds to growth); the size is estimated and
+# runs about -0.10 on the full history.
+RATE_SENSITIVITY_CLIP = (-0.30, 0.0)
+# A number here replaces the estimate (e.g. -0.20 for FRB/US-strength
+# transmission, where 100bp costs ~0.8% of GDP over two years).
+RATE_SENSITIVITY_OVERRIDE = None
+# Market-implied policy path, LIVE runs only: dated steps in the effective
+# rate, day-weighted into monthly means by usmodel.rates. Source: the
+# meeting-date implied path read off a Hedgeye slide supplied on
+# 2026-09-18 (0.57 hikes priced for 28 Oct 2026 rising to 3.00 hikes by
+# 28 Jul 2027). The first entry is the post-September-meeting rate that
+# slide implies (4.03 - 0.57 x 0.25); the daily effective rate confirms or
+# corrects it as it is published. Replace when the curve moves -- the
+# backtest never sees this (it holds the rate flat, having no futures
+# history), so it cannot leak.
+POLICY_RATE_PATH_ASOF = "2026-09-18"
+POLICY_RATE_PATH = {
+    "2026-09-18": 3.88,
+    "2026-10-28": 4.03,
+    "2026-12-09": 4.21,
+    "2027-01-27": 4.31,
+    "2027-03-17": 4.47,
+    "2027-04-28": 4.55,
+    "2027-06-09": 4.62,
+    "2027-07-28": 4.63,
+}

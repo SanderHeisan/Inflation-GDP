@@ -37,7 +37,7 @@ import numpy as np
 import pandas as pd
 
 from quadmap import quads
-from usmodel import config as uconfig, gdp as gdp_mod, nowcast
+from usmodel import config as uconfig, gdp as gdp_mod, nowcast, rates
 from usmodel.data_bundle import USDataBundle
 from usmodel.fetch_data_us import INDICATOR_PUB_LAG_DAYS
 
@@ -304,6 +304,13 @@ def vintage_assumptions(bundle: USDataBundle, asof: pd.Timestamp,
     return assumptions, diagnostics
 
 
+# Daily/weekly rate series a LIVE run may read for the month in progress,
+# the way it reads oil, the dollar and the pump price: a policy move on the
+# 17th is public on the 17th. None of these feed the nowcast regression, so
+# the partial month cannot change how many months it counts as published.
+LIVE_PARTIAL_INDICATORS = ("fed_funds", "treasury_10y", "mortgage_30y")
+
+
 def published_indicators(bundle: USDataBundle, asof: pd.Timestamp,
                          cfg: USVintageConfig) -> dict[str, pd.Series]:
     """Each activity indicator truncated with its own release lag (payrolls
@@ -313,6 +320,8 @@ def published_indicators(bundle: USDataBundle, asof: pd.Timestamp,
     for name, series in (bundle.indicators or {}).items():
         lag = cfg.indicator_pub_lag_days.get(
             name, INDICATOR_PUB_LAG_DAYS.get(name, 20))
+        if cfg.live_partial_month and name in LIVE_PARTIAL_INDICATORS:
+            lag = -31
         t = truncate(series, asof, lag)
         if len(t):
             out[name] = t
@@ -408,6 +417,37 @@ def build_vintage(bundle: USDataBundle, asof: pd.Timestamp | str,
     diagnostics.setdefault("nowcast_k", -1)
     diagnostics.setdefault("trend_qoq_pct", uconfig.GDP_TREND_QOQ * 100)
     diagnostics.setdefault("convergence", uconfig.GDP_CONVERGENCE)
+
+    # The rate channel: sensitivity fitted on this vintage's published
+    # history (1960+ via the untruncated GDP series, rates as published),
+    # then the drag for the quarters the projection will cover, off a
+    # policy path that is observed, then market-implied (live only), then
+    # flat. Every number here is knowable at the as-of date.
+    if cfg.rate_channel and "fed_funds" in panel:
+        long_gdp = (truncate(bundle.gdp_long, asof, cfg.gdp_pub_lag_days)
+                    if bundle.gdp_long is not None else gdp)
+        if len(long_gdp) < len(gdp):
+            long_gdp = gdp
+        ff_m = panel["fed_funds"]
+        last_q = gdp.index[-1]
+        targets = pd.period_range(last_q + 1, periods=12, freq="Q")
+        path_m = rates.expected_policy_path(
+            ff_m, cfg.policy_rate_path, targets[-1].asfreq("M", "end"))
+        policy_q = rates.quarterly_mean(path_m)
+        fit = rates.fit_rate_sensitivity(long_gdp,
+                                         rates.quarterly_mean(ff_m))
+        if fit is not None:
+            drag = rates.rate_drag(policy_q, targets, fit["beta"])
+            indicators["rate_drag_qoq"] = drag
+            diagnostics.update({
+                "rate_beta": fit["beta"], "rate_beta_raw": fit["beta_raw"],
+                "rate_fit_n": fit["n"], "rate_fit_corr": fit["corr"],
+                "rate_drag_pp": {str(q): float(d) * 100
+                                 for q, d in drag.items()},
+                "rate_state": rates.rate_state(ff_m, policy_q, fit, drag,
+                                               cfg.policy_rate_path),
+            })
+    diagnostics.setdefault("rate_beta", float("nan"))
 
     return USVintage(asof=asof, gdp_level=gdp, cpi_index=cpi,
                      market_rent=rent, dollar=dollar, indicator_panel=panel,

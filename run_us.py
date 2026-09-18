@@ -29,7 +29,7 @@ def _demo_inputs(horizon_months: int):
     assumptions = data_bundle.assumptions_from_bundle(bundle)
     aux = {"market_rent": bundle.market_rent, "dollar": bundle.dollar}
     return (bundle.cpi, bundle.gdp, assumptions, aux, {},
-            bundle.gdp.index[-1], "synthetic demo", {}, None)
+            bundle.gdp.index[-1], "synthetic demo", {}, None, None)
 
 
 def _live_inputs(horizon_months: int):
@@ -40,11 +40,26 @@ def _live_inputs(horizon_months: int):
     bundle = data_bundle.load_bundle()
     # current vintage is the live one; and a live run may use the month in
     # progress for oil, the dollar and the pump price (see btconfig)
-    cfg = USVintageConfig(revision_mode="none", live_partial_month=True)
+    # ... and the market-implied policy path extends the rate channel
+    # forward (config.POLICY_RATE_PATH, dated; the backtest never sees it)
+    cfg = USVintageConfig(
+        revision_mode="none", live_partial_month=True,
+        policy_rate_path=(config.POLICY_RATE_PATH
+                          if config.RATE_CHANNEL_ENABLED else None))
     v = build_vintage(bundle, pd.Timestamp.today().normalize(), cfg,
                       horizon_months=horizon_months + 2)
     d = v.diagnostics
     trend_ann = (1 + d["trend_qoq_pct"] / 100) ** 4 * 100 - 100
+    rs = d.get("rate_state")
+    rate_line = ""
+    if rs:
+        f = rs["fit"]
+        rate_line = (f"\n  rates      : fed funds {rs['level_pct']:.2f}% "
+                     f"({rs['latest_month']}), {rs['chg_4q_pp']:+.2f}pp over 4q, "
+                     f"{rs['chg_8q_pp']:+.2f}pp over 8q; drag sensitivity "
+                     f"{f['beta']:.3f}pp/q per 1pp (raw fit {f['beta_raw']:+.3f}, "
+                     f"n={f['n']}, {f['fit_start']}..{f['fit_end']}); path "
+                     f"{rs['path_source']}")
     note = (f"real data | CPI through {v.last_cpi_month}, GDP through "
             f"{v.last_gdp_quarter}\n"
             f"  CPI blocks : shelter b={d['shelter_b']:.2f} a={d['shelter_a']:.2f}"
@@ -56,12 +71,45 @@ def _live_inputs(horizon_months: int):
             f"  energy     : WTI ${v.assumptions['wti_recent']:.0f} at the last CPI "
             f"month, {d['gasoline_pump_months_observed']} later month(s) of pump "
             f"prices observed (incl. the month in progress); "
-            f"pump slope {d['gasoline_pump_slope']:.2f}")
+            f"pump slope {d['gasoline_pump_slope']:.2f}{rate_line}")
     consumer = growth_direction.consumer_state(v.indicator_panel,
                                                v.last_gdp_quarter)
     real_pce = v.indicator_panel.get("real_pce")
     return (v.cpi_index, v.gdp_level, v.assumptions, v.aux, v.indicators,
-            v.last_gdp_quarter, note, consumer, real_pce)
+            v.last_gdp_quarter, note, consumer, real_pce, rs)
+
+
+def _rates_block(rs: dict, trend_qoq_pct: float) -> str:
+    """The rate channel quarter by quarter: the policy path the projection
+    assumes and where each number comes from, the drag it puts on QoQ
+    growth past the nowcast quarter, and the cumulative level effect.
+    The channel is on because it was asked for; its measured cost to the
+    growth call is in the README and results_us/us_rate_channel.csv."""
+    if not rs:
+        return "  (rate channel off, or no policy-rate data)"
+    lines = [f"  {'quarter':8s} {'policy rate':>12s} {'source':>20s} "
+             f"{'drag pp/q':>10s} {'ann.':>7s} {'path QoQ':>9s} {'cum level':>10s}"]
+    drag = {r["quarter"]: r for r in rs.get("drag", [])}
+    for r in rs["path"]:
+        q = r["quarter"]
+        if q not in drag:
+            continue
+        d = drag[q]
+        lines.append(f"  {q:8s} {r['rate_pct']:11.2f}% {r['source']:>20s} "
+                     f"{d['drag_qoq_pp']:+10.2f} {d['drag_ann_pp']:+6.1f}% "
+                     f"{trend_qoq_pct + d['drag_qoq_pp']:8.2f}% "
+                     f"{d['cum_level_pct']:+9.2f}%")
+    f = rs["fit"]
+    lines.append(f"  Window: the change in the policy rate over the year ending "
+                 f"{rs['lags'][0]} quarters before the target ({rs['lags'][0]}-"
+                 f"{rs['lags'][1]}q lag); sensitivity {f['beta']:.3f}pp of "
+                 f"quarterly growth per 1pp, fitted point-in-time on "
+                 f"{f['fit_start']}..{f['fit_end']} (n={f['n']}, corr "
+                 f"{f['corr']:+.2f}).")
+    lines.append("  Backtested 2017-2026 the drag LOWERS growth-direction "
+                 "accuracy (README, 'The rate channel'); set "
+                 "config.RATE_CHANNEL_ENABLED = False for the flat path.")
+    return "\n".join(lines)
 
 
 def _consumer_block(c: dict) -> str:
@@ -172,12 +220,16 @@ def _direction_block(table, gdp_hist, gdp_full, cpi_full, last_real,
 
 def run(demo: bool = False, horizon_months: int = 15):
     (cpi_hist, gdp_hist, assumptions, aux, indicators, last_real, note,
-     consumer, real_pce) = (_demo_inputs(horizon_months) if demo
-                            else _live_inputs(horizon_months))
+     consumer, real_pce, rate_state) = (_demo_inputs(horizon_months) if demo
+                                        else _live_inputs(horizon_months))
     print(f"\nUS GIP Quad Map | {note}")
     if not demo:
         print("\n=== The consumer (published data, vs its own trailing decade) ===")
         print(_consumer_block(consumer))
+        print("\n=== The rate channel (policy rate -> growth, 2-6 quarters later) ===")
+        print(_rates_block(rate_state,
+                           indicators.get("fitted_trend_qoq",
+                                          config.GDP_TREND_QOQ) * 100))
 
     # --- Inflation: bottom-up component projection -> YoY path
     cpi_full = inflation.build_cpi_projection(cpi_hist, horizon_months,
@@ -217,12 +269,13 @@ def run(demo: bool = False, horizon_months: int = 15):
     print(f"\nDeadband for low_conviction: +/-{config.QUAD_DEADBAND_PP}pp. "
           f"Measured accuracy of these calls is in the README.")
     if not demo:
-        print("Note: the growth path past the nowcast quarter is FLAT at the "
-              "trend above.\n  It is a trailing median, so it reflects the "
-              "last six years rather than any\n  estimate of potential - "
-              "read the projected growth LEVEL with that in mind.\n  The "
-              "quad only uses the direction, which is far less sensitive to "
-              "it.")
+        print("Note: the growth path past the nowcast quarter is the trend "
+              "above plus the rate\n  channel's drag (see the rates block; "
+              "zero when the channel is off). The trend is a\n  trailing "
+              "median, so it reflects the last six years rather than any "
+              "estimate of\n  potential - read the projected growth LEVEL "
+              "with that in mind. The quad only\n  uses the direction, "
+              "which is far less sensitive to it.")
     return table
 
 

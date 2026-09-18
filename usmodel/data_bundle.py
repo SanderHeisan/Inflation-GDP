@@ -56,6 +56,10 @@ class USDataBundle:
     cpi_food: pd.Series | None = None
     cpi_energy: pd.Series | None = None
     gdp_vintages: pd.DataFrame | None = None
+    # Real GDP from 1947, untruncated by `start`: the rate channel fits its
+    # sensitivity on 1960+ (usmodel.rates), which the modelling window
+    # starting 2004 cannot supply.
+    gdp_long: pd.Series | None = None
     # Growth-side activity indicators (Period[M]), keyed by the names in
     # fetch_data_us.INDICATOR_PUB_LAG_DAYS.
     indicators: dict[str, pd.Series] = field(default_factory=dict)
@@ -134,6 +138,7 @@ def load_bundle(data_dir: Path | str = DATA_DIR,
     opt = monthly
     cpi = monthly("cpi")
     gdp = _read_series(d / "gdp.csv", "Q")
+    gdp_long = gdp.copy()
     if start:
         cpi = cpi[cpi.index >= pd.Period(start, "M")]
         gdp = gdp[gdp.index >= pd.Period(start, "M").asfreq("Q")]
@@ -158,6 +163,7 @@ def load_bundle(data_dir: Path | str = DATA_DIR,
         cpi_food=opt("cpi_food"),
         cpi_energy=opt("cpi_energy"),
         gdp_vintages=panel,
+        gdp_long=gdp_long,
         indicators={k: s for k in INDICATOR_NAMES
                     if (s := opt(k)) is not None and len(s)},
         filled=filled,

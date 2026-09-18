@@ -19,15 +19,16 @@ Writes to results_us/:
     us_direction.csv              the four direction calls: hit by call x horizon
     us_direction_conviction.csv   the same by conviction bucket
     us_direction_calls.csv        every direction call made (or abstained)
+    us_rate_channel.csv           the rate channel on vs off on the same vintages
 """
 from __future__ import annotations
 
 import argparse
+from dataclasses import replace
 from pathlib import Path
 
+import numpy as np
 import pandas as pd
-
-from dataclasses import replace
 
 from usbacktest import direction, monthly, scoring
 from usbacktest.btconfig import BACKTEST_START, RESULTS_DIR, USVintageConfig
@@ -47,16 +48,20 @@ def growth_variants(bundle, start, end, horizon, cfg, real_first, real_final
         # the original: momentum-only nowcast, geometric glide to a static trend
         "momentum nowcast + glide (original)":
             replace(cfg, use_indicator_nowcast=False, fit_trend=False,
-                    fit_convergence=True),
+                    fit_convergence=True, rate_channel=False),
         "fitted nowcast + glide":
             replace(cfg, use_indicator_nowcast=True, fit_trend=False,
-                    fit_convergence=True),
+                    fit_convergence=True, rate_channel=False),
         "fitted nowcast + static trend, flat":
             replace(cfg, use_indicator_nowcast=True, fit_trend=False,
-                    fit_convergence=False),
-        "fitted nowcast + fitted trend, flat (shipped)":
+                    fit_convergence=False, rate_channel=False),
+        "fitted nowcast + fitted trend, flat":
             replace(cfg, use_indicator_nowcast=True, fit_trend=True,
-                    fit_convergence=False),
+                    fit_convergence=False, rate_channel=False),
+        # the same path with the rate channel's drag on it (usmodel.rates)
+        "fitted nowcast + fitted trend + rate channel (shipped)":
+            replace(cfg, use_indicator_nowcast=True, fit_trend=True,
+                    fit_convergence=False, rate_channel=True),
     }
     rows = {}
     for name, vcfg in variants.items():
@@ -74,6 +79,49 @@ def growth_variants(bundle, start, end, horizon, cfg, real_first, real_final
             "mae_growth_yoy_h0": ax["mae_growth_yoy_pp"][0],
             "mae_growth_yoy_mean": ax["mae_growth_yoy_pp"].mean(),
         })
+    return pd.DataFrame(rows).T
+
+
+def rate_channel_comparison(bundle, start, end, horizon, cfg, preds, dcalls,
+                            real_first, real_final) -> pd.DataFrame:
+    """The rate channel on and off on the same vintages: growth-direction
+    hit rate by horizon (the direction backtest), quad hit rate (first-
+    release truth), growth-level error, and -- the part that matters --
+    what happened on the rows where the drag actually flipped the growth
+    call. Everything else is identical between the two runs, so any
+    difference is the channel."""
+    other = replace(cfg, rate_channel=not cfg.rate_channel)
+    preds2 = run_backtest(bundle, start, end, max_horizon=horizon, cfg=other)
+    dcalls2 = direction.direction_backtest(bundle, start, end, horizon, other)
+    real = real_final["d_growth"].astype(float)
+
+    def one(p, d, c):
+        sc = scoring.score(p, real_first, "fr", range(horizon + 1)).loc[
+            ("fr", "model")]
+        ax = scoring.axis_accuracy(p, real_final)
+        gh = direction.summarize_by_horizon(d).loc["growth_yoy", "hit"]
+        row = {"rate_channel": c.rate_channel,
+               "quad_hit_h0": sc["hit_rate"][0],
+               "quad_hit_mean": sc["hit_rate"].mean(),
+               "mae_growth_yoy_mean": ax["mae_growth_yoy_pp"].mean()}
+        row.update({f"growth_dir_h{h}": float(gh.get(h, np.nan))
+                    for h in range(horizon + 1)})
+        return row
+    rows = {"shipped setting": one(preds, dcalls, cfg),
+            "the other setting": one(preds2, dcalls2, other)}
+    m = preds.merge(preds2, on=["asof", "target_quarter", "horizon"],
+                    suffixes=("_a", "_b"))
+    m["real"] = real.reindex(
+        pd.PeriodIndex(m["target_quarter"], freq="Q")).to_numpy()
+    m = m.dropna(subset=["real"])
+    flipped = m[np.sign(m["pred_d_growth_a"]) != np.sign(m["pred_d_growth_b"])]
+    for key, suf in (("shipped setting", "_a"), ("the other setting", "_b")):
+        rows[key]["n_rows"] = int(len(m))
+        rows[key]["n_flipped_by_channel"] = int(len(flipped))
+        rows[key]["hit_on_flipped_rows"] = (
+            float((np.sign(flipped["pred_d_growth" + suf])
+                   == np.sign(flipped["real"])).mean())
+            if len(flipped) else np.nan)
     return pd.DataFrame(rows).T
 
 
@@ -97,6 +145,9 @@ def main() -> None:
     ap.add_argument("--no-self-calibrate", action="store_true",
                     help="use the static config coefficients instead of "
                          "re-fitting them on each vintage's own history")
+    ap.add_argument("--no-rate-channel", action="store_true",
+                    help="drop the rate channel's drag from the growth path "
+                         "(usmodel.rates); the run measures both either way")
     ap.add_argument("--growth-variants", action="store_true",
                     help="also run the 2x2 of growth-side settings "
                          "(momentum vs fitted nowcast) x (static vs fitted "
@@ -109,7 +160,8 @@ def main() -> None:
     cfg = USVintageConfig(
         revision_mode=args.revision_mode,
         self_calibrate=not args.no_self_calibrate,
-        use_indicator_nowcast=not args.no_indicator_nowcast)
+        use_indicator_nowcast=not args.no_indicator_nowcast,
+        rate_channel=not args.no_rate_channel)
     if args.sigma is not None:
         cfg.revision_sigma_pp = args.sigma
 
@@ -123,7 +175,8 @@ def main() -> None:
     print(f"  as-of {args.start}..{end} ({args.freq})   horizon "
           f"0..{args.horizon}q   revisions={cfg.revision_mode}"
           f"{'  self-calibrating' if cfg.self_calibrate else ''}"
-          f"{'  indicator-nowcast' if cfg.use_indicator_nowcast else '  momentum-nowcast'}")
+          f"{'  indicator-nowcast' if cfg.use_indicator_nowcast else '  momentum-nowcast'}"
+          f"{'  rate-channel' if cfg.rate_channel else '  flat-path'}")
 
     # ---- Quad backtest -----------------------------------------------------
     preds = run_backtest(bundle, args.start, end, freq=args.freq,
@@ -212,6 +265,16 @@ def main() -> None:
     print(disp.to_string())
     print("\n=== Direction calls: hit rate by conviction (all horizons) ===")
     print(by_c.round(3).to_string())
+
+    # ---- The rate channel, on vs off ----------------------------------------
+    rc = rate_channel_comparison(bundle, args.start, end, args.horizon, cfg,
+                                 preds, dcalls, real_first, real_final)
+    rc.to_csv(out / "us_rate_channel.csv")
+    print("\n=== The rate channel (policy-rate drag on the growth path), "
+          "on vs off ===")
+    print("  'hit_on_flipped_rows' scores only the growth calls the drag "
+          "reversed -- the rows where the channel is doing anything.")
+    print(rc.T.to_string())
 
     if args.growth_variants:
         print("\n=== Growth-side variants (first-release truth) ===")
