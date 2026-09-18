@@ -252,6 +252,17 @@ first as-of date whose shelter block is driven by *observed* market rents is
 **2017-01**. That bounds the backtest: **115 monthly as-of dates, 2017-01 to
 2026-07, 575 quad predictions.**
 
+## The sheet
+
+`python us_sheet.py` writes `results_us/us_quad_sheet.html`, a plain-language
+page for a reader rather than a modeller: the quads ahead as cards, both
+series on one chart with the quad of each quarter shaded, a month-by-month
+table (inflation monthly, GDP beside its three months), and what is behind
+the numbers — oil and the pump, the bar each quarter has to beat, the
+consumer, interest rates and the subscriber's own view against the model's
+— with every hit rate read from `results_us/` so the page cannot quote a
+number the backtest did not produce. Regenerate it after each data release.
+
 ## The stats
 
 Walk-forward and point-in-time. At each as-of date the information set is
