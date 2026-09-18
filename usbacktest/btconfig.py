@@ -103,6 +103,10 @@ class USVintageConfig:
     # re-fitted point-in-time on 1960+ at every vintage. Default follows
     # usmodel.config; the backtest measures it on and off.
     rate_channel: bool = uconfig.RATE_CHANNEL_ENABLED
+    # The pace assumed past the nowcast quarter (usmodel.config.GDP_PACE_MODE:
+    # trailing_median, potential, nowcast, glide). The backtest measures all
+    # four on every run (us_pace_modes.csv).
+    pace_mode: str = uconfig.GDP_PACE_MODE
     # LIVE runs only: dated market-implied steps in the policy rate
     # ({'YYYY-MM-DD': rate}) that extend the path forward. The backtest
     # holds the rate flat at its last observation -- there is no futures
@@ -110,6 +114,9 @@ class USVintageConfig:
     policy_rate_path: dict | None = None
 
     def __post_init__(self):
+        if self.pace_mode not in uconfig.GDP_PACE_MODES:
+            raise ValueError(f"pace_mode must be one of {uconfig.GDP_PACE_MODES}, "
+                             f"got {self.pace_mode!r}")
         if self.revision_mode not in REVISION_MODES:
             raise ValueError(f"revision_mode must be one of {REVISION_MODES}, "
                              f"got {self.revision_mode!r}")

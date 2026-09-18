@@ -262,6 +262,7 @@ def build() -> dict:
     meta = {"asof": asof.strftime("%d %b %Y"), "asof_iso": asof.strftime("%Y-%m-%d"),
             "cpi_through": last_m.strftime("%b %Y"), "gdp_through": f"Q{last_q.quarter} {last_q.year}",
             "next_cpi_month": nxt["label"], "trend_ann": ann(trend_q), "nowcast_ann": ann(nowcast_q), "k": int(d["nowcast_k"]),
+            "pace_mode": str(d["pace_mode"]), "pace_ann": ann(float(d["pace_qoq_pct"])), "pace_persistence": float(d["pace_persistence"]),
             "wti_last_cpi": float(v.assumptions["wti_recent"]), "wti_now": float(wti_m.iloc[-1]), "pump_now": float(pump_m.iloc[-1]),
             "pump_mom": float(pump_m.iloc[-1] / pump_m.iloc[-2] - 1) * 100, "rent_yoy": float(d["market_rent_yoy"]),
             "wage_yoy": float(d["wage_yoy"]), "last_cpi_yoy": float(yoy[last_m]), "filled": b.filled.get("cpi", []),
@@ -406,7 +407,8 @@ def render(D: dict) -> str:
         gcells = ""
         if first and q:
             rs_ = len(idxs)
-            gtxt = ("actual" if q["realized"] else "from data so far" if q["is_nowcast"] else "trend" + (" + rates" if M["rate_channel"] else ""))
+            pace_word = {"potential": "normal pace", "nowcast": "this quarter's pace", "glide": "fading to normal", "trailing_median": "trend"}[M["pace_mode"]]
+            gtxt = ("actual" if q["realized"] else "from data so far" if q["is_nowcast"] else pace_word + (" + rates" if M["rate_channel"] else ""))
             gcells = (f'<td rowspan="{rs_}" class="num gq">{sgn(q["qoq_ann"], 1)}%<br><span class="sub">{gtxt}</span></td>'
                       f'<td rowspan="{rs_}" class="num gq strong-num">{q["g_yoy"]:.1f}%</td>'
                       f'<td rowspan="{rs_}" class="gq">{arrow(q["g_dir"], q["g_strong"])} <span class="sub">{"actual" if q["realized"] else ("strong" if q["g_strong"] else "weak") + " · " + pct(q["g_hit"])}</span></td>')
@@ -433,6 +435,12 @@ def render(D: dict) -> str:
         for r in E)
     hit_word = "hit" if SC["model_dir"] == SC["actual_dir"] else "miss"
 
+    pace_sentence = {
+        "potential": f'the economy\'s normal pace, <b>{M["pace_ann"]:.1f}% a year</b>, from the quarter after next',
+        "nowcast": f'that this quarter\'s pace, <b>{M["nowcast_ann"]:+.1f}% a year</b>, carries on',
+        "glide": f'that this quarter\'s pace fades toward a normal <b>{M["pace_ann"]:.1f}% a year</b>',
+        "trailing_median": f'the trend of the last six years, <b>{M["trend_ann"]:.1f}% a year</b>',
+    }[M["pace_mode"]]
     # ---- growth: the bar to beat, and slower paths ----
     srows = "".join(
         f'<tr><td class="lbl">{r["label"]}</td><td class="num">{r["bar_ann"]:+.1f}%<br><span class="sub">{r["bar_src"]}</span></td>'
@@ -485,6 +493,16 @@ def render(D: dict) -> str:
     q1, q2 = qmap["2027Q1"], qmap["2027Q2"]
     r1 = next(r for r in RT["rows"] if r["q"] == "2027Q1"); r2 = next(r for r in RT["rows"] if r["q"] == "2027Q2")
     RS = ST["rate"]
+    gap1, gap2 = q1["qoq_ann"] - q1["bar_ann"], q2["qoq_ann"] - q2["bar_ann"]
+    fast2 = abs(r2["fast_hawk_ann"] or 0.0); fast1 = abs(r1["fast_hawk_ann"] or 0.0)
+    quad_word = lambda q: f'Quad {q["quad"]}' + (" (too close to call)" if q["close"] else "")
+    view_sentence = (f'Its own path is {q1["qoq_ann"]:+.1f}% in Q1 2027 and {q2["qoq_ann"]:+.1f}% in Q2 2027, against bars of '
+                     f'{q1["bar_ann"]:+.1f}% and {q2["bar_ann"]:+.1f}%: {quad_word(q1)} and {quad_word(q2)}. '
+                     f'Q1 2027 is a margin of {gap1:+.1f}pp, so it is a coin flip whichever way the data lean. Q2 2027 is a margin of {gap2:+.1f}pp; '
+                     + (f'a hike at every meeting with the fastest response on record takes about {fast2:.1f}pp off it, which is <b>enough to tip it to Quad 4</b> on its own.'
+                        if fast2 >= gap2 else
+                        f'a hike at every meeting with the fastest response on record takes about {fast2:.1f}pp off it, {"most" if fast2 >= 0.6 * gap2 else "part"} of that margin, so rates alone do not quite get there on the historical lag.')
+                     + ' Hikes take at least two quarters to bite, and the 2024–26 cuts are still working in the other direction; so the timing, not the size, is what decides it.')
 
     # ---- trust table ----
     gh, iy, qh = ST["growth_yoy"], ST["infl_yoy"], ST["quad_hit"]
@@ -656,7 +674,7 @@ code{{font-family:"IBM Plex Mono",monospace;font-size:12px;background:var(--actu
 <h2>Growth: what is behind the numbers</h2>
 <ul class="story">
 <li><b>This quarter ({now["label"]}): about {now["qoq_ann"]:+.1f}% annualized</b>, estimated from jobs, industrial production, retail sales and jobless claims with {M["k"]} of 3 months in. (Annualized = the pace over a full year if the quarter repeated.)</li>
-<li><b>After this quarter we do not forecast GDP.</b> Nobody can, two to four quarters out; every method tried did worse than a constant. So the sheet assumes the trend, <b>{M["trend_ann"]:.1f}% a year</b> (the typical pace of the last six years, which is high because those years were strong), adjusted for interest rates as below.</li>
+<li><b>After this quarter we do not forecast GDP.</b> Nobody can, two to four quarters out; every method tried did worse than a constant. So the sheet assumes {pace_sentence}, adjusted for interest rates as below. (The old setting, the last six years' typical pace of {M["trend_ann"]:.1f}%, is backward looking: it assumes the post-2020 boom continues.)</li>
 <li><b>Up or down is decided by the bar to beat.</b> Year-over-year growth rises in a quarter only if that quarter grows faster than the same quarter a year earlier. Those bars are already published, so each quarter's call is "does our assumed pace clear a known bar". The table shows the bar, our path, and what a slower economy would do to the quad.</li>
 </ul>
 <div class="tblwrap"><table class="wide">
@@ -682,7 +700,7 @@ code{{font-family:"IBM Plex Mono",monospace;font-size:12px;background:var(--actu
 
 <div class="box view"><div class="box-h">Your view: the Fed keeps hiking, and growth slows in Q1 and Q2 2027</div>
 <p><b>If that is right, both quarters are Quad 4</b>, because inflation is falling hard in both anyway ({sgn(q1["di"])}pp and {sgn(q2["di"])}pp). What growth has to do: come in <b>under {q1["bar_ann"]:+.1f}% annualized in Q1 2027</b> and <b>under {q2["bar_ann"]:+.1f}% in Q2 2027</b>. The bars are low because early 2026 was weak, so it does not take a recession, just a real slowdown.</p>
-<p><b>What the sheet says.</b> Its own path is {q1["qoq_ann"]:+.1f}% and {q2["qoq_ann"]:+.1f}%, so Quad 1 in both. Hikes cannot get it there by then on the historical lag: even a hike at every meeting and the fastest response on record takes about {abs(r2["fast_hawk_ann"] or 0):.1f}pp off Q2 2027, a third of the gap. The reason is timing, not size: hikes take at least two quarters to bite, and the 2024–26 cuts are still working in the other direction.</p>
+<p><b>What the sheet says.</b> {view_sentence}</p>
 <p><b>What would confirm your view early:</b> jobless claims rising through the autumn, retail sales going flat, the Q4 2026 GDP print (28 January 2027) coming in under {qmap["2026Q4"]["bar_ann"]:+.1f}% annualized, and the Q1 2027 print (late April) under {q1["bar_ann"]:+.1f}%. The consumer lines above are where it would show first: real income is already weak and the saving rate is already very low.</p>
 <p class="ss"><b>Honesty note.</b> In the 2017–2026 backtest the rate effect made the growth calls slightly worse, not better: it reversed {RS["n_flipped"]} of {RS["n_rows"]} calls and was right on {pct(RS["hit_flipped_on"])} of those against {pct(RS["hit_flipped_off"])} without it. Both times it mattered (2018, 2023) the Fed hiked into an economy that kept growing. It is on because you asked for it; the cards above say where it changes a quad.</p></div>
 
@@ -701,7 +719,7 @@ code{{font-family:"IBM Plex Mono",monospace;font-size:12px;background:var(--actu
 
 <div class="notes">
 <p><b>†</b> BLS never published the October 2025 CPI (the autumn 2025 shutdown). It is filled in by averaging September and November 2025 so 12-month comparisons stay honest; October 2026's rate is compared against that fill.</p>
-<p><b>How to read the growth levels.</b> After this quarter they are an assumption (trend plus the rate effect), not a forecast. What the sheet stands behind is the direction, up or down against the bar, and the inflation path.</p>
+<p><b>How to read the growth levels.</b> After this quarter they are an assumption ({pace_sentence.replace("<b>", "").replace("</b>", "")}, plus the rate effect), not a forecast. What the sheet stands behind is the direction, up or down against the bar, and the inflation path.</p>
 <p><b>Caveats.</b> The backtest uses simulated first releases of GDP (the real-time archives are unreachable from where this is built), which costs it 5–8 points of growth accuracy. The interest-rate path ahead is read off a curve dated {RT["path_asof"]}; the actual Fed rate replaces it as it prints. The sample is one inflation cycle. Regenerate with <code>python us_sheet.py</code> after each data release.</p>
 </div>
 </div>

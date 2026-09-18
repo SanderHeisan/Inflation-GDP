@@ -417,6 +417,12 @@ def build_vintage(bundle: USDataBundle, asof: pd.Timestamp | str,
     diagnostics.setdefault("nowcast_k", -1)
     diagnostics.setdefault("trend_qoq_pct", uconfig.GDP_TREND_QOQ * 100)
     diagnostics.setdefault("convergence", uconfig.GDP_CONVERGENCE)
+    # The pace past the nowcast quarter, and what it resolves to here.
+    indicators["pace_mode"] = cfg.pace_mode
+    q1 = gdp_mod.nowcast_qoq(gdp, indicators)
+    anchor, persistence, _ = gdp_mod.pace_past_nowcast(q1, indicators)
+    diagnostics.update({"pace_mode": cfg.pace_mode, "pace_qoq_pct": anchor * 100,
+                        "pace_persistence": persistence})
 
     # The rate channel: sensitivity fitted on this vintage's published
     # history (1960+ via the untruncated GDP series, rates as published),

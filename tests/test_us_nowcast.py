@@ -122,7 +122,8 @@ def test_project_gdp_steps_to_trend_after_the_nowcast_quarter(gdp_level):
     step, not a glide, because past the nowcast quarter QoQ is not
     forecastable and a moving path only adds noise to the known base."""
     out = gdp_mod.project_gdp(gdp_level, {"fitted_qoq_pct": 2.0,
-                                          "fitted_trend_qoq": 0.001},
+                                          "fitted_trend_qoq": 0.001,
+                                          "pace_mode": "trailing_median"},
                               horizon_quarters=4)
     proj = out[out["projected"]]["qoq_pct"].to_numpy()
     assert proj[0] == pytest.approx(2.0, abs=1e-6)
@@ -134,7 +135,8 @@ def test_project_gdp_can_still_glide_when_asked(gdp_level):
     reproduce the measurement that it is worse."""
     out = gdp_mod.project_gdp(gdp_level, {"fitted_qoq_pct": 2.0,
                                           "fitted_trend_qoq": 0.001,
-                                          "fitted_convergence": 0.5},
+                                          "fitted_convergence": 0.5,
+                                          "pace_mode": "trailing_median"},
                               horizon_quarters=4)
     proj = out[out["projected"]]["qoq_pct"].to_numpy()
     assert proj[1] == pytest.approx(0.1 + (2.0 - 0.1) * 0.5, abs=1e-6)
@@ -188,13 +190,20 @@ def test_estimate_convergence_needs_history(gdp_level):
 
 
 def test_convergence_falls_back_to_config(gdp_level):
-    """With nothing supplied, project_gdp uses the config constants -- and
-    the shipped GDP_CONVERGENCE is 0, so the path steps to trend."""
+    """With nothing supplied, project_gdp uses the config constants: in the
+    trailing-median mode the static trend with GDP_CONVERGENCE = 0 (a step),
+    and in the shipped mode the potential pace."""
     assert config.GDP_CONVERGENCE == 0.0
-    out = gdp_mod.project_gdp(gdp_level, {"fitted_qoq_pct": 1.0},
+    out = gdp_mod.project_gdp(gdp_level, {"fitted_qoq_pct": 1.0,
+                                          "pace_mode": "trailing_median"},
                               horizon_quarters=3)
     proj = out[out["projected"]]["qoq_pct"].to_numpy()
     assert proj[1] == pytest.approx(config.GDP_TREND_QOQ * 100, abs=1e-6)
+    out = gdp_mod.project_gdp(gdp_level, {"fitted_qoq_pct": 1.0},
+                              horizon_quarters=3)
+    proj = out[out["projected"]]["qoq_pct"].to_numpy()
+    assert config.GDP_PACE_MODE == "potential"
+    assert proj[1] == pytest.approx(gdp_mod.potential_qoq() * 100, abs=1e-6)
 
 
 # ---------------------------------------------------------------------------

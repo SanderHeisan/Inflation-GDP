@@ -147,6 +147,7 @@ def run_backtest(bundle: USDataBundle, start: str, end: str,
                 "nowcast_qoq_pct": vintage.diagnostics["nowcast_qoq_pct"],
                 "nowcast_k": vintage.diagnostics["nowcast_k"],
                 "rate_beta": vintage.diagnostics.get("rate_beta"),
+                "pace_mode": vintage.diagnostics.get("pace_mode"),
             })
     df = pd.DataFrame(rows)
     if df.empty:

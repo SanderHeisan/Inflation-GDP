@@ -98,7 +98,7 @@ def test_projection_applies_the_drag_only_past_the_nowcast_quarter():
     last = quarters[-1]
     drag = pd.Series({last + 1: -0.005, last + 2: -0.002, last + 3: -0.002})
     ind = {"fitted_qoq_pct": 0.9, "fitted_trend_qoq": 0.006,
-           "rate_drag_qoq": drag}
+           "rate_drag_qoq": drag, "pace_mode": "trailing_median"}
     out = gdp_mod.project_gdp(level, ind, horizon_quarters=5)
     assert out.loc[last + 1, "qoq_pct"] == pytest.approx(0.9)      # nowcast untouched
     assert out.loc[last + 2, "qoq_pct"] == pytest.approx(0.4)      # 0.6 - 0.2

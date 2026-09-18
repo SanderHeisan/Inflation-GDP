@@ -1,7 +1,9 @@
 """
-US real-GDP projection: nowcast the first unpublished quarter, hold the rest
-flat at trend, and compound onto the last level so the YoY path falls out
-against known year-ago levels.
+US real-GDP projection: nowcast the first unpublished quarter, then a
+constant pace (config.GDP_PACE_MODE: potential, the nowcast carried, a
+glide between them, or the trailing median), plus the rate channel's drag,
+compounded onto the last level so the YoY path falls out against known
+year-ago levels.
 
 Why flat rather than a converging path. The quad needs the sign of
 
@@ -25,6 +27,17 @@ E[Phi(|Z|)] = 75% of the time. Measured on the 2017-2026 sample the ceiling
 is 73.7%. Chasing growth accuracy above that requires forecasting quarterly
 GDP two to four quarters out, which nothing in this repo (or the literature)
 can do.
+
+Which constant, then. The trailing 24-quarter median scored best on
+2017-2026 -- 3.1% annualized today, because the window is the post-2020
+boom -- and it scored best precisely because that sample's past kept
+repeating. It is backward-looking by construction, and the subscriber's
+brief is to be forward-looking. So the pace past the nowcast quarter is a
+config choice (config.GDP_PACE_MODE), shipped as a potential pace of 2.0%
+a year, with the nowcast carried forward and a glide between the two as
+alternatives; `python us_backtest.py` measures all four on identical
+vintages (us_pace_modes.csv) and the README states what the switch costs on
+the sample it can be measured on.
 """
 from __future__ import annotations
 
@@ -62,6 +75,36 @@ def nowcast_qoq(gdp_level: pd.Series, indicators: dict) -> float:
     used = {k: v for k, v in signals.items() if k in w}
     total_w = sum(w[k] for k in used)
     return sum(w[k] * v for k, v in used.items()) / total_w
+
+
+def potential_qoq(ann_pct: float = config.GDP_POTENTIAL_ANN_PCT) -> float:
+    """A long-run annualized pace as a quarterly decimal."""
+    return (1.0 + ann_pct / 100.0) ** 0.25 - 1.0
+
+
+def pace_past_nowcast(q1: float, indicators: dict,
+                      mode: str | None = None) -> tuple[float, float, str]:
+    """(anchor, persistence, mode) for the path from q+2 on, per
+    config.GDP_PACE_MODE or indicators['pace_mode']:
+      trailing_median  anchor = the fitted trailing median, persistence 0
+      potential        anchor = potential, persistence 0
+      nowcast          anchor = the nowcast itself (carried forward)
+      glide            anchor = potential, persistence GDP_GLIDE_PERSISTENCE
+    """
+    mode = mode or indicators.get("pace_mode", config.GDP_PACE_MODE)
+    if mode not in config.GDP_PACE_MODES:
+        raise ValueError(f"pace_mode must be one of {config.GDP_PACE_MODES}, got {mode!r}")
+    if mode == "trailing_median":
+        return (float(indicators.get("fitted_trend_qoq", config.GDP_TREND_QOQ)),
+                float(indicators.get("fitted_convergence", config.GDP_CONVERGENCE)), mode)
+    pot = potential_qoq(float(indicators.get("potential_ann_pct",
+                                             config.GDP_POTENTIAL_ANN_PCT)))
+    if mode == "potential":
+        return pot, 0.0, mode
+    if mode == "nowcast":
+        return float(q1), 0.0, mode
+    return pot, float(indicators.get("glide_persistence",
+                                     config.GDP_GLIDE_PERSISTENCE)), mode
 
 
 def estimate_trend_qoq(gdp_level: pd.Series,
@@ -108,25 +151,29 @@ def project_gdp(gdp_level: pd.Series, indicators: dict,
     """Extend the real-GDP level and compute the YoY path. Returns a frame
     indexed by Period[Q] with level, qoq_pct, yoy_pct, projected.
 
-    The path is nowcast(q+1), then trend from q+2 on. With the shipped
-    config.GDP_CONVERGENCE = 0 that is a step, not a glide -- deliberately,
-    see the module docstring. Pass indicators['fitted_trend_qoq'] /
-    ['fitted_convergence'] to override either with a point-in-time
-    estimate, and indicators['rate_drag_qoq'] ({quarter: decimal}) to add
-    the rate channel's drag (usmodel.rates) to every quarter past the
-    nowcast quarter -- the nowcast itself already sees the rate environment
-    through its indicators, so the drag is not applied there."""
+    The path is nowcast(q+1), then the pace config.GDP_PACE_MODE selects
+    (indicators['pace_mode'] overrides): potential, the nowcast carried, a
+    glide from the nowcast to potential, or the trailing median. Pass
+    indicators['fitted_trend_qoq'] / ['fitted_convergence'] for the
+    trailing-median mode's point-in-time estimates, and
+    indicators['rate_drag_qoq'] ({quarter: decimal}) to add the rate
+    channel's drag (usmodel.rates) to every quarter past the nowcast
+    quarter -- the nowcast itself already sees the rate environment through
+    its indicators, so the drag is not applied there."""
     q1 = nowcast_qoq(gdp_level, indicators)
-    trend = float(indicators.get("fitted_trend_qoq", config.GDP_TREND_QOQ))
-    conv = float(indicators.get("fitted_convergence", config.GDP_CONVERGENCE))
+    trend, conv, mode = pace_past_nowcast(q1, indicators)
     drag = indicators.get("rate_drag_qoq")      # {Period[Q]: decimal}, optional
 
     last = gdp_level.index[-1]
     horizon = pd.period_range(last + 1, periods=horizon_quarters, freq="Q")
+    # In "nowcast" mode the carried pace already reflects the rate
+    # environment of the nowcast quarter, so only the CHANGE in drag from
+    # that quarter is added; the other anchors are rate-neutral.
+    drag0 = float(drag.get(last + 1, 0.0)) if (drag is not None and mode == "nowcast") else 0.0
     path, base = [q1], q1
     for tq in horizon[1:]:
         base = trend + (base - trend) * conv
-        extra = float(drag.get(tq, 0.0)) if drag is not None else 0.0
+        extra = (float(drag.get(tq, 0.0)) - drag0) if drag is not None else 0.0
         path.append(base + extra)
     level, proj = gdp_level.iloc[-1], []
     for g in path:

@@ -169,3 +169,26 @@ POLICY_RATE_PATH = {
     "2027-06-09": 4.62,
     "2027-07-28": 4.63,
 }
+
+# ---------------------------------------------------------------------------
+# The pace the growth path assumes past the nowcast quarter (usmodel.gdp).
+#   "trailing_median"  the vintage's trailing 24-quarter median QoQ. Backward-
+#                      looking: 3.1% annualized today because the window is the
+#                      post-2020 boom. Scored best on 2017-2026, a period in
+#                      which the past kept repeating.
+#   "potential"        a long-run potential pace (GDP_POTENTIAL_ANN_PCT) from
+#                      q+2 on: "this quarter from the data, then the economy's
+#                      normal pace". Forward-looking in the sense that it does
+#                      not assume the boom continues.
+#   "nowcast"          this quarter's nowcast carried forward: the latest
+#                      activity data set the pace.
+#   "glide"            the nowcast fading toward potential with persistence
+#                      GDP_GLIDE_PERSISTENCE per quarter.
+# The rate channel's drag sits on top in every mode (relative to the nowcast
+# quarter in "nowcast" mode, which already sees the rate environment). All
+# four are measured by `python us_backtest.py` (us_pace_modes.csv).
+# ---------------------------------------------------------------------------
+GDP_PACE_MODE = "potential"
+GDP_POTENTIAL_ANN_PCT = 2.0        # CBO-style potential; the bar the boom-era median overstates
+GDP_GLIDE_PERSISTENCE = 0.5
+GDP_PACE_MODES = ("trailing_median", "potential", "nowcast", "glide")
