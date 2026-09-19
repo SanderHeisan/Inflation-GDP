@@ -122,6 +122,16 @@ FRED_SERIES = {
     # Financial conditions on the household: policy rate, long rate, mortgage
     # rate, net worth. Shown with their measured lead (or lack of one) on
     # growth; the rate channel is the one with a documented 2-4 quarter lag.
+    # The monthly growth measure (usmodel.monthly_growth): the NBER-style
+    # coincident set, consumer-weighted. Real PCE, IP and real retail sales
+    # are above; these complete it.
+    "real_income_ex_transfers": ("W875RX1", "M"),   # real personal income ex transfers
+    "hours_all":            ("AWHAETP", "M"),      # avg weekly hours, all private employees
+    # Benchmarks for the monthly measure: the Chicago Fed's monthly real GDP
+    # (Brave-Butters-Kelley; revised heavily, ~2.5 months behind) and the
+    # Dallas Fed's Weekly Economic Index (scaled to 4-quarter GDP growth).
+    "bbk_gdp":              ("BBKMGDP", "M"),
+    "wei":                  ("WEI", "W"),
     "fed_funds":            ("DFF", "D"),          # daily effective rate -> monthly mean
     "treasury_10y":         ("DGS10", "D"),
     "mortgage_30y":         ("MORTGAGE30US", "W"),
@@ -143,6 +153,7 @@ INDICATOR_PUB_LAG_DAYS = {
     "real_retail": 17, "consumer_credit": 37, "gasoline_retail": 0,
     "fed_funds": 0, "treasury_10y": 0, "mortgage_30y": 0,
     "household_net_worth": 75,
+    "real_income_ex_transfers": 30, "hours_all": 8, "bbk_gdp": 75, "wei": 7,
 }
 
 DEFAULT_DATA_DIR = Path(__file__).resolve().parent.parent / "data" / "us"

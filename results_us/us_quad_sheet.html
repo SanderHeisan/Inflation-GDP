@@ -70,7 +70,7 @@ b{font-weight:700}
 .tip{position:absolute;pointer-events:none;background:var(--ink);color:var(--ground);font:12.5px "IBM Plex Mono",monospace;padding:6px 9px;border-radius:4px;white-space:nowrap;visibility:hidden;z-index:2}
 /* tables */
 .tblwrap{overflow-x:auto;border:1px solid var(--rule);border-radius:6px;background:var(--surface);margin-top:12px}
-table{border-collapse:collapse;width:100%;font-size:13.5px} table.wide{min-width:900px} table.months{min-width:1000px}
+table{border-collapse:collapse;width:100%;font-size:13.5px} table.wide{min-width:900px} table.months{min-width:1260px}
 thead th{text-align:left;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-2);font-weight:600;padding:10px 10px 8px;border-bottom:2px solid var(--ink);white-space:nowrap;vertical-align:bottom}
 thead th.num{text-align:right} thead .grp th{border-bottom:1px solid var(--rule);color:var(--accent);letter-spacing:.12em;padding-top:12px}
 tbody td{padding:7px 10px;border-bottom:1px solid var(--rule-2);vertical-align:middle}
@@ -113,11 +113,11 @@ code{font-family:"IBM Plex Mono",monospace;font-size:12px;background:var(--actua
 <div class="wrap">
 <header>
   <div><p class="eyebrow">United States · growth and inflation</p><h1>US Quad Sheet</h1></div>
-  <div class="asof">as of <b>18 Sep 2026</b><br>inflation data to <b>Aug 2026</b> · GDP data to <b>Q2 2026</b><br>headline CPI, all items</div>
+  <div class="asof">as of <b>19 Sep 2026</b><br>inflation data to <b>Aug 2026</b> · GDP data to <b>Q2 2026</b><br>headline CPI, all items</div>
 </header>
 
 <h2>The quads ahead</h2>
-<p class="lede">Each quarter gets a quad from two questions: is year-over-year growth going up or down, and is year-over-year inflation going up or down. Filled arrows are the calls the backtest says to trust.</p>
+<p class="lede">Each quarter gets a quad from two questions: is year-over-year growth going up or down, and is year-over-year inflation going up or down. Filled arrows are the calls the backtest says to trust. The month-by-month quads further down use a monthly growth measure instead of quarterly GDP.</p>
 <div class="cards"><div class="card q1 past">
 <div class="card-q">Q1 2026 <span class="card-m">Jan–Mar</span></div>
 <div class="card-quad">Quad 1</div>
@@ -181,50 +181,70 @@ code{font-family:"IBM Plex Mono",monospace;font-size:12px;background:var(--actua
 </div>
 
 <h2>Month by month</h2>
-<p class="lede">Inflation is monthly. GDP only comes quarterly, so each quarter's growth numbers sit beside its three months. "Up" or "down" for inflation is this month's year-over-year rate against last month's; for growth it is this quarter's year-over-year rate against last quarter's. The percentage after each call is how often that kind of call was right in the backtest.</p>
+<p class="lede">A quad for every month, the way Hedgeye's monthly map works. The month's growth reading is a <b>monthly growth measure</b> built from real consumer spending (55%), industrial production, real income, real retail sales and hours worked, published through Jul 2026; the next months are called the way next month's CPI is (this month's change minus what drops out of the 12-month window). GDP itself only comes quarterly and sits at the right beside its three months. Hedgeye's column is their monthly map of mid-Sep 2026, with the probability they put on it, so both can be scored as the months print.</p>
 <div class="tblwrap"><table class="wide months">
-<thead><tr class="grp"><th></th><th></th><th colspan="3">Inflation (CPI)</th><th colspan="3">GDP growth (the quarter)</th></tr>
-<tr><th>Month</th><th>Quad</th><th class="num">Month on month</th><th class="num">Year over year</th><th>Up or down</th><th class="num">The quarter, annualized</th><th class="num">Year over year</th><th>Up or down</th></tr></thead>
+<thead><tr class="grp"><th></th><th colspan="2">Quad, this month</th><th colspan="3">Growth measure (monthly)</th><th colspan="3">Inflation (CPI)</th><th colspan="3">GDP growth (the quarter)</th></tr>
+<tr><th>Month</th><th>This sheet</th><th>Hedgeye</th><th class="num">Month on month</th><th class="num">Year over year</th><th>Up or down</th><th class="num">Month on month</th><th class="num">Year over year</th><th>Up or down</th><th class="num">The quarter, annualized</th><th class="num">Year over year</th><th>Up or down</th></tr></thead>
 <tbody><tr class="realized qstart"><td class="lbl">Jun 2026 <span class="tag">actual</span></td>
-<td class="quadcell"><span class="quad q3 mini">Q3</span></td>
+<td class="quadcell"><span class="quad q1 mini">Q1</span></td><td class="quadcell"><span class="muted">—</span></td>
+<td class="num">+0.37%</td><td class="num strong-num">2.03%</td><td class="dircell"><span class="dir weak"><span class="tri">△</span>up</span> <span class="sub">lean · actual</span></td>
 <td class="num">−0.42%</td><td class="num strong-num">3.46%</td><td class="dircell"><span class="dir strong"><span class="tri">▼</span>down</span> <span class="sub">strong · 100%</span></td><td rowspan="1" class="num gq">+1.5%<br><span class="sub">actual</span></td><td rowspan="1" class="num gq strong-num">2.1%</td><td rowspan="1" class="gq"><span class="dir strong"><span class="tri">▼</span>down</span> <span class="sub">actual</span></td></tr><tr class="realized qstart"><td class="lbl">Jul 2026 <span class="tag">actual</span></td>
-<td class="quadcell"><span class="quad q4 mini">Q4</span></td>
+<td class="quadcell"><span class="quad q4 mini">Q4</span></td><td class="quadcell"><span class="quad q4 mini">Q4</span></td>
+<td class="num">−0.01%</td><td class="num strong-num">1.52%</td><td class="dircell"><span class="dir strong"><span class="tri">▼</span>down</span> <span class="sub">strong · actual</span></td>
 <td class="num">+0.07%</td><td class="num strong-num">3.30%</td><td class="dircell"><span class="dir strong"><span class="tri">▼</span>down</span> <span class="sub">good · 89%</span></td><td rowspan="3" class="num gq">+2.4%<br><span class="sub">from data so far</span></td><td rowspan="3" class="num gq strong-num">1.6%</td><td rowspan="3" class="gq"><span class="dir weak"><span class="tri">▽</span>down</span> <span class="sub">weak · 47%</span></td></tr><tr class="realized"><td class="lbl">Aug 2026 <span class="tag">actual</span></td>
-<td class="quadcell"><span class="quad q4 mini">Q4</span></td>
+<td class="quadcell"><span class="quad q2 close mini">Q2</span> <span class="sub">nowcast</span></td><td class="quadcell"><span class="quad q3 mini">Q3</span><span class="sub">55%</span></td>
+<td class="num">+0.26%</td><td class="num strong-num">1.66%</td><td class="dircell"><span class="dir weak"><span class="tri">△</span>up</span> <span class="sub">lean · 71%</span></td>
 <td class="num">+0.40%</td><td class="num strong-num">3.35%</td><td class="dircell"><span class="dir weak"><span class="tri">△</span>up</span> <span class="sub">toss-up · 67%</span></td></tr><tr class=""><td class="lbl">Sep 2026</td>
-<td class="quadcell"><span class="quad q4 mini">Q4</span></td>
+<td class="quadcell"><span class="quad q2 mini">Q2</span></td><td class="quadcell"><span class="quad q2 mini">Q2</span><span class="sub">63%</span></td>
+<td class="num">+0.21%</td><td class="num strong-num">1.79%</td><td class="dircell"><span class="dir weak"><span class="tri">△</span>up</span> <span class="sub">lean · 65%</span></td>
 <td class="num">+0.39%</td><td class="num strong-num">3.45%</td><td class="dircell"><span class="dir weak"><span class="tri">△</span>up</span> <span class="sub">lean · 90%</span></td></tr><tr class=" qstart"><td class="lbl">Oct 2026</td>
-<td class="quadcell"><span class="quad q2 mini">Q2</span></td>
+<td class="quadcell"><span class="quad q2 mini">Q2</span></td><td class="quadcell"><span class="quad q2 mini">Q2</span><span class="sub">44%</span></td>
+<td class="num">+0.21%</td><td class="num strong-num">1.98%</td><td class="dircell"><span class="dir strong"><span class="tri">▲</span>up</span> <span class="sub">good · 83%</span></td>
 <td class="num">+0.19%</td><td class="num strong-num">3.51% <abbr class="flag" title="Compared with October 2025, a month BLS never published (filled in by averaging September and November 2025)">†</abbr></td><td class="dircell"><span class="dir weak"><span class="tri">△</span>up</span> <span class="sub">lean · 90%</span></td><td rowspan="3" class="num gq">+2.3%<br><span class="sub">normal pace + rates</span></td><td rowspan="3" class="num gq strong-num">2.1%</td><td rowspan="3" class="gq"><span class="dir weak"><span class="tri">△</span>up</span> <span class="sub">weak · 47%</span></td></tr><tr class=""><td class="lbl">Nov 2026</td>
-<td class="quadcell"><span class="quad q2 mini">Q2</span></td>
+<td class="quadcell"><span class="quad q2 mini">Q2</span></td><td class="quadcell"><span class="quad q1 mini">Q1</span><span class="sub">39%</span></td>
+<td class="num">+0.21%</td><td class="num strong-num">2.13%</td><td class="dircell"><span class="dir weak"><span class="tri">△</span>up</span> <span class="sub">lean · path</span></td>
 <td class="num">+0.19%</td><td class="num strong-num">3.58%</td><td class="dircell"><span class="dir weak"><span class="tri">△</span>up</span> <span class="sub">lean · 90%</span></td></tr><tr class=""><td class="lbl">Dec 2026</td>
-<td class="quadcell"><span class="quad q2 mini">Q2</span></td>
+<td class="quadcell"><span class="quad q1 mini">Q1</span></td><td class="quadcell"><span class="quad q2 mini">Q2</span><span class="sub">70%</span></td>
+<td class="num">+0.21%</td><td class="num strong-num">2.31%</td><td class="dircell"><span class="dir strong"><span class="tri">▲</span>up</span> <span class="sub">good · path</span></td>
 <td class="num">+0.18%</td><td class="num strong-num">3.46%</td><td class="dircell"><span class="dir weak"><span class="tri">▽</span>down</span> <span class="sub">lean · 90%</span></td></tr><tr class=" qstart"><td class="lbl">Jan 2027</td>
-<td class="quadcell"><span class="quad q1 close mini">Q1</span></td>
+<td class="quadcell"><span class="quad q2 close mini">Q2</span></td><td class="quadcell"><span class="quad q2 mini">Q2</span><span class="sub">54%</span></td>
+<td class="num">+0.21%</td><td class="num strong-num">2.67%</td><td class="dircell"><span class="dir strong"><span class="tri">▲</span>up</span> <span class="sub">strong · path</span></td>
 <td class="num">+0.18%</td><td class="num strong-num">3.47%</td><td class="dircell"><span class="dir weak"><span class="tri">△</span>up</span> <span class="sub">toss-up · 67%</span></td><td rowspan="3" class="num gq">+2.2%<br><span class="sub">normal pace + rates</span></td><td rowspan="3" class="num gq strong-num">2.1%</td><td rowspan="3" class="gq"><span class="dir weak"><span class="tri">△</span>up</span> <span class="sub">weak · 47%</span></td></tr><tr class=""><td class="lbl">Feb 2027</td>
-<td class="quadcell"><span class="quad q1 close mini">Q1</span></td>
+<td class="quadcell"><span class="quad q4 mini">Q4</span></td><td class="quadcell"><span class="quad q4 mini">Q4</span><span class="sub">63%</span></td>
+<td class="num">+0.21%</td><td class="num strong-num">2.62%</td><td class="dircell"><span class="dir weak"><span class="tri">▽</span>down</span> <span class="sub">lean · path</span></td>
 <td class="num">+0.18%</td><td class="num strong-num">3.39%</td><td class="dircell"><span class="dir weak"><span class="tri">▽</span>down</span> <span class="sub">lean · 90%</span></td></tr><tr class=""><td class="lbl">Mar 2027</td>
-<td class="quadcell"><span class="quad q1 close mini">Q1</span></td>
+<td class="quadcell"><span class="quad q1 close mini">Q1</span></td><td class="quadcell"><span class="quad q1 mini">Q1</span><span class="sub">63%</span></td>
+<td class="num">+0.21%</td><td class="num strong-num">2.64%</td><td class="dircell"><span class="dir weak"><span class="tri">△</span>up</span> <span class="sub">toss-up · path</span></td>
 <td class="num">+0.18%</td><td class="num strong-num">2.68%</td><td class="dircell"><span class="dir strong"><span class="tri">▼</span>down</span> <span class="sub">strong · 100%</span></td></tr><tr class=" qstart"><td class="lbl">Apr 2027</td>
-<td class="quadcell"><span class="quad q1 mini">Q1</span></td>
+<td class="quadcell"><span class="quad q4 close mini">Q4</span></td><td class="quadcell"><span class="quad q1 mini">Q1</span><span class="sub">54%</span></td>
+<td class="num">+0.21%</td><td class="num strong-num">2.62%</td><td class="dircell"><span class="dir weak"><span class="tri">▽</span>down</span> <span class="sub">toss-up · path</span></td>
 <td class="num">+0.18%</td><td class="num strong-num">2.22%</td><td class="dircell"><span class="dir strong"><span class="tri">▼</span>down</span> <span class="sub">strong · 100%</span></td><td rowspan="3" class="num gq">+1.9%<br><span class="sub">normal pace + rates</span></td><td rowspan="3" class="num gq strong-num">2.2%</td><td rowspan="3" class="gq"><span class="dir weak"><span class="tri">△</span>up</span> <span class="sub">weak · 47%</span></td></tr><tr class=""><td class="lbl">May 2027</td>
-<td class="quadcell"><span class="quad q1 mini">Q1</span></td>
+<td class="quadcell"><span class="quad q4 mini">Q4</span></td><td class="quadcell"><span class="quad q4 mini">Q4</span><span class="sub">78%</span></td>
+<td class="num">+0.21%</td><td class="num strong-num">2.55%</td><td class="dircell"><span class="dir weak"><span class="tri">▽</span>down</span> <span class="sub">lean · path</span></td>
 <td class="num">+0.18%</td><td class="num strong-num">1.92%</td><td class="dircell"><span class="dir strong"><span class="tri">▼</span>down</span> <span class="sub">good · 89%</span></td></tr><tr class=""><td class="lbl">Jun 2027</td>
-<td class="quadcell"><span class="quad q1 mini">Q1</span></td>
+<td class="quadcell"><span class="quad q3 mini">Q3</span></td><td class="quadcell"><span class="quad q3 mini">Q3</span><span class="sub">41%</span></td>
+<td class="num">+0.21%</td><td class="num strong-num">2.39%</td><td class="dircell"><span class="dir strong"><span class="tri">▼</span>down</span> <span class="sub">good · path</span></td>
 <td class="num">+0.18%</td><td class="num strong-num">2.54%</td><td class="dircell"><span class="dir strong"><span class="tri">▲</span>up</span> <span class="sub">strong · 100%</span></td></tr><tr class=" qstart"><td class="lbl">Jul 2027</td>
-<td class="quadcell"><span class="quad q3 mini">Q3</span></td>
+<td class="quadcell"><span class="quad q2 mini">Q2</span></td><td class="quadcell"><span class="quad q2 mini">Q2</span><span class="sub">68%</span></td>
+<td class="num">+0.21%</td><td class="num strong-num">2.62%</td><td class="dircell"><span class="dir strong"><span class="tri">▲</span>up</span> <span class="sub">good · path</span></td>
 <td class="num">+0.18%</td><td class="num strong-num">2.66%</td><td class="dircell"><span class="dir weak"><span class="tri">△</span>up</span> <span class="sub">lean · 90%</span></td><td rowspan="3" class="num gq">+1.7%<br><span class="sub">normal pace + rates</span></td><td rowspan="3" class="num gq strong-num">2.1%</td><td rowspan="3" class="gq"><span class="dir weak"><span class="tri">▽</span>down</span> <span class="sub">weak · 47%</span></td></tr><tr class=""><td class="lbl">Aug 2027</td>
-<td class="quadcell"><span class="quad q3 mini">Q3</span></td>
+<td class="quadcell"><span class="quad q4 close mini">Q4</span></td><td class="quadcell"><span class="muted">—</span></td>
+<td class="num">+0.21%</td><td class="num strong-num">2.57%</td><td class="dircell"><span class="dir weak"><span class="tri">▽</span>down</span> <span class="sub">toss-up · path</span></td>
 <td class="num">+0.18%</td><td class="num strong-num">2.44%</td><td class="dircell"><span class="dir strong"><span class="tri">▼</span>down</span> <span class="sub">good · 89%</span></td></tr><tr class=""><td class="lbl">Sep 2027</td>
-<td class="quadcell"><span class="quad q3 mini">Q3</span></td>
+<td class="quadcell"><span class="quad q4 close mini">Q4</span></td><td class="quadcell"><span class="muted">—</span></td>
+<td class="num">+0.21%</td><td class="num strong-num">2.57%</td><td class="dircell"><span class="dir weak"><span class="tri">▽</span>down</span> <span class="sub">toss-up · path</span></td>
 <td class="num">+0.19%</td><td class="num strong-num">2.23%</td><td class="dircell"><span class="dir strong"><span class="tri">▼</span>down</span> <span class="sub">good · 89%</span></td></tr><tr class=" qstart"><td class="lbl">Oct 2027</td>
-<td class="quadcell"><span class="quad q4 mini">Q4</span></td>
+<td class="quadcell"><span class="quad q4 close mini">Q4</span></td><td class="quadcell"><span class="muted">—</span></td>
+<td class="num">+0.21%</td><td class="num strong-num">2.57%</td><td class="dircell"><span class="dir weak"><span class="tri">▽</span>down</span> <span class="sub">toss-up · path</span></td>
 <td class="num">+0.19%</td><td class="num strong-num">2.23%</td><td class="dircell"><span class="muted">flat</span></td><td rowspan="3" class="num gq">+1.6%<br><span class="sub">normal pace + rates</span></td><td rowspan="3" class="num gq strong-num">1.9%</td><td rowspan="3" class="gq"><span class="dir weak"><span class="tri">▽</span>down</span> <span class="sub">weak · 47%</span></td></tr><tr class=""><td class="lbl">Nov 2027</td>
-<td class="quadcell"><span class="quad q4 mini">Q4</span></td>
+<td class="quadcell"><span class="quad q1 close mini">Q1</span></td><td class="quadcell"><span class="muted">—</span></td>
+<td class="num">+0.21%</td><td class="num strong-num">2.57%</td><td class="dircell"><span class="dir weak"><span class="tri">△</span>up</span> <span class="sub">toss-up · path</span></td>
 <td class="num">+0.18%</td><td class="num strong-num">2.23%</td><td class="dircell"><span class="muted">flat</span></td></tr><tr class=""><td class="lbl">Dec 2027</td>
-<td class="quadcell"><span class="quad q4 mini">Q4</span></td>
+<td class="quadcell"><span class="quad q3 close mini">Q3</span></td><td class="quadcell"><span class="muted">—</span></td>
+<td class="num">+0.21%</td><td class="num strong-num">2.57%</td><td class="dircell"><span class="dir weak"><span class="tri">▽</span>down</span> <span class="sub">toss-up · path</span></td>
 <td class="num">+0.19%</td><td class="num strong-num">2.23%</td><td class="dircell"><span class="muted">flat</span></td></tr><tr class=" qstart"><td class="lbl">Jan 2028</td>
-<td class="quadcell">—</td>
+<td class="quadcell"><span class="quad q3 close mini">Q3</span></td><td class="quadcell"><span class="muted">—</span></td>
+<td class="num">+0.21%</td><td class="num strong-num">2.57%</td><td class="dircell"><span class="dir weak"><span class="tri">▽</span>down</span> <span class="sub">toss-up · path</span></td>
 <td class="num">+0.18%</td><td class="num strong-num">2.23%</td><td class="dircell"><span class="muted">flat</span></td><td rowspan="1" class="gq muted">—</td><td rowspan="1" class="gq"></td><td rowspan="1" class="gq"></td></tr></tbody></table></div>
 
 <h2>Inflation: what is behind the numbers</h2>
@@ -260,7 +280,7 @@ code{font-family:"IBM Plex Mono",monospace;font-size:12px;background:var(--actua
 
 <h3>Interest rates</h3>
 <ul class="story">
-<li><b>Where rates are.</b> The Fed funds rate was 3.63% through mid-September; the September hike takes it to about 3.88%, and the market expects <b>4.63% by July 2027</b>, roughly three more hikes.</li>
+<li><b>Where rates are.</b> The Fed funds rate was 3.64% through mid-September; the September hike takes it to about 3.88%, and the market expects <b>4.63% by July 2027</b>, roughly three more hikes.</li>
 <li><b>How the sheet uses that.</b> Rate hikes slow growth with a lag: in the data since 1960, growth is lower for the four quarters that start two quarters after the hikes, by about 0.4pp of annual growth per 1pp of hikes. So each quarter's assumed pace is the trend plus the effect of rate changes over the year ending two quarters earlier.</li>
 <li><b>What that means now.</b> The Fed <b>cut</b> 1.6pp over the last two years, and under that lag the cuts still help growth through Q1 2027. The new hikes start to bite in <b>Q3 2027</b>, at −0.3 to −0.4pp of annualized growth, and first change a quad in Q1 2027.</li>
 </ul>
@@ -283,6 +303,7 @@ code{font-family:"IBM Plex Mono",monospace;font-size:12px;background:var(--actua
 <tr><td class="lbl">Then "cut roughly in half" by mid-2027</td><td>yes</td><td>3.58% → 1.92% by May 2027, −46%</td><td>agree, strong call</td></tr>
 <tr><td class="lbl">Quad in Q2 2027</td><td>Quad 4</td><td>Quad 1: inflation side agrees, growth needs a print under +1.5% annualized</td><td>hinges on growth</td></tr>
 <tr><td class="lbl">Rate hikes slow growth</td><td>yes, hard, into 2027</td><td>yes, but with the lag the data show the bite lands in the second half of 2027</td><td>same story, later date</td></tr>
+<tr><td class="lbl">Monthly quad path, Jul 2026–Jul 2027</td><td>their monthly map (mid-Sep 2026)</td><td>the sheet's monthly quads agree in <b>9 of 13 months</b>; they differ in Aug (they Q3, we Q2), Nov (they Q1, we Q2), Dec (they Q2, we Q1), Apr (they Q1, we Q4)</td><td>same arithmetic, different growth measure</td></tr>
 </tbody></table></div>
 
 <h2>How often is this right?</h2>
@@ -291,6 +312,7 @@ code{font-family:"IBM Plex Mono",monospace;font-size:12px;background:var(--actua
 <thead><tr><th>The call</th><th class="num">How often it was right</th><th>What that means</th></tr></thead><tbody>
 <tr><td class="lbl">Next month's inflation: up or down</td><td class="num strong-num">90%</td><td>100% when the call is strong, 89% when good, 90% on a lean, 67% on a toss-up. The sharpest tool on the sheet.</td></tr>
 <tr><td class="lbl">Inflation for the quarter: up or down</td><td class="num strong-num">87% · 71% · 68%</td><td>this quarter · next · the one after. Strong calls (a move of 0.30pp or more) are right about 4 times in 5.</td></tr>
+<tr><td class="lbl">Growth measure, next month: up or down</td><td class="num strong-num">85% · 79% · 81%</td><td>one, two, three months past the last complete month, on the measure's own path; 90% for the month that already has most components in. Strong calls (over 0.30pp) 100%, good 94%, lean 71%, toss-up 65%. But it agrees with the <em>quarter's</em> GDP direction only 54% month by month: the monthly quad is the consumer-and-production trend, not the GDP print.</td></tr>
 <tr><td class="lbl">Growth for the quarter: up or down</td><td class="num strong-num">65% · 57% · 58%</td><td>this quarter · next · the one after. Strong calls (0.50pp or more) 73%; weak ones 47%. Without the rate effect: 65% · 59% · 64%.</td></tr>
 <tr><td class="lbl">The quad</td><td class="num strong-num">64% · 38% · 39% · 35%</td><td>this quarter · next · +2 · +3, against the first GDP release. A random guess is 25%. This quarter rises to 70% when neither side is too close to call. Without the rate effect the average is 45% instead of 40%.</td></tr>
 </tbody></table></div>

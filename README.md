@@ -699,6 +699,83 @@ the growth-side work itself, though:
   that the growth axis is now *at* its ceiling for 0–2 quarters, not that
   it got dramatically more accurate.
 
+### What has driven US growth, and what leads it
+
+Before building anything monthly, the question the subscriber asked: what
+has actually moved US growth up and down? Real GDP by component (BEA
+contributions and real levels, 1960–2026 ex-COVID; `scratchpad` study,
+numbers reproducible from the FRED component series):
+
+* **Quarter-to-quarter growth is mostly noise from three places.** Since
+  2010 the variance shares of QoQ SAAR growth are inventories 33%, consumer
+  spending 27%, net exports 21%, government 13%, fixed investment 6%. Two
+  of the top three carry no information about where the economy is going.
+* **The quad axis — the change in YoY growth — is driven by the consumer
+  and fixed investment, and they lead by about one quarter.** Over 1960–2026
+  the change in fixed investment's contribution correlates +0.51 with the
+  change in YoY growth in the same quarter and +0.42 one quarter ahead;
+  consumer spending +0.40 and +0.35. Nothing carries a lead of two quarters
+  or more. Since 1990 the same leads are +0.35 and +0.25.
+* **Growth peaks are led by investment.** In the 2000, 2006, 2015, 2022 and
+  2024 slowdowns, fixed investment's contribution peaked 3–6 quarters before
+  YoY growth did; consumer spending 1–3 quarters before in 1984, 1989, 1994,
+  2000, 2006 and 2022.
+* **Monthly leads are modest and short.** Against the change in YoY growth
+  one to two quarters ahead (1990–2026): Chicago Fed national activity
+  +0.32 / 58% sign agreement, Baa credit spread +0.24 / 60–63%, financial
+  conditions (NFCI) +0.22–0.30 / 55–66%, new home sales +0.28 / 58%,
+  building permits +0.25 / 58%, equities +0.21 / 55%. Coincident, not
+  leading: manufacturing hours (+0.46), real retail sales, industrial
+  production, capacity utilization, housing starts. At three quarters
+  nothing beats a coin flip. That is the same negative result the direct
+  forecasting experiments found, now with the reason attached: the things
+  that move the quad axis lead it by one quarter, and the rest is noise.
+
+### The monthly growth measure
+
+The subscriber's brief is a growth call one or two months ahead with a
+good hit rate and strong direction, the same shape as the CPI call, and
+the ability to score a monthly quad map (Hedgeye's is monthly). Quarterly
+GDP cannot supply that, so `usmodel/monthly_growth.py` builds a monthly
+measure of real activity from the NBER-style coincident set, weighted
+toward the consumer because that is what GDP is made of: real PCE 0.55,
+industrial production 0.15, real personal income ex transfers 0.10, real
+retail sales 0.10, payrolls × hours 0.10 (geometric index). Against real
+GDP on final data (2008–2026) its quarterly-average YoY correlates 0.97
+with GDP YoY, and the direction of its change agrees with the quad axis
+two quarters in three — the third is inventories, imports and government.
+
+Its next month can be called exactly like next month's CPI: the change in
+YoY = this month's MoM minus the MoM that drops out of the 12-month window,
+and only the first term is a forecast (each component's trailing 6-month
+mean where it has not printed, its actual value where it has). Walk-forward
+2010–2026 ex-COVID, point-in-time with each component's release lag, as-of
+the 20th and the end of every month (`results_us/us_growth_monthly.csv`):
+
+| Call | n | Right on the measure's own path | Right vs BBK monthly GDP | Right vs the quarter's GDP direction |
+|---|---|---|---|---|
+| **+1 month, all calls** | 367 | 85% | 59% | 54% |
+| +1 month, target month already has 3 of 5 components in (as-of the 20th) | 199 | 90% | 62% | 55% |
+| +1 month, strong (move over 0.30pp) | 104 | 100% | 69% | 69% |
+| +1 month, call (0.15–0.30pp) | 108 | 94% | 57% | 47% |
+| +1 month, lean (0.05–0.15pp) | 107 | 71% | 53% | 51% |
+| +1 month, toss-up (under 0.05pp) | 48 | 65% | 54% | 48% |
+| **+2 months, all calls** | 366 | 79% | 55% | 54% |
+| +2 months, strong | 95 | 100% | 61% | 62% |
+| **+3 months, all calls** | 366 | 81% | 56% | 51% |
+| +3 months, strong | 107 | 100% | 61% | 60% |
+
+Read it the way it is meant: **the measure's own direction one month out is
+called 85% of the time, 91% once most of the month's components are in,
+and 100% of the time when the move is larger than 0.30pp** — that is the
+monthly quad map's growth axis, and the sheet shows the monthly quads with
+Hedgeye's path beside them. But it is the consumer-and-production trend,
+not the GDP print: month by month it agrees with the *quarter's* GDP
+direction only 54% of the time (59% with the Chicago Fed's monthly GDP),
+because a quarter's YoY change is decided by the noise components above.
+The quarterly quad therefore still comes from GDP, and the monthly quad is
+the read underneath it. `python us_sheet.py` puts both on the page.
+
 ### The pace past the nowcast quarter
 
 Past the nowcast quarter the path is a constant, and the constant is a

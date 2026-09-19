@@ -35,7 +35,8 @@ INDICATOR_NAMES = ("payrolls", "indpro", "retail", "claims", "cfnai",
                    "real_pce_durables", "real_pce_nondurables",
                    "real_pce_services", "real_retail", "consumer_credit",
                    "gasoline_retail", "fed_funds", "treasury_10y",
-                   "mortgage_30y", "household_net_worth")
+                   "mortgage_30y", "household_net_worth",
+                   "real_income_ex_transfers", "hours_all", "bbk_gdp", "wei")
 
 
 @dataclass

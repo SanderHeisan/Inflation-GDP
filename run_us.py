@@ -21,7 +21,7 @@ import pandas as pd
 
 from quadmap import quads
 from usmodel import (config, data_bundle, gdp as gdp_mod,
-                     growth_direction, inflation)
+                     growth_direction, inflation, monthly_growth)
 
 
 def _demo_inputs(horizon_months: int):
@@ -29,7 +29,7 @@ def _demo_inputs(horizon_months: int):
     assumptions = data_bundle.assumptions_from_bundle(bundle)
     aux = {"market_rent": bundle.market_rent, "dollar": bundle.dollar}
     return (bundle.cpi, bundle.gdp, assumptions, aux, {},
-            bundle.gdp.index[-1], "synthetic demo", {}, None, None)
+            bundle.gdp.index[-1], "synthetic demo", {}, None, None, None)
 
 
 def _live_inputs(horizon_months: int):
@@ -79,8 +79,38 @@ def _live_inputs(horizon_months: int):
     consumer = growth_direction.consumer_state(v.indicator_panel,
                                                v.last_gdp_quarter)
     real_pce = v.indicator_panel.get("real_pce")
+    mg_index = monthly_growth.activity_index(v.indicator_panel, horizon_months=3)
     return (v.cpi_index, v.gdp_level, v.assumptions, v.aux, v.indicators,
-            v.last_gdp_quarter, note, consumer, real_pce, rs)
+            v.last_gdp_quarter, note, consumer, real_pce, rs, mg_index)
+
+
+def _monthly_growth_block(index) -> str:
+    """The monthly growth measure: its last months, and the near-term calls
+    on its own direction with the backtested hit rate for each conviction
+    bucket (results_us/us_growth_monthly.csv: 2010-2026 ex-COVID, own
+    truth, 85% one month ahead, 100% when the move is over 0.30pp)."""
+    if index is None:
+        return "  (monthly growth measure unavailable: components missing)"
+    hit = {"toss-up (<0.05pp)": 0.65, "lean (0.05-0.15pp)": 0.71,
+           "call (0.15-0.30pp)": 0.93, "strong (>0.30pp)": 1.00}
+    last = index.attrs["last_complete"]
+    lines = [f"  index of real PCE .55, IP .15, real income ex transfers .10, real "
+             f"retail .10, payrolls x hours .10; complete through {last}"]
+    tail = index.loc[last - 5:]
+    for m, r in tail.iterrows():
+        d = r["yoy_pct"] - index["yoy_pct"].get(m - 1, float("nan"))
+        comps = "" if r["status"] == "actual" else f"  [{int(r['n_actual'])}/5 components in]"
+        lines.append(f"  {str(m):8s} {r['status']:9s} MoM {r['mom_pct']:+.2f}%  "
+                     f"YoY {r['yoy_pct']:.2f}% ({d:+.2f}pp {'up' if d > 0 else 'down'})"
+                     f"{comps}")
+    calls = monthly_growth.growth_calls(index, 3)
+    for t, c in calls.iterrows():
+        lines.append(f"  call for {t}: {c['direction']:4s} {c['conviction_pp']:.2f}pp "
+                     f"{c['bucket']:20s} -> right {hit[c['bucket']]:.0%} of the time "
+                     f"({c['status']})")
+    lines.append("  Agrees with the QUARTER's GDP direction about 2 months in 3; "
+                 "the third is inventories, imports and government.")
+    return "\n".join(lines)
 
 
 def _rates_block(rs: dict, trend_qoq_pct: float) -> str:
@@ -225,12 +255,14 @@ def _direction_block(table, gdp_hist, gdp_full, cpi_full, last_real,
 
 def run(demo: bool = False, horizon_months: int = 15):
     (cpi_hist, gdp_hist, assumptions, aux, indicators, last_real, note,
-     consumer, real_pce, rate_state) = (_demo_inputs(horizon_months) if demo
-                                        else _live_inputs(horizon_months))
+     consumer, real_pce, rate_state, mg_index) = (
+         _demo_inputs(horizon_months) if demo else _live_inputs(horizon_months))
     print(f"\nUS GIP Quad Map | {note}")
     if not demo:
         print("\n=== The consumer (published data, vs its own trailing decade) ===")
         print(_consumer_block(consumer))
+        print("\n=== The monthly growth measure (the near-term growth call) ===")
+        print(_monthly_growth_block(mg_index))
         print("\n=== The rate channel (policy rate -> growth, 2-6 quarters later) ===")
         print(_rates_block(rate_state, rate_state.get("pace_qoq_pct",
                                                       config.GDP_TREND_QOQ * 100)))

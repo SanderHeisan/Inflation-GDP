@@ -22,7 +22,7 @@ import numpy as np
 import pandas as pd
 
 from quadmap import quads
-from usmodel import config as ucfg, data_bundle, gdp as gdp_mod, growth_direction, inflation, rates
+from usmodel import config as ucfg, data_bundle, gdp as gdp_mod, growth_direction, inflation, monthly_growth as mg, rates
 from usbacktest.btconfig import RESULTS_DIR, USVintageConfig
 from usbacktest.monthly import bucket_label as cpi_bucket
 from usbacktest.vintage import build_vintage, truncate
@@ -39,6 +39,16 @@ QUAD_PLAIN = {1: "growth up, inflation down", 2: "growth up, inflation up",
 HAWKISH_STEPS = {"2026-09-18": 3.88, "2026-10-28": 4.13, "2026-12-09": 4.38,
                  "2027-01-27": 4.63, "2027-03-17": 4.88, "2027-04-28": 5.13,
                  "2027-06-09": 5.38, "2027-07-28": 5.63}
+# Hedgeye's monthly quad path as read off the "U.S. MONTHLY QUAD FORECAST"
+# chart the subscriber supplied (dated mid-September 2026; "the Hedgeye GIP
+# Model has changed to Quad 2 for September"), with the probability they
+# attached to the most likely quad. Shown beside the sheet's own monthly
+# quads so both can be scored as the months print.
+HEDGEYE_MONTHLY = {"2026-07": (4, None), "2026-08": (3, 0.55), "2026-09": (2, 0.63), "2026-10": (2, 0.44),
+                   "2026-11": (1, 0.39), "2026-12": (2, 0.70), "2027-01": (2, 0.54), "2027-02": (4, 0.63),
+                   "2027-03": (1, 0.63), "2027-04": (1, 0.54), "2027-05": (4, 0.78), "2027-06": (3, 0.41),
+                   "2027-07": (2, 0.68)}
+HEDGEYE_MONTHLY_ASOF = "mid-Sep 2026"
 # The fastest transmission the 1960-2026 record shows: the lag-2 coefficient
 # of the free distributed lag (pp of quarterly growth per 1pp quarterly
 # change in the policy rate). Used only for the "even at the fastest bite"
@@ -86,6 +96,9 @@ def build() -> dict:
     dirh = pd.read_csv(R / "us_direction.csv").set_index(["call", "horizon"])
     cpid = pd.read_csv(R / "us_cpi_direction.csv").set_index("bucket")
     rcmp = pd.read_csv(R / "us_rate_channel.csv", index_col=0)
+    mgs = pd.read_csv(R / "us_growth_monthly.csv").set_index(["horizon", "bucket"])
+    mgc = pd.read_csv(R / "us_growth_monthly_calls.csv")
+    mgc = mgc[~mgc["covid"]]
     on, off = rcmp.loc["shipped setting"], rcmp.loc["the other setting"]
     g = dcalls[(dcalls.call == "growth_yoy") & dcalls.made_call].copy(); g["hit"] = g["hit"].astype(float)
     stats = {
@@ -103,6 +116,11 @@ def build() -> dict:
         "cpi_callable": float(cpid.loc["callable (>=0.05pp)", "hit_rate"]),
         "cpi": {k: float(cpid.loc[k, "hit_rate"]) for k in ("coin-flip (<0.05pp)", "lean (0.05-0.15pp)",
                                                              "call (0.15-0.30pp)", "high conviction (>0.30pp)")},
+        "mg": {"h1": float(mgs.loc[(1, "ALL"), "hit_own"]), "h2": float(mgs.loc[(2, "ALL"), "hit_own"]), "h3": float(mgs.loc[(3, "ALL"), "hit_own"]),
+               "h1_nowcast": float(mgc[(mgc.horizon == 1) & (mgc.status == "nowcast")]["hit_own"].mean()),
+               "gdp_q": float(mgs.loc[(1, "ALL"), "hit_gdp_q"]), "bbk": float(mgs.loc[(1, "ALL"), "hit_bbk"]),
+               "buckets": {b: float(mgs.loc[(1, b), "hit_own"]) for b in [x[2] for x in mg.BUCKETS] if (1, b) in mgs.index},
+               "n": int(mgs.loc[(1, "ALL"), "n"])},
         "rate": {"on": {h: float(on[f"growth_dir_h{h}"]) for h in range(5)},
                  "off": {h: float(off[f"growth_dir_h{h}"]) for h in range(5)},
                  "quad_mean_on": float(on["quad_hit_mean"]), "quad_mean_off": float(off["quad_hit_mean"]),
@@ -159,6 +177,14 @@ def build() -> dict:
         })
     qmap = {qq["q"]: qq for qq in quarters}
 
+    # ---- the monthly growth measure and monthly quads ----
+    mgi = mg.activity_index(v.indicator_panel, horizon_months=H + 3)
+    mg_last = mgi.attrs["last_complete"] if mgi is not None else None
+    mq = mg.monthly_quads(mgi["yoy_pct"], yoy, deadband_pp=0.05) if mgi is not None else pd.DataFrame()
+    mg_calls = mg.growth_calls(mgi, 3) if mgi is not None else pd.DataFrame()
+    def mg_hit(bucket, h):
+        key = (min(max(h, 1), 3), bucket)
+        return float(mgs.loc[key, "hit_own"]) if key in mgs.index else None
     # ---- months ----
     months = []
     for m in pd.period_range(last_m - 2, periods=H + 3, freq="M"):
@@ -173,6 +199,19 @@ def build() -> dict:
                "base_filled": str(m - 12) in b.filled.get("cpi", [])}
         if not realized:
             row["contrib"] = {k: float(cpi.loc[m, f"contrib_{k}"]) for k in ("gasoline", "shelter", "core_goods", "supercore")}
+        # the monthly growth measure and the monthly quad
+        if mgi is not None and m in mgi.index and m in mq.index:
+            r = mgi.loc[m]; qq_m = mq.loc[m]
+            h = int((m - mg_last).n) if m > mg_last else 0
+            dgm = float(qq_m["d_growth"])
+            row["mg"] = {"status": str(r["status"]), "n_actual": int(r["n_actual"]), "h": h,
+                         "mom": float(r["mom_pct"]), "yoy": float(r["yoy_pct"]), "d_yoy": dgm,
+                         "dir": "up" if dgm > 0 else "down", "bucket": mg.bucket_label(abs(dgm)),
+                         "hit": mg_hit(mg.bucket_label(abs(dgm)), h) if 1 <= h <= 3 else None}
+            row["mquad"] = {"quad": int(qq_m["quad"]), "close": bool(qq_m["close"]),
+                            "status": "actual" if (r["status"] == "actual" and realized) else ("nowcast" if r["status"] == "nowcast" or (r["status"] == "actual" and not realized) else "forecast")}
+        hg = HEDGEYE_MONTHLY.get(str(m))
+        row["hedgeye"] = {"quad": hg[0], "prob": hg[1]} if hg else None
         months.append(row)
 
     # ---- chart: inflation YoY monthly, growth YoY quarterly, quad bands ----
@@ -263,6 +302,7 @@ def build() -> dict:
             "cpi_through": last_m.strftime("%b %Y"), "gdp_through": f"Q{last_q.quarter} {last_q.year}",
             "next_cpi_month": nxt["label"], "trend_ann": ann(trend_q), "nowcast_ann": ann(nowcast_q), "k": int(d["nowcast_k"]),
             "pace_mode": str(d["pace_mode"]), "pace_ann": ann(float(d["pace_qoq_pct"])), "pace_persistence": float(d["pace_persistence"]),
+            "mg_last": str(mg_last) if mg_last is not None else None, "hedgeye_monthly_asof": HEDGEYE_MONTHLY_ASOF,
             "wti_last_cpi": float(v.assumptions["wti_recent"]), "wti_now": float(wti_m.iloc[-1]), "pump_now": float(pump_m.iloc[-1]),
             "pump_mom": float(pump_m.iloc[-1] / pump_m.iloc[-2] - 1) * 100, "rent_yoy": float(d["market_rent_yoy"]),
             "wage_yoy": float(d["wage_yoy"]), "last_cpi_yoy": float(yoy[last_m]), "filled": b.filled.get("cpi", []),
@@ -398,11 +438,26 @@ def render(D: dict) -> str:
     groups = {}
     for i, m in enumerate(MO):
         groups.setdefault(m["quarter"], []).append(i)
+    MGW = {"toss-up (<0.05pp)": "toss-up", "lean (0.05-0.15pp)": "lean", "call (0.15-0.30pp)": "good", "strong (>0.30pp)": "strong"}
     for i, m in enumerate(MO):
         q = qmap.get(m["quarter"]); idxs = groups[m["quarter"]]; first = i == idxs[0]
         cls = ("realized" if m["realized"] else "") + (" qstart" if first else "")
         d_cell = ('<span class="muted">flat</span>' if abs(m["d_yoy"]) < 0.005 else
                   f'{arrow(m["dir"], m["word"] in ("strong", "good"))} <span class="sub">{m["word"]} · {pct(m["hit"])}</span>')
+        g_ = m.get("mg"); mq_ = m.get("mquad"); hg_ = m.get("hedgeye")
+        if mq_:
+            tag_ = {"actual": "", "nowcast": ' <span class="sub">nowcast</span>', "forecast": ""}[mq_["status"]]
+            mquad_cell = chip(mq_["quad"], mq_["close"], small=True) + tag_
+        else:
+            mquad_cell = "—"
+        hg_cell = (f'{chip(hg_["quad"], False, small=True)}' + (f'<span class="sub">{hg_["prob"] * 100:.0f}%</span>' if hg_["prob"] else "")) if hg_ else '<span class="muted">—</span>'
+        if g_:
+            word = MGW[g_["bucket"]]
+            g_dir = (f'{arrow(g_["dir"], word in ("strong", "good"))} <span class="sub">{word}'
+                     + (f' · {pct(g_["hit"])}' if g_["hit"] is not None else (" · actual" if g_["status"] == "actual" and m["realized"] else " · path")) + '</span>')
+            g_cells = (f'<td class="num">{sgn(g_["mom"])}%</td><td class="num strong-num">{g_["yoy"]:.2f}%</td><td class="dircell">{g_dir}</td>')
+        else:
+            g_cells = '<td class="num muted">—</td><td class="num muted">—</td><td class="muted">—</td>'
         flag = ' <abbr class="flag" title="Compared with October 2025, a month BLS never published (filled in by averaging September and November 2025)">†</abbr>' if m["base_filled"] else ""
         gcells = ""
         if first and q:
@@ -415,7 +470,8 @@ def render(D: dict) -> str:
         elif first:
             gcells = f'<td rowspan="{len(idxs)}" class="gq muted">—</td><td rowspan="{len(idxs)}" class="gq"></td><td rowspan="{len(idxs)}" class="gq"></td>'
         mrows.append(f'''<tr class="{cls}"><td class="lbl">{m["label"]}{' <span class="tag">actual</span>' if m["realized"] else ''}</td>
-<td class="quadcell">{chip(m["quad"], m["close"], small=True) if m["quad"] else "—"}</td>
+<td class="quadcell">{mquad_cell}</td><td class="quadcell">{hg_cell}</td>
+{g_cells}
 <td class="num">{sgn(m["mom"])}%</td><td class="num strong-num">{m["yoy"]:.2f}%{flag}</td><td class="dircell">{d_cell}</td>{gcells}</tr>''')
 
     # ---- inflation drivers ----
@@ -504,12 +560,18 @@ def render(D: dict) -> str:
                         f'a hike at every meeting with the fastest response on record takes about {fast2:.1f}pp off it, {"most" if fast2 >= 0.6 * gap2 else "part"} of that margin, so rates alone do not quite get there on the historical lag.')
                      + ' Hikes take at least two quarters to bite, and the 2024–26 cuts are still working in the other direction; so the timing, not the size, is what decides it.')
 
+    # ---- Hedgeye's monthly path against ours ----
+    hg_rows = [m for m in MO if m.get("hedgeye") and m.get("mquad")]
+    hg_n = len(hg_rows); hg_agree = sum(1 for m in hg_rows if m["hedgeye"]["quad"] == m["mquad"]["quad"])
+    hg_diff = ", ".join(f'{m["label"].split()[0]} (they Q{m["hedgeye"]["quad"]}, we Q{m["mquad"]["quad"]})' for m in hg_rows if m["hedgeye"]["quad"] != m["mquad"]["quad"]) or "no month"
+    hg_first = hg_rows[0]["label"] if hg_rows else ""; hg_last = hg_rows[-1]["label"] if hg_rows else ""
     # ---- trust table ----
     gh, iy, qh = ST["growth_yoy"], ST["infl_yoy"], ST["quad_hit"]
     trust = f'''<table class="trust">
 <thead><tr><th>The call</th><th class="num">How often it was right</th><th>What that means</th></tr></thead><tbody>
 <tr><td class="lbl">Next month's inflation: up or down</td><td class="num strong-num">{pct(ST["cpi_all"])}</td><td>{pct(ST["cpi"]["high conviction (>0.30pp)"])} when the call is strong, {pct(ST["cpi"]["call (0.15-0.30pp)"])} when good, {pct(ST["cpi"]["lean (0.05-0.15pp)"])} on a lean, {pct(ST["cpi"]["coin-flip (<0.05pp)"])} on a toss-up. The sharpest tool on the sheet.</td></tr>
 <tr><td class="lbl">Inflation for the quarter: up or down</td><td class="num strong-num">{pct(iy[0])} · {pct(iy[1])} · {pct(iy[2])}</td><td>this quarter · next · the one after. Strong calls (a move of 0.30pp or more) are right about 4 times in 5.</td></tr>
+<tr><td class="lbl">Growth measure, next month: up or down</td><td class="num strong-num">{pct(ST["mg"]["h1"])} · {pct(ST["mg"]["h2"])} · {pct(ST["mg"]["h3"])}</td><td>one, two, three months past the last complete month, on the measure's own path; {pct(ST["mg"]["h1_nowcast"])} for the month that already has most components in. Strong calls (over 0.30pp) {pct(ST["mg"]["buckets"].get("strong (>0.30pp)", 0))}, good {pct(ST["mg"]["buckets"].get("call (0.15-0.30pp)", 0))}, lean {pct(ST["mg"]["buckets"].get("lean (0.05-0.15pp)", 0))}, toss-up {pct(ST["mg"]["buckets"].get("toss-up (<0.05pp)", 0))}. But it agrees with the <em>quarter's</em> GDP direction only {pct(ST["mg"]["gdp_q"])} month by month: the monthly quad is the consumer-and-production trend, not the GDP print.</td></tr>
 <tr><td class="lbl">Growth for the quarter: up or down</td><td class="num strong-num">{pct(gh[0])} · {pct(gh[1])} · {pct(gh[2])}</td><td>this quarter · next · the one after. Strong calls (0.50pp or more) {pct(ST["growth_strong"])}; weak ones {pct(ST["growth_weak"])}. Without the rate effect: {pct(RS["off"][0])} · {pct(RS["off"][1])} · {pct(RS["off"][2])}.</td></tr>
 <tr><td class="lbl">The quad</td><td class="num strong-num">{pct(qh[0])} · {pct(qh[1])} · {pct(qh[2])} · {pct(qh[3])}</td><td>this quarter · next · +2 · +3, against the first GDP release. A random guess is 25%. This quarter rises to {pct(ST["quad_hit_hc0"])} when neither side is too close to call. Without the rate effect the average is {pct(RS["quad_mean_off"])} instead of {pct(RS["quad_mean_on"])}.</td></tr>
 </tbody></table>'''
@@ -586,7 +648,7 @@ b{{font-weight:700}}
 .tip{{position:absolute;pointer-events:none;background:var(--ink);color:var(--ground);font:12.5px "IBM Plex Mono",monospace;padding:6px 9px;border-radius:4px;white-space:nowrap;visibility:hidden;z-index:2}}
 /* tables */
 .tblwrap{{overflow-x:auto;border:1px solid var(--rule);border-radius:6px;background:var(--surface);margin-top:12px}}
-table{{border-collapse:collapse;width:100%;font-size:13.5px}} table.wide{{min-width:900px}} table.months{{min-width:1000px}}
+table{{border-collapse:collapse;width:100%;font-size:13.5px}} table.wide{{min-width:900px}} table.months{{min-width:1260px}}
 thead th{{text-align:left;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-2);font-weight:600;padding:10px 10px 8px;border-bottom:2px solid var(--ink);white-space:nowrap;vertical-align:bottom}}
 thead th.num{{text-align:right}} thead .grp th{{border-bottom:1px solid var(--rule);color:var(--accent);letter-spacing:.12em;padding-top:12px}}
 tbody td{{padding:7px 10px;border-bottom:1px solid var(--rule-2);vertical-align:middle}}
@@ -633,7 +695,7 @@ code{{font-family:"IBM Plex Mono",monospace;font-size:12px;background:var(--actu
 </header>
 
 <h2>The quads ahead</h2>
-<p class="lede">Each quarter gets a quad from two questions: is year-over-year growth going up or down, and is year-over-year inflation going up or down. Filled arrows are the calls the backtest says to trust.</p>
+<p class="lede">Each quarter gets a quad from two questions: is year-over-year growth going up or down, and is year-over-year inflation going up or down. Filled arrows are the calls the backtest says to trust. The month-by-month quads further down use a monthly growth measure instead of quarterly GDP.</p>
 <div class="cards">{"".join(cards)}</div>
 <p class="legend-inline"><b>Quad 1</b> growth up, inflation down (best for stocks) &nbsp;·&nbsp; <b>Quad 2</b> both up &nbsp;·&nbsp; <b>Quad 3</b> growth down, inflation up (worst) &nbsp;·&nbsp; <b>Quad 4</b> both down (bonds, defensives). "Too close to call" means one side moves by less than 0.10pp.</p>
 
@@ -649,10 +711,10 @@ code{{font-family:"IBM Plex Mono",monospace;font-size:12px;background:var(--actu
 </div>
 
 <h2>Month by month</h2>
-<p class="lede">Inflation is monthly. GDP only comes quarterly, so each quarter's growth numbers sit beside its three months. "Up" or "down" for inflation is this month's year-over-year rate against last month's; for growth it is this quarter's year-over-year rate against last quarter's. The percentage after each call is how often that kind of call was right in the backtest.</p>
+<p class="lede">A quad for every month, the way Hedgeye's monthly map works. The month's growth reading is a <b>monthly growth measure</b> built from real consumer spending (55%), industrial production, real income, real retail sales and hours worked, published through {M["mg_last"] and pd.Period(M["mg_last"], "M").strftime("%b %Y")}; the next months are called the way next month's CPI is (this month's change minus what drops out of the 12-month window). GDP itself only comes quarterly and sits at the right beside its three months. Hedgeye's column is their monthly map of {M["hedgeye_monthly_asof"]}, with the probability they put on it, so both can be scored as the months print.</p>
 <div class="tblwrap"><table class="wide months">
-<thead><tr class="grp"><th></th><th></th><th colspan="3">Inflation (CPI)</th><th colspan="3">GDP growth (the quarter)</th></tr>
-<tr><th>Month</th><th>Quad</th><th class="num">Month on month</th><th class="num">Year over year</th><th>Up or down</th><th class="num">The quarter, annualized</th><th class="num">Year over year</th><th>Up or down</th></tr></thead>
+<thead><tr class="grp"><th></th><th colspan="2">Quad, this month</th><th colspan="3">Growth measure (monthly)</th><th colspan="3">Inflation (CPI)</th><th colspan="3">GDP growth (the quarter)</th></tr>
+<tr><th>Month</th><th>This sheet</th><th>Hedgeye</th><th class="num">Month on month</th><th class="num">Year over year</th><th>Up or down</th><th class="num">Month on month</th><th class="num">Year over year</th><th>Up or down</th><th class="num">The quarter, annualized</th><th class="num">Year over year</th><th>Up or down</th></tr></thead>
 <tbody>{"".join(mrows)}</tbody></table></div>
 
 <h2>Inflation: what is behind the numbers</h2>
@@ -711,6 +773,7 @@ code{{font-family:"IBM Plex Mono",monospace;font-size:12px;background:var(--actu
 <tr><td class="lbl">Then "cut roughly in half" by mid-2027</td><td>yes</td><td>{M["peak"]["yoy"]:.2f}% → {M["trough"]["yoy"]:.2f}% by {M["trough"]["label"]}, −{(1 - M["trough"]["yoy"] / M["peak"]["yoy"]) * 100:.0f}%</td><td>agree, strong call</td></tr>
 <tr><td class="lbl">Quad in Q2 2027</td><td>Quad 4</td><td>Quad {q2["quad"]}: inflation side agrees, growth needs a print under {q2["bar_ann"]:+.1f}% annualized</td><td>hinges on growth</td></tr>
 <tr><td class="lbl">Rate hikes slow growth</td><td>yes, hard, into 2027</td><td>yes, but with the lag the data show the bite lands in the second half of 2027</td><td>same story, later date</td></tr>
+<tr><td class="lbl">Monthly quad path, {hg_first}–{hg_last}</td><td>their monthly map ({M["hedgeye_monthly_asof"]})</td><td>the sheet's monthly quads agree in <b>{hg_agree} of {hg_n} months</b>; they differ in {hg_diff}</td><td>same arithmetic, different growth measure</td></tr>
 </tbody></table></div>
 
 <h2>How often is this right?</h2>

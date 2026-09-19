@@ -1,7 +1,7 @@
 {
  "meta": {
-  "asof": "18 Sep 2026",
-  "asof_iso": "2026-09-18",
+  "asof": "19 Sep 2026",
+  "asof_iso": "2026-09-19",
   "cpi_through": "Aug 2026",
   "gdp_through": "Q2 2026",
   "next_cpi_month": "Sep 2026",
@@ -11,6 +11,8 @@
   "pace_mode": "potential",
   "pace_ann": 2.000000000000024,
   "pace_persistence": 0.0,
+  "mg_last": "2026-07",
+  "hedgeye_monthly_asof": "mid-Sep 2026",
   "wti_last_cpi": 83.89761904761905,
   "wti_now": 97.462,
   "pump_now": 4.238,
@@ -198,15 +200,15 @@
    "close": true,
    "quad_off": 4,
    "close_off": true,
-   "g_yoy": 2.100921096840591,
-   "dg": 0.03938717500038269,
+   "g_yoy": 2.1006488647331345,
+   "dg": 0.03911494289292605,
    "g_dir": "up",
    "g_strong": false,
    "g_hit": 0.46984126984126984,
-   "qoq": 0.5570460917637243,
-   "qoq_ann": 2.2468716248806864,
+   "qoq": 0.5567779760965674,
+   "qoq_ann": 2.2457811442182063,
    "qoq_off": 0.49629315732038215,
-   "level": 24688.430524075455,
+   "level": 24688.36469721122,
    "is_nowcast": false,
    "is_trend": true,
    "bar": 0.518254492928083,
@@ -234,15 +236,15 @@
    "close": false,
    "quad_off": 1,
    "close_off": false,
-   "g_yoy": 2.217195591628829,
-   "dg": 0.1162744947882377,
+   "g_yoy": 2.2169230494982095,
+   "dg": 0.116274184765075,
    "g_dir": "up",
    "g_strong": false,
    "g_hit": 0.46984126984126984,
    "qoq": 0.48317071168051395,
    "qoq_ann": 1.9467352566622242,
    "qoq_off": 0.49629315732038215,
-   "level": 24807.71778954138,
+   "level": 24807.651644621015,
    "is_nowcast": false,
    "is_trend": true,
    "bar": 0.36886871149750533,
@@ -270,15 +272,15 @@
    "close": false,
    "quad_off": 3,
    "close_off": false,
-   "g_yoy": 2.0513418562401853,
-   "dg": -0.16585373538864356,
+   "g_yoy": 2.0510697563260516,
+   "dg": -0.1658532931721579,
    "g_dir": "down",
    "g_strong": false,
    "g_hit": 0.46984126984126984,
    "qoq": 0.4318312318220885,
    "qoq_ann": 1.7385458656756336,
    "qoq_off": 0.49629315732038215,
-   "level": 24914.845262858904,
+   "level": 24914.778832304113,
    "is_nowcast": false,
    "is_trend": true,
    "bar": 0.5950529402165189,
@@ -306,15 +308,15 @@
    "close": false,
    "quad_off": 4,
    "close_off": true,
-   "g_yoy": 1.8935393564260883,
-   "dg": -0.157802499814097,
+   "g_yoy": 1.893267677261412,
+   "dg": -0.1578020790646395,
    "g_dir": "down",
    "g_strong": false,
    "g_hit": 0.46984126984126984,
    "qoq": 0.4082571185429318,
    "qoq_ann": 1.6430561527607246,
    "qoq_off": 0.49629315732038215,
-   "level": 25016.56189221848,
+   "level": 25016.495190456222,
    "is_nowcast": false,
    "is_trend": true,
    "bar": 0.5637593621136139,
@@ -347,7 +349,24 @@
    "word": "strong",
    "hit": 1.0,
    "bar": 0.2541949971929469,
-   "base_filled": false
+   "base_filled": false,
+   "mg": {
+    "status": "actual",
+    "n_actual": 5,
+    "h": 0,
+    "mom": 0.36635046264741794,
+    "yoy": 2.0251347219921723,
+    "d_yoy": 0.1402195352487201,
+    "dir": "up",
+    "bucket": "lean (0.05-0.15pp)",
+    "hit": null
+   },
+   "mquad": {
+    "quad": 1,
+    "close": false,
+    "status": "actual"
+   },
+   "hedgeye": null
   },
   {
    "m": "2026-07",
@@ -364,7 +383,27 @@
    "word": "good",
    "hit": 0.8947368421052632,
    "bar": 0.22835098853577485,
-   "base_filled": false
+   "base_filled": false,
+   "mg": {
+    "status": "actual",
+    "n_actual": 5,
+    "h": 0,
+    "mom": -0.007030726322287959,
+    "yoy": 1.5240933198905404,
+    "d_yoy": -0.5010414021016318,
+    "dir": "down",
+    "bucket": "strong (>0.30pp)",
+    "hit": null
+   },
+   "mquad": {
+    "quad": 4,
+    "close": false,
+    "status": "actual"
+   },
+   "hedgeye": {
+    "quad": 4,
+    "prob": null
+   }
   },
   {
    "m": "2026-08",
@@ -381,7 +420,27 @@
    "word": "toss-up",
    "hit": 0.6666666666666666,
    "bar": 0.3482644202266627,
-   "base_filled": false
+   "base_filled": false,
+   "mg": {
+    "status": "nowcast",
+    "n_actual": 3,
+    "h": 1,
+    "mom": 0.25932934034918814,
+    "yoy": 1.6609180957598113,
+    "d_yoy": 0.1368247758692709,
+    "dir": "up",
+    "bucket": "lean (0.05-0.15pp)",
+    "hit": 0.7075471698113207
+   },
+   "mquad": {
+    "quad": 2,
+    "close": true,
+    "status": "nowcast"
+   },
+   "hedgeye": {
+    "quad": 3,
+    "prob": 0.55
+   }
   },
   {
    "m": "2026-09",
@@ -404,6 +463,26 @@
     "shelter": 0.08448663161982789,
     "core_goods": 0.006366862862979571,
     "supercore": 0.04812052200498313
+   },
+   "mg": {
+    "status": "forecast",
+    "n_actual": 0,
+    "h": 2,
+    "mom": 0.21110458279983996,
+    "yoy": 1.7891693609887183,
+    "d_yoy": 0.12825126522890695,
+    "dir": "up",
+    "bucket": "lean (0.05-0.15pp)",
+    "hit": 0.6494845360824743
+   },
+   "mquad": {
+    "quad": 2,
+    "close": false,
+    "status": "forecast"
+   },
+   "hedgeye": {
+    "quad": 2,
+    "prob": 0.63
    }
   },
   {
@@ -427,6 +506,26 @@
     "shelter": 0.08534104915606078,
     "core_goods": 0.006566670346455267,
     "supercore": 0.04812052200498313
+   },
+   "mg": {
+    "status": "forecast",
+    "n_actual": 0,
+    "h": 3,
+    "mom": 0.21110458279983996,
+    "yoy": 1.9848514653754146,
+    "d_yoy": 0.1956821043866963,
+    "dir": "up",
+    "bucket": "call (0.15-0.30pp)",
+    "hit": 0.826530612244898
+   },
+   "mquad": {
+    "quad": 2,
+    "close": false,
+    "status": "forecast"
+   },
+   "hedgeye": {
+    "quad": 2,
+    "prob": 0.44
    }
   },
   {
@@ -450,6 +549,26 @@
     "shelter": 0.08525433029232772,
     "core_goods": 0.0070373672666595895,
     "supercore": 0.04812052200498313
+   },
+   "mg": {
+    "status": "forecast",
+    "n_actual": 0,
+    "h": 4,
+    "mom": 0.21110458279983996,
+    "yoy": 2.130696357317774,
+    "d_yoy": 0.1458448919423594,
+    "dir": "up",
+    "bucket": "lean (0.05-0.15pp)",
+    "hit": null
+   },
+   "mquad": {
+    "quad": 2,
+    "close": false,
+    "status": "forecast"
+   },
+   "hedgeye": {
+    "quad": 1,
+    "prob": 0.39
    }
   },
   {
@@ -473,6 +592,26 @@
     "shelter": 0.08488403462250796,
     "core_goods": 0.004836899561189954,
     "supercore": 0.04812052200498313
+   },
+   "mg": {
+    "status": "forecast",
+    "n_actual": 0,
+    "h": 5,
+    "mom": 0.21110458279983996,
+    "yoy": 2.308240022809671,
+    "d_yoy": 0.17754366549189715,
+    "dir": "up",
+    "bucket": "call (0.15-0.30pp)",
+    "hit": null
+   },
+   "mquad": {
+    "quad": 1,
+    "close": false,
+    "status": "forecast"
+   },
+   "hedgeye": {
+    "quad": 2,
+    "prob": 0.7
    }
   },
   {
@@ -496,6 +635,26 @@
     "shelter": 0.08354870074689581,
     "core_goods": 0.004610140843685805,
     "supercore": 0.04812052200498313
+   },
+   "mg": {
+    "status": "forecast",
+    "n_actual": 0,
+    "h": 6,
+    "mom": 0.21110458279983996,
+    "yoy": 2.673571160443333,
+    "d_yoy": 0.3653311376336621,
+    "dir": "up",
+    "bucket": "strong (>0.30pp)",
+    "hit": null
+   },
+   "mquad": {
+    "quad": 2,
+    "close": true,
+    "status": "forecast"
+   },
+   "hedgeye": {
+    "quad": 2,
+    "prob": 0.54
    }
   },
   {
@@ -519,6 +678,26 @@
     "shelter": 0.08300011433462985,
     "core_goods": 0.005454002854033721,
     "supercore": 0.04812052200498313
+   },
+   "mg": {
+    "status": "forecast",
+    "n_actual": 0,
+    "h": 7,
+    "mom": 0.21110458279983996,
+    "yoy": 2.6200841073234615,
+    "d_yoy": -0.053487053119871675,
+    "dir": "down",
+    "bucket": "lean (0.05-0.15pp)",
+    "hit": null
+   },
+   "mquad": {
+    "quad": 4,
+    "close": false,
+    "status": "forecast"
+   },
+   "hedgeye": {
+    "quad": 4,
+    "prob": 0.63
    }
   },
   {
@@ -542,6 +721,26 @@
     "shelter": 0.08254776288724607,
     "core_goods": 0.003202045929645056,
     "supercore": 0.04812052200498313
+   },
+   "mg": {
+    "status": "forecast",
+    "n_actual": 0,
+    "h": 8,
+    "mom": 0.21110458279983996,
+    "yoy": 2.64084304780301,
+    "d_yoy": 0.020758940479548293,
+    "dir": "up",
+    "bucket": "toss-up (<0.05pp)",
+    "hit": null
+   },
+   "mquad": {
+    "quad": 1,
+    "close": true,
+    "status": "forecast"
+   },
+   "hedgeye": {
+    "quad": 1,
+    "prob": 0.63
    }
   },
   {
@@ -565,6 +764,26 @@
     "shelter": 0.08338179406226123,
     "core_goods": 0.0026677786859122003,
     "supercore": 0.04812052200498313
+   },
+   "mg": {
+    "status": "forecast",
+    "n_actual": 0,
+    "h": 9,
+    "mom": 0.21110458279983996,
+    "yoy": 2.6217502284839656,
+    "d_yoy": -0.019092819319044274,
+    "dir": "down",
+    "bucket": "toss-up (<0.05pp)",
+    "hit": null
+   },
+   "mquad": {
+    "quad": 4,
+    "close": true,
+    "status": "forecast"
+   },
+   "hedgeye": {
+    "quad": 1,
+    "prob": 0.54
    }
   },
   {
@@ -588,6 +807,26 @@
     "shelter": 0.08461433369299548,
     "core_goods": 0.003128963011682105,
     "supercore": 0.04812052200498313
+   },
+   "mg": {
+    "status": "forecast",
+    "n_actual": 0,
+    "h": 10,
+    "mom": 0.21110458279983996,
+    "yoy": 2.5505747624092745,
+    "d_yoy": -0.07117546607469105,
+    "dir": "down",
+    "bucket": "lean (0.05-0.15pp)",
+    "hit": null
+   },
+   "mquad": {
+    "quad": 4,
+    "close": false,
+    "status": "forecast"
+   },
+   "hedgeye": {
+    "quad": 4,
+    "prob": 0.78
    }
   },
   {
@@ -611,6 +850,26 @@
     "shelter": 0.08615281295363231,
     "core_goods": 0.0023158624333733226,
     "supercore": 0.04812052200498313
+   },
+   "mg": {
+    "status": "forecast",
+    "n_actual": 0,
+    "h": 11,
+    "mom": 0.21110458279983996,
+    "yoy": 2.391492736426737,
+    "d_yoy": -0.15908202598253762,
+    "dir": "down",
+    "bucket": "call (0.15-0.30pp)",
+    "hit": null
+   },
+   "mquad": {
+    "quad": 3,
+    "close": false,
+    "status": "forecast"
+   },
+   "hedgeye": {
+    "quad": 3,
+    "prob": 0.41
    }
   },
   {
@@ -634,6 +893,26 @@
     "shelter": 0.08787540649492609,
     "core_goods": 0.0016243075262716551,
     "supercore": 0.04812052200498313
+   },
+   "mg": {
+    "status": "forecast",
+    "n_actual": 0,
+    "h": 12,
+    "mom": 0.21110458279983996,
+    "yoy": 2.6150885176350336,
+    "d_yoy": 0.2235957812082967,
+    "dir": "up",
+    "bucket": "call (0.15-0.30pp)",
+    "hit": null
+   },
+   "mquad": {
+    "quad": 2,
+    "close": false,
+    "status": "forecast"
+   },
+   "hedgeye": {
+    "quad": 2,
+    "prob": 0.68
    }
   },
   {
@@ -657,7 +936,24 @@
     "shelter": 0.08787540649492609,
     "core_goods": 0.0016816126322712645,
     "supercore": 0.04812052200498313
-   }
+   },
+   "mg": {
+    "status": "forecast",
+    "n_actual": 0,
+    "h": 13,
+    "mom": 0.21110458279983996,
+    "yoy": 2.5656145702927846,
+    "d_yoy": -0.04947394734224897,
+    "dir": "down",
+    "bucket": "toss-up (<0.05pp)",
+    "hit": null
+   },
+   "mquad": {
+    "quad": 4,
+    "close": true,
+    "status": "forecast"
+   },
+   "hedgeye": null
   },
   {
    "m": "2027-09",
@@ -680,7 +976,24 @@
     "shelter": 0.08787540649492609,
     "core_goods": 0.002625245297414738,
     "supercore": 0.04812052200498313
-   }
+   },
+   "mg": {
+    "status": "forecast",
+    "n_actual": 0,
+    "h": 14,
+    "mom": 0.21110458279983996,
+    "yoy": 2.5656145702927624,
+    "d_yoy": -2.220446049250313e-14,
+    "dir": "down",
+    "bucket": "toss-up (<0.05pp)",
+    "hit": null
+   },
+   "mquad": {
+    "quad": 4,
+    "close": true,
+    "status": "forecast"
+   },
+   "hedgeye": null
   },
   {
    "m": "2027-10",
@@ -703,7 +1016,24 @@
     "shelter": 0.08787540649492609,
     "core_goods": 0.002121986986247112,
     "supercore": 0.04812052200498313
-   }
+   },
+   "mg": {
+    "status": "forecast",
+    "n_actual": 0,
+    "h": 15,
+    "mom": 0.21110458279983996,
+    "yoy": 2.56561457029274,
+    "d_yoy": -2.220446049250313e-14,
+    "dir": "down",
+    "bucket": "toss-up (<0.05pp)",
+    "hit": null
+   },
+   "mquad": {
+    "quad": 4,
+    "close": true,
+    "status": "forecast"
+   },
+   "hedgeye": null
   },
   {
    "m": "2027-11",
@@ -726,7 +1056,24 @@
     "shelter": 0.08787540649492609,
     "core_goods": 0.0011938874977925997,
     "supercore": 0.04812052200498313
-   }
+   },
+   "mg": {
+    "status": "forecast",
+    "n_actual": 0,
+    "h": 16,
+    "mom": 0.21110458279983996,
+    "yoy": 2.5656145702927624,
+    "d_yoy": 2.220446049250313e-14,
+    "dir": "up",
+    "bucket": "toss-up (<0.05pp)",
+    "hit": null
+   },
+   "mquad": {
+    "quad": 1,
+    "close": true,
+    "status": "forecast"
+   },
+   "hedgeye": null
   },
   {
    "m": "2027-12",
@@ -749,7 +1096,24 @@
     "shelter": 0.08787540649492609,
     "core_goods": 0.0021588048196361865,
     "supercore": 0.04812052200498313
-   }
+   },
+   "mg": {
+    "status": "forecast",
+    "n_actual": 0,
+    "h": 17,
+    "mom": 0.21110458279983996,
+    "yoy": 2.5656145702927624,
+    "d_yoy": 0.0,
+    "dir": "down",
+    "bucket": "toss-up (<0.05pp)",
+    "hit": null
+   },
+   "mquad": {
+    "quad": 3,
+    "close": true,
+    "status": "forecast"
+   },
+   "hedgeye": null
   },
   {
    "m": "2028-01",
@@ -772,7 +1136,24 @@
     "shelter": 0.08787540649492609,
     "core_goods": 0.0018352164557377036,
     "supercore": 0.04812052200498313
-   }
+   },
+   "mg": {
+    "status": "forecast",
+    "n_actual": 0,
+    "h": 18,
+    "mom": 0.21110458279983996,
+    "yoy": 2.56561457029274,
+    "d_yoy": -2.220446049250313e-14,
+    "dir": "down",
+    "bucket": "toss-up (<0.05pp)",
+    "hit": null
+   },
+   "mquad": {
+    "quad": 3,
+    "close": true,
+    "status": "forecast"
+   },
+   "hedgeye": null
   }
  ],
  "chart": {
@@ -863,25 +1244,25 @@
    },
    {
     "x": 8.0,
-    "y": 2.100921096840591,
+    "y": 2.1006488647331345,
     "actual": false,
     "q": "2027Q1"
    },
    {
     "x": 11.0,
-    "y": 2.217195591628829,
+    "y": 2.2169230494982095,
     "actual": false,
     "q": "2027Q2"
    },
    {
     "x": 14.0,
-    "y": 2.0513418562401853,
+    "y": 2.0510697563260516,
     "actual": false,
     "q": "2027Q3"
    },
    {
     "x": 17.0,
-    "y": 1.8935393564260883,
+    "y": 1.893267677261412,
     "actual": false,
     "q": "2027Q4"
    }
@@ -1081,8 +1462,8 @@
   },
   "fed_funds": {
    "latest_month": "2026-09",
-   "level_pct": 3.63,
-   "chg_4q_pp": -0.665534050179212,
+   "level_pct": 3.644705882352941,
+   "chg_4q_pp": -0.6606320893948978,
    "pctl_10y": 0.3076923076923077
   },
   "sentiment": {
@@ -1104,10 +1485,10 @@
   }
  },
  "rate": {
-  "level": 3.63,
+  "level": 3.644705882352941,
   "month": "2026-09",
-  "chg_8q": -1.6339784946236557,
-  "chg_4q": -0.665534050179212,
+  "chg_8q": -1.6290765338393416,
+  "chg_4q": -0.6606320893948978,
   "beta": -0.09652164017615897,
   "beta_ann_per_pp": -0.38552793469124325,
   "fit": {
@@ -1131,8 +1512,8 @@
    {
     "q": "2026Q3",
     "label": "Q3 2026",
-    "mkt_rate": 3.6654659498207884,
-    "hawk_rate": 3.6654659498207884,
+    "mkt_rate": 3.668243727598566,
+    "hawk_rate": 3.668243727598566,
     "mkt_drag_ann": null,
     "hawk_drag_ann": null,
     "fast_mkt_ann": null,
@@ -1165,15 +1546,15 @@
     "label": "Q1 2027",
     "mkt_rate": 4.307849462365591,
     "hawk_rate": 4.600430107526882,
-    "mkt_drag_ann": 0.24323328262325639,
-    "hawk_drag_ann": 0.24323328262325639,
-    "fast_mkt_ann": -0.03719094103386,
-    "fast_hawk_ann": -0.03719094103386,
+    "mkt_drag_ann": 0.24215886842764434,
+    "hawk_drag_ann": 0.24215886842764434,
+    "fast_mkt_ann": -0.04019007045519274,
+    "fast_hawk_ann": -0.04019007045519274,
     "quad": 1,
     "quad_off": 4,
     "close": true,
     "close_off": true,
-    "path_ann": 2.2468716248806864,
+    "path_ann": 2.2457811442182063,
     "bar_ann": 2.0891889857350465
    },
    {
@@ -1183,8 +1564,8 @@
     "hawk_rate": 5.116111111111111,
     "mkt_drag_ann": -0.05247945154853717,
     "hawk_drag_ann": -0.08654523609913367,
-    "fast_mkt_ann": -0.3941579903376513,
-    "fast_hawk_ann": -0.48918392317410797,
+    "fast_mkt_ann": -0.39116682958557636,
+    "fast_hawk_ann": -0.48619490288898115,
     "quad": 1,
     "quad_off": 1,
     "close": false,
@@ -1305,8 +1686,8 @@
     {
      "path": "our path",
      "quad": 1,
-     "dg": 0.03879159883564132,
-     "ann": 2.2468716248806864
+     "dg": 0.03852348316848442,
+     "ann": 2.2457811442182063
     },
     {
      "path": "2% a year",
@@ -1476,6 +1857,21 @@
    "lean (0.05-0.15pp)": 0.9032258064516128,
    "call (0.15-0.30pp)": 0.8947368421052632,
    "high conviction (>0.30pp)": 1.0
+  },
+  "mg": {
+   "h1": 0.8497267759562842,
+   "h2": 0.7933884297520661,
+   "h3": 0.814404432132964,
+   "h1_nowcast": 0.9045226130653267,
+   "gdp_q": 0.5439560439560439,
+   "bbk": 0.5879120879120879,
+   "buckets": {
+    "toss-up (<0.05pp)": 0.6458333333333334,
+    "lean (0.05-0.15pp)": 0.7075471698113207,
+    "call (0.15-0.30pp)": 0.9351851851851852,
+    "strong (>0.30pp)": 1.0
+   },
+   "n": 367
   },
   "rate": {
    "on": {

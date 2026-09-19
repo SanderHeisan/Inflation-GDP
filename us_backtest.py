@@ -21,6 +21,8 @@ Writes to results_us/:
     us_direction_calls.csv        every direction call made (or abstained)
     us_rate_channel.csv           the rate channel on vs off on the same vintages
     us_pace_modes.csv             the four growth-pace modes on the same vintages
+    us_growth_monthly.csv         the monthly growth measure's 1-3 month calls, by horizon and conviction
+    us_growth_monthly_calls.csv   every one of those calls
 """
 from __future__ import annotations
 
@@ -31,7 +33,7 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
-from usbacktest import direction, monthly, scoring
+from usbacktest import direction, growth_monthly, monthly, scoring
 from usbacktest.btconfig import BACKTEST_START, RESULTS_DIR, USVintageConfig
 from usbacktest.engine import run_backtest
 from usmodel import data_bundle
@@ -319,6 +321,15 @@ def main() -> None:
     print(disp.to_string())
     print("\n=== Direction calls: hit rate by conviction (all horizons) ===")
     print(by_c.round(3).to_string())
+
+    # ---- The monthly growth measure: 1-3 months ahead ----------------------
+    mgc = growth_monthly.monthly_growth_backtest(bundle, "2010-01", end, 3, cfg)
+    mgc.to_csv(out / "us_growth_monthly_calls.csv", index=False)
+    mgs = growth_monthly.summarize_monthly_growth(mgc)
+    mgs.to_csv(out / "us_growth_monthly.csv")
+    print("\n=== The monthly growth measure: next-month direction by horizon and "
+          "conviction (own truth / BBK monthly GDP / the quarter's GDP) ===")
+    print(mgs.round(3).to_string())
 
     # ---- The rate channel, on vs off ----------------------------------------
     rc = rate_channel_comparison(bundle, args.start, end, args.horizon, cfg,
