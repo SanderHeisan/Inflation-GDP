@@ -1,14 +1,20 @@
 {
- "generated_utc": "2026-09-20T14:14:02+00:00",
- "asof": "2026-09-19",
+ "generated_utc": "2026-09-20T15:51:53+00:00",
+ "asof": "2026-09-20",
  "cpi_through": "Aug 2026",
  "gdp_through": "Q2 2026",
+ "regimes": {
+  "1": "Sweet spot",
+  "2": "Heating",
+  "3": "Squeeze",
+  "4": "Cooling"
+ },
  "quarters": [
   {
    "quarter": "2026Q1",
    "label": "Q1 2026",
-   "quad": 1,
-   "name": "Goldilocks",
+   "regime": 1,
+   "regime_name": "Sweet spot",
    "too_close_to_call": true,
    "realized": true,
    "growth_yoy": 2.68,
@@ -20,8 +26,8 @@
   {
    "quarter": "2026Q2",
    "label": "Q2 2026",
-   "quad": 3,
-   "name": "Stagflation",
+   "regime": 3,
+   "regime_name": "Squeeze",
    "too_close_to_call": false,
    "realized": true,
    "growth_yoy": 2.1,
@@ -33,8 +39,8 @@
   {
    "quarter": "2026Q3",
    "label": "Q3 2026",
-   "quad": 4,
-   "name": "Disinflation",
+   "regime": 4,
+   "regime_name": "Cooling",
    "too_close_to_call": false,
    "realized": false,
    "growth_yoy": 1.61,
@@ -46,8 +52,8 @@
   {
    "quarter": "2026Q4",
    "label": "Q4 2026",
-   "quad": 2,
-   "name": "Reflation",
+   "regime": 2,
+   "regime_name": "Heating",
    "too_close_to_call": false,
    "realized": false,
    "growth_yoy": 2.06,
@@ -59,8 +65,8 @@
   {
    "quarter": "2027Q1",
    "label": "Q1 2027",
-   "quad": 1,
-   "name": "Goldilocks",
+   "regime": 1,
+   "regime_name": "Sweet spot",
    "too_close_to_call": true,
    "realized": false,
    "growth_yoy": 2.1,
@@ -72,8 +78,8 @@
   {
    "quarter": "2027Q2",
    "label": "Q2 2027",
-   "quad": 1,
-   "name": "Goldilocks",
+   "regime": 1,
+   "regime_name": "Sweet spot",
    "too_close_to_call": false,
    "realized": false,
    "growth_yoy": 2.22,
@@ -85,8 +91,8 @@
   {
    "quarter": "2027Q3",
    "label": "Q3 2027",
-   "quad": 3,
-   "name": "Stagflation",
+   "regime": 3,
+   "regime_name": "Squeeze",
    "too_close_to_call": false,
    "realized": false,
    "growth_yoy": 2.05,
@@ -98,13 +104,13 @@
   {
    "quarter": "2027Q4",
    "label": "Q4 2027",
-   "quad": 4,
-   "name": "Disinflation",
+   "regime": 4,
+   "regime_name": "Cooling",
    "too_close_to_call": false,
    "realized": false,
    "growth_yoy": 1.89,
    "growth_dir": "down",
-   "inflation_yoy": 2.23,
+   "inflation_yoy": 2.24,
    "inflation_dir": "down",
    "backtest_hit": null
   }
@@ -113,7 +119,8 @@
   {
    "month": "2026-06",
    "label": "Jun 2026",
-   "quad": 1,
+   "regime": 1,
+   "regime_name": "Sweet spot",
    "too_close_to_call": false,
    "status": "actual",
    "growth_measure_yoy": 2.03,
@@ -125,12 +132,13 @@
    "cpi_dir": "down",
    "cpi_conviction": "strong",
    "cpi_hit": 1.0,
-   "hedgeye_quad": null
+   "hedgeye_regime": null
   },
   {
    "month": "2026-07",
    "label": "Jul 2026",
-   "quad": 4,
+   "regime": 4,
+   "regime_name": "Cooling",
    "too_close_to_call": false,
    "status": "actual",
    "growth_measure_yoy": 1.52,
@@ -142,12 +150,13 @@
    "cpi_dir": "down",
    "cpi_conviction": "good",
    "cpi_hit": 0.895,
-   "hedgeye_quad": 4
+   "hedgeye_regime": 4
   },
   {
    "month": "2026-08",
    "label": "Aug 2026",
-   "quad": 2,
+   "regime": 2,
+   "regime_name": "Heating",
    "too_close_to_call": true,
    "status": "nowcast",
    "growth_measure_yoy": 1.66,
@@ -159,12 +168,13 @@
    "cpi_dir": "up",
    "cpi_conviction": "toss-up",
    "cpi_hit": 0.667,
-   "hedgeye_quad": 3
+   "hedgeye_regime": 3
   },
   {
    "month": "2026-09",
    "label": "Sep 2026",
-   "quad": 2,
+   "regime": 2,
+   "regime_name": "Heating",
    "too_close_to_call": false,
    "status": "forecast",
    "growth_measure_yoy": 1.79,
@@ -176,12 +186,13 @@
    "cpi_dir": "up",
    "cpi_conviction": "lean",
    "cpi_hit": 0.903,
-   "hedgeye_quad": 2
+   "hedgeye_regime": 2
   },
   {
    "month": "2026-10",
    "label": "Oct 2026",
-   "quad": 2,
+   "regime": 2,
+   "regime_name": "Heating",
    "too_close_to_call": false,
    "status": "forecast",
    "growth_measure_yoy": 1.98,
@@ -193,12 +204,13 @@
    "cpi_dir": "up",
    "cpi_conviction": "lean",
    "cpi_hit": 0.903,
-   "hedgeye_quad": 2
+   "hedgeye_regime": 2
   },
   {
    "month": "2026-11",
    "label": "Nov 2026",
-   "quad": 2,
+   "regime": 2,
+   "regime_name": "Heating",
    "too_close_to_call": false,
    "status": "forecast",
    "growth_measure_yoy": 2.13,
@@ -210,12 +222,13 @@
    "cpi_dir": "up",
    "cpi_conviction": "lean",
    "cpi_hit": 0.903,
-   "hedgeye_quad": 1
+   "hedgeye_regime": 1
   },
   {
    "month": "2026-12",
    "label": "Dec 2026",
-   "quad": 1,
+   "regime": 1,
+   "regime_name": "Sweet spot",
    "too_close_to_call": false,
    "status": "forecast",
    "growth_measure_yoy": 2.31,
@@ -227,12 +240,13 @@
    "cpi_dir": "down",
    "cpi_conviction": "lean",
    "cpi_hit": 0.903,
-   "hedgeye_quad": 2
+   "hedgeye_regime": 2
   },
   {
    "month": "2027-01",
    "label": "Jan 2027",
-   "quad": 2,
+   "regime": 2,
+   "regime_name": "Heating",
    "too_close_to_call": true,
    "status": "forecast",
    "growth_measure_yoy": 2.67,
@@ -244,12 +258,13 @@
    "cpi_dir": "up",
    "cpi_conviction": "toss-up",
    "cpi_hit": 0.667,
-   "hedgeye_quad": 2
+   "hedgeye_regime": 2
   },
   {
    "month": "2027-02",
    "label": "Feb 2027",
-   "quad": 4,
+   "regime": 4,
+   "regime_name": "Cooling",
    "too_close_to_call": false,
    "status": "forecast",
    "growth_measure_yoy": 2.62,
@@ -261,12 +276,13 @@
    "cpi_dir": "down",
    "cpi_conviction": "lean",
    "cpi_hit": 0.903,
-   "hedgeye_quad": 4
+   "hedgeye_regime": 4
   },
   {
    "month": "2027-03",
    "label": "Mar 2027",
-   "quad": 1,
+   "regime": 1,
+   "regime_name": "Sweet spot",
    "too_close_to_call": true,
    "status": "forecast",
    "growth_measure_yoy": 2.64,
@@ -278,12 +294,13 @@
    "cpi_dir": "down",
    "cpi_conviction": "strong",
    "cpi_hit": 1.0,
-   "hedgeye_quad": 1
+   "hedgeye_regime": 1
   },
   {
    "month": "2027-04",
    "label": "Apr 2027",
-   "quad": 4,
+   "regime": 4,
+   "regime_name": "Cooling",
    "too_close_to_call": true,
    "status": "forecast",
    "growth_measure_yoy": 2.62,
@@ -295,12 +312,13 @@
    "cpi_dir": "down",
    "cpi_conviction": "strong",
    "cpi_hit": 1.0,
-   "hedgeye_quad": 1
+   "hedgeye_regime": 1
   },
   {
    "month": "2027-05",
    "label": "May 2027",
-   "quad": 4,
+   "regime": 4,
+   "regime_name": "Cooling",
    "too_close_to_call": false,
    "status": "forecast",
    "growth_measure_yoy": 2.55,
@@ -312,12 +330,13 @@
    "cpi_dir": "down",
    "cpi_conviction": "good",
    "cpi_hit": 0.895,
-   "hedgeye_quad": 4
+   "hedgeye_regime": 4
   },
   {
    "month": "2027-06",
    "label": "Jun 2027",
-   "quad": 3,
+   "regime": 3,
+   "regime_name": "Squeeze",
    "too_close_to_call": false,
    "status": "forecast",
    "growth_measure_yoy": 2.39,
@@ -329,12 +348,13 @@
    "cpi_dir": "up",
    "cpi_conviction": "strong",
    "cpi_hit": 1.0,
-   "hedgeye_quad": 3
+   "hedgeye_regime": 3
   },
   {
    "month": "2027-07",
    "label": "Jul 2027",
-   "quad": 2,
+   "regime": 2,
+   "regime_name": "Heating",
    "too_close_to_call": false,
    "status": "forecast",
    "growth_measure_yoy": 2.62,
@@ -346,12 +366,13 @@
    "cpi_dir": "up",
    "cpi_conviction": "lean",
    "cpi_hit": 0.903,
-   "hedgeye_quad": 2
+   "hedgeye_regime": 2
   },
   {
    "month": "2027-08",
    "label": "Aug 2027",
-   "quad": 4,
+   "regime": 4,
+   "regime_name": "Cooling",
    "too_close_to_call": true,
    "status": "forecast",
    "growth_measure_yoy": 2.57,
@@ -359,96 +380,101 @@
    "growth_conviction": "toss-up (<0.05pp)",
    "growth_hit": null,
    "cpi_yoy": 2.44,
-   "cpi_mom": 0.18,
+   "cpi_mom": 0.19,
    "cpi_dir": "down",
    "cpi_conviction": "good",
    "cpi_hit": 0.895,
-   "hedgeye_quad": null
+   "hedgeye_regime": null
   },
   {
    "month": "2027-09",
    "label": "Sep 2027",
-   "quad": 4,
+   "regime": 4,
+   "regime_name": "Cooling",
    "too_close_to_call": true,
    "status": "forecast",
    "growth_measure_yoy": 2.57,
    "growth_dir": "down",
    "growth_conviction": "toss-up (<0.05pp)",
    "growth_hit": null,
-   "cpi_yoy": 2.23,
+   "cpi_yoy": 2.24,
    "cpi_mom": 0.19,
    "cpi_dir": "down",
    "cpi_conviction": "good",
    "cpi_hit": 0.895,
-   "hedgeye_quad": null
+   "hedgeye_regime": null
   },
   {
    "month": "2027-10",
    "label": "Oct 2027",
-   "quad": 4,
+   "regime": 3,
+   "regime_name": "Squeeze",
    "too_close_to_call": true,
    "status": "forecast",
    "growth_measure_yoy": 2.57,
    "growth_dir": "down",
    "growth_conviction": "toss-up (<0.05pp)",
    "growth_hit": null,
-   "cpi_yoy": 2.23,
+   "cpi_yoy": 2.24,
    "cpi_mom": 0.19,
-   "cpi_dir": "down",
+   "cpi_dir": "up",
    "cpi_conviction": "toss-up",
    "cpi_hit": 0.667,
-   "hedgeye_quad": null
+   "hedgeye_regime": null
   },
   {
    "month": "2027-11",
    "label": "Nov 2027",
-   "quad": 1,
+   "regime": 1,
+   "regime_name": "Sweet spot",
    "too_close_to_call": true,
    "status": "forecast",
    "growth_measure_yoy": 2.57,
    "growth_dir": "up",
    "growth_conviction": "toss-up (<0.05pp)",
    "growth_hit": null,
-   "cpi_yoy": 2.23,
-   "cpi_mom": 0.18,
+   "cpi_yoy": 2.24,
+   "cpi_mom": 0.19,
    "cpi_dir": "down",
    "cpi_conviction": "toss-up",
    "cpi_hit": 0.667,
-   "hedgeye_quad": null
+   "hedgeye_regime": null
   },
   {
    "month": "2027-12",
    "label": "Dec 2027",
-   "quad": 3,
+   "regime": 3,
+   "regime_name": "Squeeze",
    "too_close_to_call": true,
    "status": "forecast",
    "growth_measure_yoy": 2.57,
    "growth_dir": "down",
    "growth_conviction": "toss-up (<0.05pp)",
    "growth_hit": null,
-   "cpi_yoy": 2.23,
+   "cpi_yoy": 2.24,
    "cpi_mom": 0.19,
    "cpi_dir": "up",
    "cpi_conviction": "toss-up",
    "cpi_hit": 0.667,
-   "hedgeye_quad": null
+   "hedgeye_regime": null
   },
   {
    "month": "2028-01",
    "label": "Jan 2028",
-   "quad": 3,
+   "regime": 3,
+   "regime_name": "Squeeze",
    "too_close_to_call": true,
    "status": "forecast",
    "growth_measure_yoy": 2.57,
    "growth_dir": "down",
    "growth_conviction": "toss-up (<0.05pp)",
    "growth_hit": null,
-   "cpi_yoy": 2.23,
-   "cpi_mom": 0.18,
+   "cpi_yoy": 2.24,
+   "cpi_mom": 0.19,
    "cpi_dir": "up",
    "cpi_conviction": "toss-up",
    "cpi_hit": 0.667,
-   "hedgeye_quad": null
+   "hedgeye_regime": null
   }
  ],
  "source": "https://github.com/SanderHeisan/Inflation-GDP"

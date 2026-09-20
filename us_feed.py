@@ -1,6 +1,7 @@
 """
-The compact feed: the quads only, for a consumer that does not want the
-whole sheet (results_us/latest.json).
+The compact feed: the regimes only, for a consumer that does not want the
+whole sheet (results_us/latest.json). Regimes are numbered 1-4 internally
+and named Sweet spot / Heating / Squeeze / Cooling.
 
     python us_feed.py            # after us_sheet.py; writes results_us/latest.json
 
@@ -27,18 +28,20 @@ def build_feed(sheet: dict, repo: str = "SanderHeisan/Inflation-GDP") -> dict:
     return {
         "generated_utc": datetime.datetime.now(datetime.timezone.utc).isoformat(timespec="seconds"),
         "asof": m["asof_iso"], "cpi_through": m["cpi_through"], "gdp_through": m["gdp_through"],
-        "quarters": [{"quarter": q["q"], "label": q["label"], "quad": q["quad"], "name": q["name"],
+        "regimes": {1: "Sweet spot", 2: "Heating", 3: "Squeeze", 4: "Cooling"},
+        "quarters": [{"quarter": q["q"], "label": q["label"], "regime": q["quad"], "regime_name": q["name"],
                       "too_close_to_call": q["close"], "realized": q["realized"],
                       "growth_yoy": round(q["g_yoy"], 2), "growth_dir": q["g_dir"],
                       "inflation_yoy": round(q["i_yoy"], 2), "inflation_dir": q["i_dir"],
                       "backtest_hit": q["quad_hit"]} for q in sheet["quarters"]],
-        "months": [{"month": mm["m"], "label": mm["label"], "quad": mm["mquad"]["quad"],
+        "months": [{"month": mm["m"], "label": mm["label"], "regime": mm["mquad"]["quad"],
+                    "regime_name": {1: "Sweet spot", 2: "Heating", 3: "Squeeze", 4: "Cooling"}[mm["mquad"]["quad"]],
                     "too_close_to_call": mm["mquad"]["close"], "status": mm["mquad"]["status"],
                     "growth_measure_yoy": round(mm["mg"]["yoy"], 2), "growth_dir": mm["mg"]["dir"],
                     "growth_conviction": mm["mg"]["bucket"], "growth_hit": mm["mg"]["hit"],
                     "cpi_yoy": round(mm["yoy"], 2), "cpi_mom": round(mm["mom"], 2), "cpi_dir": mm["dir"],
                     "cpi_conviction": mm["word"], "cpi_hit": round(mm["hit"], 3),
-                    "hedgeye_quad": (mm.get("hedgeye") or {}).get("quad")}
+                    "hedgeye_regime": (mm.get("hedgeye") or {}).get("quad")}
                    for mm in sheet["months"] if mm.get("mquad") and mm.get("mg")],
         "source": f"https://github.com/{repo}",
     }

@@ -254,7 +254,12 @@ first as-of date whose shelter block is driven by *observed* market rents is
 
 ## The sheet
 
-`python us_sheet.py` writes `results_us/us_quad_sheet.html`, a plain-language
+Naming: everything a reader sees says **regime** and uses the four names
+Sweet spot, Heating, Squeeze and Cooling. "Quad" and "GIP" are Hedgeye's
+product names and appear nowhere public; the code keeps "quad" as its
+generic identifier for the four-cell classification.
+
+`python us_sheet.py` writes `results_us/us_regime_sheet.html`, a plain-language
 page for a reader rather than a modeller: the quads ahead as cards, both
 series on one chart with the quad of each quarter shaded, a month-by-month
 table (inflation monthly, GDP beside its three months), and what is behind

@@ -1,7 +1,12 @@
 """
-US Quad Sheet -- the plain-language page.
+US Macro Regime -- the plain-language page.
 
-    python us_sheet.py                # writes results_us/us_quad_sheet.html + us_sheet.json
+    python us_sheet.py                # writes results_us/us_regime_sheet.html + us_sheet.json
+
+Naming: the page, the feed and everything a reader sees say "regime" and
+use the four regime names below. The code keeps its generic identifiers
+("quad" as the four-cell growth x inflation classification); "Quad" and
+"GIP" as product names are Hedgeye's and appear nowhere public.
 
 Everything on the page is computed the way the live run and the backtest
 compute it: today's information set from the backtest's own vintage
@@ -27,10 +32,13 @@ from usbacktest.btconfig import RESULTS_DIR, USVintageConfig
 from usbacktest.monthly import bucket_label as cpi_bucket
 from usbacktest.vintage import build_vintage, truncate
 
-OUT_HTML = RESULTS_DIR / "us_quad_sheet.html"
+OUT_HTML = RESULTS_DIR / "us_regime_sheet.html"
 OUT_JSON = RESULTS_DIR / "us_sheet.json"
 
-QUAD_NAME = {1: "Goldilocks", 2: "Reflation", 3: "Stagflation", 4: "Disinflation"}
+# The four regimes, by the direction of YoY growth and YoY inflation.
+REGIME_NAME = {1: "Sweet spot", 2: "Heating", 3: "Squeeze", 4: "Cooling"}
+REGIME_SHORT = {1: "Sweet", 2: "Heat", 3: "Squeeze", 4: "Cool"}
+QUAD_NAME = REGIME_NAME
 QUAD_PLAIN = {1: "growth up, inflation down", 2: "growth up, inflation up",
               3: "growth down, inflation up", 4: "growth down, inflation down"}
 # What a hike at every FOMC meeting from here would look like, for the
@@ -334,8 +342,8 @@ def arrow(direction, strong=True):
 
 
 def chip(quad, close=False, small=False):
-    return (f'<span class="quad q{quad}{" close" if close else ""}{" mini" if small else ""}">Q{quad}'
-            f'{"" if small else " " + QUAD_NAME[quad]}</span>')
+    return (f'<span class="quad q{quad}{" close" if close else ""}{" mini" if small else ""}">'
+            f'{REGIME_SHORT[quad] if small else REGIME_NAME[quad]}</span>')
 
 
 def chart_svg(ch: dict) -> str:
@@ -353,7 +361,7 @@ def chart_svg(ch: dict) -> str:
         parts.append(f'<rect x="{x0:.1f}" y="{T}" width="{x1 - x0:.1f}" height="{Hh - T - B}" fill="var(--q{bd["quad"]}-soft)"/>')
         if bd["i1"] - bd["i0"] >= 1:
             parts.append(f'<text x="{(x0 + x1) / 2:.1f}" y="{T - 10}" text-anchor="middle" class="bandlbl" fill="var(--q{bd["quad"]})">'
-                         f'{bd["label"]} · Quad {bd["quad"]}</text>')
+                         f'{bd["label"]} · {REGIME_NAME[bd["quad"]]}</text>')
     for t in range(int(ymin), int(ymax) + 1):
         parts.append(f'<line x1="{L}" x2="{W - Rr}" y1="{Y(t):.1f}" y2="{Y(t):.1f}" class="grid"/>')
         parts.append(f'<text x="{L - 8}" y="{Y(t) + 4:.1f}" text-anchor="end" class="tick">{t}%</text>')
@@ -386,7 +394,7 @@ def chart_svg(ch: dict) -> str:
     for i in range(n):
         parts.append(f'<rect class="hov" data-i="{i}" x="{X(i) - step / 2:.1f}" y="{T}" width="{step:.1f}" height="{Hh - T - B}" fill="transparent"/>')
     parts.append(f'<line id="xhair" x1="0" x2="0" y1="{T}" y2="{Hh - B}" class="xhair" visibility="hidden"/>')
-    return (f'<svg viewBox="0 0 {W} {Hh}" class="chart" role="img" aria-label="Inflation and growth, year over year, with the quad of each quarter shaded">'
+    return (f'<svg viewBox="0 0 {W} {Hh}" class="chart" role="img" aria-label="Inflation and growth, year over year, with the regime of each quarter shaded">'
             + "".join(parts) + "</svg>")
 
 
@@ -403,13 +411,12 @@ def render(D: dict) -> str:
         conf = ("actual" if q["realized"] else
                 f'right {pct(q["quad_hit"])} of the time at this distance' if q["quad_hit"] else "beyond the backtest")
         close = ' <span class="closetag">too close to call</span>' if q["close"] else ""
-        flat = (f'<div class="card-flat">without the rate effect: Quad {q["quad_off"]}{" (too close to call)" if q["close_off"] else ""}</div>'
+        flat = (f'<div class="card-flat">without the rate effect: {REGIME_NAME[q["quad_off"]]}{" (too close to call)" if q["close_off"] else ""}</div>'
                 if (not q["realized"] and (q["quad_off"] != q["quad"] or q["close_off"] != q["close"])) else "")
         cards.append(f'''<div class="card q{q["quad"]}{" past" if q["realized"] else ""}{" now" if q is now else ""}">
 <div class="card-q">{q["label"]} <span class="card-m">{q["months"]}</span>{'<span class="nowtag">this quarter</span>' if q is now else ''}</div>
-<div class="card-quad">Quad {q["quad"]}</div>
-<div class="card-name">{q["name"]}{close}</div>
-<div class="card-plain">{q["plain"]}</div>
+<div class="card-quad">{q["name"]}</div>
+<div class="card-name">{q["plain"]}{close}</div>
 <div class="card-nums"><span>Growth <b>{q["g_yoy"]:.1f}%</b> {arrow(q["g_dir"], q["g_strong"])}</span><span>Inflation <b>{q["i_yoy"]:.1f}%</b> {arrow(q["i_dir"], q["i_strong"])}</span></div>
 <div class="card-conf">{conf}</div>{flat}</div>''')
 
@@ -424,11 +431,11 @@ def render(D: dict) -> str:
     def why_growth(q):
         return (f'{"beats" if q["dg"] > 0 else "falls short of"} the {q["bar_ann"]:+.1f}% pace of the same quarter last year')
     story = []
-    story.append(f'<li><b>Now, {now["label"]}: Quad {now["quad"]}, {now["plain"]}.</b> Growth this quarter is running at about '
+    story.append(f'<li><b>Now, {now["label"]}: {now["name"]}, {now["plain"]}.</b> Growth this quarter is running at about '
                  f'{now["qoq_ann"]:+.1f}% annualized on the data so far, which {why_growth(now)}; year-over-year growth slips to {now["g_yoy"]:.1f}%. '
                  f'Inflation falls to {now["i_yoy"]:.1f}% on the quarter as {why_infl(now)}.</li>')
     for q in proj[1:]:
-        story.append(f'<li><b>{q["label"]}: Quad {q["quad"]}, {q["plain"]}.</b> Growth {q["g_yoy"]:.1f}% year over year '
+        story.append(f'<li><b>{q["label"]}: {q["name"]}, {q["plain"]}.</b> Growth {q["g_yoy"]:.1f}% year over year '
                      f'({"up" if q["dg"] > 0 else "down"} {abs(q["dg"]):.1f}pp), because the assumed {q["qoq_ann"]:+.1f}% pace {why_growth(q)}. '
                      f'Inflation {q["i_yoy"]:.1f}% ({"up" if q["di"] > 0 else "down"} {abs(q["di"]):.2f}pp): {why_infl(q)}.'
                      f'{" Too close to call on one side." if q["close"] else ""}</li>')
@@ -551,11 +558,11 @@ def render(D: dict) -> str:
     RS = ST["rate"]
     gap1, gap2 = q1["qoq_ann"] - q1["bar_ann"], q2["qoq_ann"] - q2["bar_ann"]
     fast2 = abs(r2["fast_hawk_ann"] or 0.0); fast1 = abs(r1["fast_hawk_ann"] or 0.0)
-    quad_word = lambda q: f'Quad {q["quad"]}' + (" (too close to call)" if q["close"] else "")
+    quad_word = lambda q: REGIME_NAME[q["quad"]] + (" (too close to call)" if q["close"] else "")
     view_sentence = (f'Its own path is {q1["qoq_ann"]:+.1f}% in Q1 2027 and {q2["qoq_ann"]:+.1f}% in Q2 2027, against bars of '
                      f'{q1["bar_ann"]:+.1f}% and {q2["bar_ann"]:+.1f}%: {quad_word(q1)} and {quad_word(q2)}. '
                      f'Q1 2027 is a margin of {gap1:+.1f}pp, so it is a coin flip whichever way the data lean. Q2 2027 is a margin of {gap2:+.1f}pp; '
-                     + (f'a hike at every meeting with the fastest response on record takes about {fast2:.1f}pp off it, which is <b>enough to tip it to Quad 4</b> on its own.'
+                     + (f'a hike at every meeting with the fastest response on record takes about {fast2:.1f}pp off it, which is <b>enough to tip it to Cooling</b> on its own.'
                         if fast2 >= gap2 else
                         f'a hike at every meeting with the fastest response on record takes about {fast2:.1f}pp off it, {"most" if fast2 >= 0.6 * gap2 else "part"} of that margin, so rates alone do not quite get there on the historical lag.')
                      + ' Hikes take at least two quarters to bite, and the 2024–26 cuts are still working in the other direction; so the timing, not the size, is what decides it.')
@@ -563,7 +570,7 @@ def render(D: dict) -> str:
     # ---- Hedgeye's monthly path against ours ----
     hg_rows = [m for m in MO if m.get("hedgeye") and m.get("mquad")]
     hg_n = len(hg_rows); hg_agree = sum(1 for m in hg_rows if m["hedgeye"]["quad"] == m["mquad"]["quad"])
-    hg_diff = ", ".join(f'{m["label"].split()[0]} (they Q{m["hedgeye"]["quad"]}, we Q{m["mquad"]["quad"]})' for m in hg_rows if m["hedgeye"]["quad"] != m["mquad"]["quad"]) or "no month"
+    hg_diff = ", ".join(f'{m["label"].split()[0]} (they {REGIME_NAME[m["hedgeye"]["quad"]]}, we {REGIME_NAME[m["mquad"]["quad"]]})' for m in hg_rows if m["hedgeye"]["quad"] != m["mquad"]["quad"]) or "no month"
     hg_first = hg_rows[0]["label"] if hg_rows else ""; hg_last = hg_rows[-1]["label"] if hg_rows else ""
     # ---- trust table ----
     gh, iy, qh = ST["growth_yoy"], ST["infl_yoy"], ST["quad_hit"]
@@ -571,12 +578,12 @@ def render(D: dict) -> str:
 <thead><tr><th>The call</th><th class="num">How often it was right</th><th>What that means</th></tr></thead><tbody>
 <tr><td class="lbl">Next month's inflation: up or down</td><td class="num strong-num">{pct(ST["cpi_all"])}</td><td>{pct(ST["cpi"]["high conviction (>0.30pp)"])} when the call is strong, {pct(ST["cpi"]["call (0.15-0.30pp)"])} when good, {pct(ST["cpi"]["lean (0.05-0.15pp)"])} on a lean, {pct(ST["cpi"]["coin-flip (<0.05pp)"])} on a toss-up. The sharpest tool on the sheet.</td></tr>
 <tr><td class="lbl">Inflation for the quarter: up or down</td><td class="num strong-num">{pct(iy[0])} · {pct(iy[1])} · {pct(iy[2])}</td><td>this quarter · next · the one after. Strong calls (a move of 0.30pp or more) are right about 4 times in 5.</td></tr>
-<tr><td class="lbl">Growth measure, next month: up or down</td><td class="num strong-num">{pct(ST["mg"]["h1"])} · {pct(ST["mg"]["h2"])} · {pct(ST["mg"]["h3"])}</td><td>one, two, three months past the last complete month, on the measure's own path; {pct(ST["mg"]["h1_nowcast"])} for the month that already has most components in. Strong calls (over 0.30pp) {pct(ST["mg"]["buckets"].get("strong (>0.30pp)", 0))}, good {pct(ST["mg"]["buckets"].get("call (0.15-0.30pp)", 0))}, lean {pct(ST["mg"]["buckets"].get("lean (0.05-0.15pp)", 0))}, toss-up {pct(ST["mg"]["buckets"].get("toss-up (<0.05pp)", 0))}. But it agrees with the <em>quarter's</em> GDP direction only {pct(ST["mg"]["gdp_q"])} month by month: the monthly quad is the consumer-and-production trend, not the GDP print.</td></tr>
+<tr><td class="lbl">Growth measure, next month: up or down</td><td class="num strong-num">{pct(ST["mg"]["h1"])} · {pct(ST["mg"]["h2"])} · {pct(ST["mg"]["h3"])}</td><td>one, two, three months past the last complete month, on the measure's own path; {pct(ST["mg"]["h1_nowcast"])} for the month that already has most components in. Strong calls (over 0.30pp) {pct(ST["mg"]["buckets"].get("strong (>0.30pp)", 0))}, good {pct(ST["mg"]["buckets"].get("call (0.15-0.30pp)", 0))}, lean {pct(ST["mg"]["buckets"].get("lean (0.05-0.15pp)", 0))}, toss-up {pct(ST["mg"]["buckets"].get("toss-up (<0.05pp)", 0))}. But it agrees with the <em>quarter's</em> GDP direction only {pct(ST["mg"]["gdp_q"])} month by month: the monthly regime is the consumer-and-production trend, not the GDP print.</td></tr>
 <tr><td class="lbl">Growth for the quarter: up or down</td><td class="num strong-num">{pct(gh[0])} · {pct(gh[1])} · {pct(gh[2])}</td><td>this quarter · next · the one after. Strong calls (0.50pp or more) {pct(ST["growth_strong"])}; weak ones {pct(ST["growth_weak"])}. Without the rate effect: {pct(RS["off"][0])} · {pct(RS["off"][1])} · {pct(RS["off"][2])}.</td></tr>
-<tr><td class="lbl">The quad</td><td class="num strong-num">{pct(qh[0])} · {pct(qh[1])} · {pct(qh[2])} · {pct(qh[3])}</td><td>this quarter · next · +2 · +3, against the first GDP release. A random guess is 25%. This quarter rises to {pct(ST["quad_hit_hc0"])} when neither side is too close to call. Without the rate effect the average is {pct(RS["quad_mean_off"])} instead of {pct(RS["quad_mean_on"])}.</td></tr>
+<tr><td class="lbl">The regime</td><td class="num strong-num">{pct(qh[0])} · {pct(qh[1])} · {pct(qh[2])} · {pct(qh[3])}</td><td>this quarter · next · +2 · +3, against the first GDP release. A random guess is 25%. This quarter rises to {pct(ST["quad_hit_hc0"])} when neither side is too close to call. Without the rate effect the average is {pct(RS["quad_mean_off"])} instead of {pct(RS["quad_mean_on"])}.</td></tr>
 </tbody></table>'''
 
-    return f'''<title>US Quad Sheet</title>
+    return f'''<title>US Macro Regime</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Libre+Franklin:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
 <style>
@@ -690,20 +697,20 @@ code{{font-family:"IBM Plex Mono",monospace;font-size:12px;background:var(--actu
 </style>
 <div class="wrap">
 <header>
-  <div><p class="eyebrow">United States · growth and inflation</p><h1>US Quad Sheet</h1></div>
+  <div><p class="eyebrow">United States · growth and inflation</p><h1>US Macro Regime</h1></div>
   <div class="asof">as of <b>{M["asof"]}</b><br>inflation data to <b>{M["cpi_through"]}</b> · GDP data to <b>{M["gdp_through"]}</b><br>headline CPI, all items</div>
 </header>
 
-<h2>The quads ahead</h2>
-<p class="lede">Each quarter gets a quad from two questions: is year-over-year growth going up or down, and is year-over-year inflation going up or down. Filled arrows are the calls the backtest says to trust. The month-by-month quads further down use a monthly growth measure instead of quarterly GDP.</p>
+<h2>The regimes ahead</h2>
+<p class="lede">Each quarter gets a regime from two questions: is year-over-year growth going up or down, and is year-over-year inflation going up or down. Filled arrows are the calls the backtest says to trust. The month-by-month regimes further down use a monthly growth measure instead of quarterly GDP.</p>
 <div class="cards">{"".join(cards)}</div>
-<p class="legend-inline"><b>Quad 1</b> growth up, inflation down (best for stocks) &nbsp;·&nbsp; <b>Quad 2</b> both up &nbsp;·&nbsp; <b>Quad 3</b> growth down, inflation up (worst) &nbsp;·&nbsp; <b>Quad 4</b> both down (bonds, defensives). "Too close to call" means one side moves by less than 0.10pp.</p>
+<p class="legend-inline"><b>Sweet spot</b> growth up, inflation down (best for stocks) &nbsp;·&nbsp; <b>Heating</b> both up &nbsp;·&nbsp; <b>Squeeze</b> growth down, inflation up (worst) &nbsp;·&nbsp; <b>Cooling</b> both down (bonds, defensives). "Too close to call" means one side moves by less than 0.10pp.</p>
 
 <h3>What is going on, in short</h3>
 <ul class="story">{"".join(story)}</ul>
 
 <h2>Inflation and growth on one chart</h2>
-<p class="lede">Both year over year. Shading is the quad of each quarter. Solid lines are published data, dashed lines are the forecast. Hover for the numbers.</p>
+<p class="lede">Both year over year. Shading is the regime of each quarter. Solid lines are published data, dashed lines are the forecast. Hover for the numbers.</p>
 <div class="chartbox">
 <div class="legend"><span><span class="sw infl"></span>Inflation, year over year (monthly)</span><span><span class="sw growth"></span>GDP growth, year over year (quarterly)</span><span><span class="sw dash" style="border-color:var(--ink-2)"></span>forecast</span></div>
 {chart_svg(D["chart"])}
@@ -711,9 +718,9 @@ code{{font-family:"IBM Plex Mono",monospace;font-size:12px;background:var(--actu
 </div>
 
 <h2>Month by month</h2>
-<p class="lede">A quad for every month, the way Hedgeye's monthly map works. The month's growth reading is a <b>monthly growth measure</b> built from real consumer spending (55%), industrial production, real income, real retail sales and hours worked, published through {M["mg_last"] and pd.Period(M["mg_last"], "M").strftime("%b %Y")}; the next months are called the way next month's CPI is (this month's change minus what drops out of the 12-month window). GDP itself only comes quarterly and sits at the right beside its three months. Hedgeye's column is their monthly map of {M["hedgeye_monthly_asof"]}, with the probability they put on it, so both can be scored as the months print.</p>
+<p class="lede">A regime for every month. The month's growth reading is a <b>monthly growth measure</b> built from real consumer spending (55%), industrial production, real income, real retail sales and hours worked, published through {M["mg_last"] and pd.Period(M["mg_last"], "M").strftime("%b %Y")}; the next months are called the way next month's CPI is (this month's change minus what drops out of the 12-month window). GDP itself only comes quarterly and sits at the right beside its three months. Hedgeye's column is their monthly map of {M["hedgeye_monthly_asof"]}, with the probability they put on it, so both can be scored as the months print.</p>
 <div class="tblwrap"><table class="wide months">
-<thead><tr class="grp"><th></th><th colspan="2">Quad, this month</th><th colspan="3">Growth measure (monthly)</th><th colspan="3">Inflation (CPI)</th><th colspan="3">GDP growth (the quarter)</th></tr>
+<thead><tr class="grp"><th></th><th colspan="2">Regime, this month</th><th colspan="3">Growth measure (monthly)</th><th colspan="3">Inflation (CPI)</th><th colspan="3">GDP growth (the quarter)</th></tr>
 <tr><th>Month</th><th>This sheet</th><th>Hedgeye</th><th class="num">Month on month</th><th class="num">Year over year</th><th>Up or down</th><th class="num">Month on month</th><th class="num">Year over year</th><th>Up or down</th><th class="num">The quarter, annualized</th><th class="num">Year over year</th><th>Up or down</th></tr></thead>
 <tbody>{"".join(mrows)}</tbody></table></div>
 
@@ -737,12 +744,12 @@ code{{font-family:"IBM Plex Mono",monospace;font-size:12px;background:var(--actu
 <ul class="story">
 <li><b>This quarter ({now["label"]}): about {now["qoq_ann"]:+.1f}% annualized</b>, estimated from jobs, industrial production, retail sales and jobless claims with {M["k"]} of 3 months in. (Annualized = the pace over a full year if the quarter repeated.)</li>
 <li><b>After this quarter we do not forecast GDP.</b> Nobody can, two to four quarters out; every method tried did worse than a constant. So the sheet assumes {pace_sentence}, adjusted for interest rates as below. (The old setting, the last six years' typical pace of {M["trend_ann"]:.1f}%, is backward looking: it assumes the post-2020 boom continues.)</li>
-<li><b>Up or down is decided by the bar to beat.</b> Year-over-year growth rises in a quarter only if that quarter grows faster than the same quarter a year earlier. Those bars are already published, so each quarter's call is "does our assumed pace clear a known bar". The table shows the bar, our path, and what a slower economy would do to the quad.</li>
+<li><b>Up or down is decided by the bar to beat.</b> Year-over-year growth rises in a quarter only if that quarter grows faster than the same quarter a year earlier. Those bars are already published, so each quarter's call is "does our assumed pace clear a known bar". The table shows the bar, our path, and what a slower economy would do to the regime.</li>
 </ul>
 <div class="tblwrap"><table class="wide">
 <thead><tr><th>Quarter</th><th class="num">Bar to beat (last year's pace)</th><th class="num">Inflation change</th>{shead}</tr></thead>
 <tbody>{srows}</tbody></table></div>
-<p class="legend-inline">Each cell is the quad if growth ran at that pace, with the pace under it. The inflation side is the same in every column.</p>
+<p class="legend-inline">Each cell is the regime if growth ran at that pace, with the pace under it. The inflation side is the same in every column.</p>
 
 <h3>The consumer</h3>
 <p class="lede">Consumer spending is about two thirds of GDP. Each line says where it stands against the last ten years, and what that has historically meant for the next quarter.</p>
@@ -752,28 +759,28 @@ code{{font-family:"IBM Plex Mono",monospace;font-size:12px;background:var(--actu
 <ul class="story">
 <li><b>Where rates are.</b> The Fed funds rate was {RT["level"]:.2f}% through mid-{pd.Period(RT["month"], "M").strftime("%B")}; the September hike takes it to about {RT["implied_now"]:.2f}%, and the market expects <b>{RT["implied_end"]:.2f}% by July 2027</b>, roughly three more hikes.</li>
 <li><b>How the sheet uses that.</b> Rate hikes slow growth with a lag: in the data since 1960, growth is lower for the four quarters that start two quarters after the hikes, by about {abs(RT["beta_ann_per_pp"]):.1f}pp of annual growth per 1pp of hikes. So each quarter's assumed pace is the trend plus the effect of rate changes over the year ending two quarters earlier.</li>
-<li><b>What that means now.</b> The Fed <b>cut</b> {abs(RT["chg_8q"]):.1f}pp over the last two years, and under that lag the cuts still help growth through Q1 2027. The new hikes start to bite in <b>{qmap[RT["first_bite"]]["label"] if RT["first_bite"] else "late 2027"}</b>, at −0.3 to −0.4pp of annualized growth{f', and first change a quad in {qmap[RT["first_change"]]["label"]}' if RT["first_change"] else ''}.</li>
+<li><b>What that means now.</b> The Fed <b>cut</b> {abs(RT["chg_8q"]):.1f}pp over the last two years, and under that lag the cuts still help growth through Q1 2027. The new hikes start to bite in <b>{qmap[RT["first_bite"]]["label"] if RT["first_bite"] else "late 2027"}</b>, at −0.3 to −0.4pp of annualized growth{f', and first change a regime in {qmap[RT["first_change"]]["label"]}' if RT["first_change"] else ''}.</li>
 </ul>
 <div class="tblwrap"><table class="wide">
 <thead><tr class="grp"><th></th><th colspan="2">Market path (curve of {RT["path_asof"]})</th><th colspan="3">If the Fed hikes at every meeting, to {RT["hawk_end"]:.2f}%</th><th></th><th></th></tr>
-<tr><th>Quarter</th><th class="num">Fed rate</th><th class="num">Effect on growth</th><th class="num">Fed rate</th><th class="num">Effect on growth</th><th class="num">…even at the fastest bite history shows</th><th class="num">Bar to beat</th><th>Quad</th></tr></thead>
+<tr><th>Quarter</th><th class="num">Fed rate</th><th class="num">Effect on growth</th><th class="num">Fed rate</th><th class="num">Effect on growth</th><th class="num">…even at the fastest bite history shows</th><th class="num">Bar to beat</th><th>Regime</th></tr></thead>
 <tbody>{rrows}</tbody></table></div>
 <p class="legend-inline">Effects in percentage points of annualized growth. "Fastest bite" applies the strongest single-quarter response in the 1960–2026 record (two quarters after a hike) instead of the measured average.</p>
 
 <div class="box view"><div class="box-h">Your view: the Fed keeps hiking, and growth slows in Q1 and Q2 2027</div>
-<p><b>If that is right, both quarters are Quad 4</b>, because inflation is falling hard in both anyway ({sgn(q1["di"])}pp and {sgn(q2["di"])}pp). What growth has to do: come in <b>under {q1["bar_ann"]:+.1f}% annualized in Q1 2027</b> and <b>under {q2["bar_ann"]:+.1f}% in Q2 2027</b>. The bars are low because early 2026 was weak, so it does not take a recession, just a real slowdown.</p>
+<p><b>If that is right, both quarters are Cooling</b>, because inflation is falling hard in both anyway ({sgn(q1["di"])}pp and {sgn(q2["di"])}pp). What growth has to do: come in <b>under {q1["bar_ann"]:+.1f}% annualized in Q1 2027</b> and <b>under {q2["bar_ann"]:+.1f}% in Q2 2027</b>. The bars are low because early 2026 was weak, so it does not take a recession, just a real slowdown.</p>
 <p><b>What the sheet says.</b> {view_sentence}</p>
 <p><b>What would confirm your view early:</b> jobless claims rising through the autumn, retail sales going flat, the Q4 2026 GDP print (28 January 2027) coming in under {qmap["2026Q4"]["bar_ann"]:+.1f}% annualized, and the Q1 2027 print (late April) under {q1["bar_ann"]:+.1f}%. The consumer lines above are where it would show first: real income is already weak and the saving rate is already very low.</p>
-<p class="ss"><b>Honesty note.</b> In the 2017–2026 backtest the rate effect made the growth calls slightly worse, not better: it reversed {RS["n_flipped"]} of {RS["n_rows"]} calls and was right on {pct(RS["hit_flipped_on"])} of those against {pct(RS["hit_flipped_off"])} without it. Both times it mattered (2018, 2023) the Fed hiked into an economy that kept growing. It is on because you asked for it; the cards above say where it changes a quad.</p></div>
+<p class="ss"><b>Honesty note.</b> In the 2017–2026 backtest the rate effect made the growth calls slightly worse, not better: it reversed {RS["n_flipped"]} of {RS["n_rows"]} calls and was right on {pct(RS["hit_flipped_on"])} of those against {pct(RS["hit_flipped_off"])} without it. Both times it mattered (2018, 2023) the Fed hiked into an economy that kept growing. It is on because you asked for it; the cards above say where it changes a regime.</p></div>
 
 <h2>Against Hedgeye</h2>
 <div class="tblwrap"><table>
 <thead><tr><th>Question</th><th>Hedgeye ({HG["read_date"]})</th><th>This sheet</th><th>Verdict</th></tr></thead><tbody>
 <tr><td class="lbl">Inflation in Q4 2026</td><td>rising, NowCast about {HG["q4_2026_nowcast"]:.2f}%</td><td>{qmap["2026Q4"]["i_yoy"]:.2f}% for the quarter, peak {M["peak"]["yoy"]:.2f}% in {M["peak"]["label"]}</td><td>same direction</td></tr>
 <tr><td class="lbl">Then "cut roughly in half" by mid-2027</td><td>yes</td><td>{M["peak"]["yoy"]:.2f}% → {M["trough"]["yoy"]:.2f}% by {M["trough"]["label"]}, −{(1 - M["trough"]["yoy"] / M["peak"]["yoy"]) * 100:.0f}%</td><td>agree, strong call</td></tr>
-<tr><td class="lbl">Quad in Q2 2027</td><td>Quad 4</td><td>Quad {q2["quad"]}: inflation side agrees, growth needs a print under {q2["bar_ann"]:+.1f}% annualized</td><td>hinges on growth</td></tr>
+<tr><td class="lbl">Regime in Q2 2027</td><td>{REGIME_NAME[4]} (their "Quad 4")</td><td>{REGIME_NAME[q2["quad"]]}: inflation side agrees, growth needs a print under {q2["bar_ann"]:+.1f}% annualized</td><td>hinges on growth</td></tr>
 <tr><td class="lbl">Rate hikes slow growth</td><td>yes, hard, into 2027</td><td>yes, but with the lag the data show the bite lands in the second half of 2027</td><td>same story, later date</td></tr>
-<tr><td class="lbl">Monthly quad path, {hg_first}–{hg_last}</td><td>their monthly map ({M["hedgeye_monthly_asof"]})</td><td>the sheet's monthly quads agree in <b>{hg_agree} of {hg_n} months</b>; they differ in {hg_diff}</td><td>same arithmetic, different growth measure</td></tr>
+<tr><td class="lbl">Monthly regime path, {hg_first}–{hg_last}</td><td>their monthly map ({M["hedgeye_monthly_asof"]})</td><td>the sheet's monthly regimes agree in <b>{hg_agree} of {hg_n} months</b>; they differ in {hg_diff}</td><td>same arithmetic, different growth measure</td></tr>
 </tbody></table></div>
 
 <h2>How often is this right?</h2>
@@ -790,14 +797,14 @@ code{{font-family:"IBM Plex Mono",monospace;font-size:12px;background:var(--actu
 (function(){{
   var box=document.querySelector('.chartbox'), tip=document.getElementById('tip'), xh=document.getElementById('xhair');
   var months={json.dumps(D["chart"]["months"])}, infl={json.dumps([round(x, 2) for x in D["chart"]["infl"]])};
-  var bands={json.dumps(D["chart"]["bands"])}, growth={json.dumps({b["q"]: round(q["g_yoy"], 2) for b in D["chart"]["bands"] for q in [qmap[b["q"]]]})};
+  var names={json.dumps(REGIME_NAME)}, bands={json.dumps(D["chart"]["bands"])}, growth={json.dumps({b["q"]: round(q["g_yoy"], 2) for b in D["chart"]["bands"] for q in [qmap[b["q"]]]})};
   function bandOf(i){{for(var k=0;k<bands.length;k++){{if(i>=bands[k].i0&&i<=bands[k].i1)return bands[k];}}return null;}}
   box.querySelectorAll('.hov').forEach(function(r){{
     r.addEventListener('mousemove',function(e){{
       var i=+r.getAttribute('data-i'), bd=bandOf(i);
       var x=parseFloat(r.getAttribute('x'))+parseFloat(r.getAttribute('width'))/2;
       xh.setAttribute('x1',x); xh.setAttribute('x2',x); xh.setAttribute('visibility','visible');
-      tip.innerHTML='<b>'+months[i]+'</b> · inflation '+infl[i].toFixed(2)+'%'+(bd?' · growth '+growth[bd.q].toFixed(2)+'% · Quad '+bd.quad:'');
+      tip.innerHTML='<b>'+months[i]+'</b> · inflation '+infl[i].toFixed(2)+'%'+(bd?' · growth '+growth[bd.q].toFixed(2)+'% · '+names[bd.quad]:'');
       var bb=box.getBoundingClientRect(); var lx=e.clientX-bb.left+12, ly=e.clientY-bb.top-34;
       if(lx+tip.offsetWidth>bb.width-8) lx=e.clientX-bb.left-tip.offsetWidth-12;
       tip.style.left=lx+'px'; tip.style.top=ly+'px'; tip.style.visibility='visible';
