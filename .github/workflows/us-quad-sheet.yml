@@ -1,0 +1,119 @@
+# Rebuilds the US quad sheet from fresh data and publishes it as a feed.
+#
+# Everything lands on the 'live-us-quad' branch, one commit, force-pushed,
+# so any consumer reads a stable raw URL with no token (the repo is public):
+#
+#   https://raw.githubusercontent.com/<owner>/<repo>/live-us-quad/latest.json
+#       the quads only: current + projected quarters, and every month
+#   https://raw.githubusercontent.com/<owner>/<repo>/live-us-quad/us_sheet.json
+#       the full data behind the page (33 KB)
+#   https://raw.githubusercontent.com/<owner>/<repo>/live-us-quad/us_quad_sheet.html
+#       the page itself
+#
+# Runs weekdays at 13:45 UTC, after the 08:30 ET releases (CPI, PCE, GDP,
+# payrolls) have reached FRED, and on demand from the Actions tab. GitHub
+# fires schedules from the default branch only; on any other branch this
+# workflow runs on demand. The whole run is ~3 minutes on a free runner and
+# touches nothing but this repository -- the model never runs on the
+# website's server.
+name: US quad sheet
+
+on:
+  schedule:
+    - cron: "45 13 * * 1-5"
+  workflow_dispatch:
+
+concurrency:
+  group: us-quad-sheet
+  cancel-in-progress: false
+
+jobs:
+  sheet:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Fetch the latest US data (FRED + Zillow, ~1 minute)
+        run: python -m usmodel.fetch_data_us --data-dir data/us
+
+      - name: Build the sheet and the live run
+        run: |
+          python us_sheet.py
+          python run_us.py > results_us/us_run.txt
+
+      - name: Assemble the feed
+        run: |
+          mkdir -p feed
+          cp results_us/us_sheet.json feed/us_sheet.json
+          cp results_us/us_quad_sheet.html feed/us_quad_sheet.html
+          cp results_us/us_run.txt feed/us_run.txt
+          python - <<'PY'
+          import json, datetime
+          d = json.load(open("feed/us_sheet.json"))
+          m = d["meta"]
+          out = {
+              "generated_utc": datetime.datetime.now(datetime.timezone.utc).isoformat(timespec="seconds"),
+              "asof": m["asof_iso"], "cpi_through": m["cpi_through"], "gdp_through": m["gdp_through"],
+              "quarters": [{"quarter": q["q"], "label": q["label"], "quad": q["quad"], "name": q["name"],
+                            "too_close_to_call": q["close"], "realized": q["realized"],
+                            "growth_yoy": round(q["g_yoy"], 2), "growth_dir": q["g_dir"],
+                            "inflation_yoy": round(q["i_yoy"], 2), "inflation_dir": q["i_dir"],
+                            "backtest_hit": q["quad_hit"]} for q in d["quarters"]],
+              "months": [{"month": mm["m"], "label": mm["label"], "quad": mm["mquad"]["quad"],
+                          "too_close_to_call": mm["mquad"]["close"], "status": mm["mquad"]["status"],
+                          "growth_measure_yoy": round(mm["mg"]["yoy"], 2), "growth_dir": mm["mg"]["dir"],
+                          "growth_conviction": mm["mg"]["bucket"], "growth_hit": mm["mg"]["hit"],
+                          "cpi_yoy": round(mm["yoy"], 2), "cpi_mom": round(mm["mom"], 2), "cpi_dir": mm["dir"],
+                          "cpi_conviction": mm["word"], "cpi_hit": round(mm["hit"], 3),
+                          "hedgeye_quad": (mm.get("hedgeye") or {}).get("quad")}
+                         for mm in d["months"] if mm.get("mquad") and mm.get("mg")],
+              "source": "https://github.com/${{ github.repository }}",
+          }
+          json.dump(out, open("feed/latest.json", "w"), indent=1)
+          print("latest.json:", len(out["quarters"]), "quarters,", len(out["months"]), "months, as of", out["asof"])
+          PY
+          cat > feed/README.md <<'MD'
+          # US quad sheet feed
+
+          Rebuilt by the "US quad sheet" workflow from fresh FRED and Zillow data.
+
+          - `latest.json` -- the quads only: each quarter (from GDP) and each month
+            (from the monthly growth measure), with directions, conviction and the
+            backtested hit rate of that kind of call
+          - `us_sheet.json` -- the full data behind the page
+          - `us_quad_sheet.html` -- the page
+          - `us_run.txt` -- the console output of the live run
+
+          Read them by raw URL, e.g.
+          `https://raw.githubusercontent.com/OWNER/REPO/live-us-quad/latest.json`.
+          MD
+          sed -i "s#OWNER/REPO#${{ github.repository }}#" feed/README.md
+
+      - name: Upload the feed as a workflow artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: us-quad-sheet-${{ github.run_id }}
+          path: feed/
+
+      - name: Publish to the live-us-quad branch
+        run: |
+          cd feed
+          git init -b live-us-quad
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "US quad sheet $(date -u +%F)"
+          git push --force \
+            "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" \
+            live-us-quad
