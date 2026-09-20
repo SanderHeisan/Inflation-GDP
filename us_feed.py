@@ -22,6 +22,11 @@ What it carries:
   print, the inflation path, oil, rents, this quarter's growth, the pace
   assumed after it, interest rates, the consumer), as text with no markup.
   Every sentence is computed from the sheet; nothing is written by hand.
+- `drivers`: the same story as a table of figures - one row per driver
+  (oil, the pump, rents, wages, this quarter's pace, the pace assumed after
+  it, the Fed funds rate, the consumer lines) with its latest reading, its
+  change, where it sits against the last ten years, and one line on what
+  it means. Strings only, no markup.
 
 The "US macro regime" workflow publishes this file, the full sheet and the
 page to the live-us-regime branch.
@@ -188,6 +193,67 @@ def notes(sheet: dict) -> List[Dict[str, str]]:
     return out
 
 
+def drivers(sheet: dict) -> List[Dict[str, str]]:
+    """The story behind the numbers as rows of figures. Every value is a
+    string a page can print as is; `change` and `level` may be empty."""
+    M, Q, RT, C = sheet["meta"], sheet["quarters"], sheet["rate"], sheet["consumer"]
+    now = next(q for q in Q if not q["realized"])
+    nxt = next(m for m in sheet["months"] if not m["realized"])
+    c = nxt.get("contrib") or {}
+    out: List[Dict[str, str]] = []
+
+    def add(key: str, label: str, value: str, change: str = "", level: str = "", note: str = "") -> None:
+        out.append({"key": key, "label": label, "value": value, "change": change, "level": level, "note": note})
+
+    add("oil", "Oil (WTI)", f"${M['wti_now']:.0f} a barrel",
+        f"{M['wti_now'] - M['wti_last_cpi']:+.0f} since {M['cpi_through']}", "",
+        "Each $1 on a barrel has been worth about 0.03 points on inflation since 2000.")
+    add("pump", "Pump price", f"${M['pump_now']:.2f} a gallon", f"{M['pump_mom']:+.1f}% this month so far", "",
+        f"Adds {c.get('gasoline', 0.0):+.2f} points to {nxt['label']} inflation; pump prices follow oil by a few weeks.")
+    add("rents", "Market rents, new leases", f"{M['rent_yoy']:+.1f}% year over year", "", "",
+        "Rents in the index follow with about a year's lag, about 0.08 points a month.")
+    add("wages", "Wages", f"{M['wage_yoy']:+.1f}% year over year", "", "", "Feeds services prices slowly.")
+    add("growth_pace", f"Growth pace, {now['label']}", f"{now['qoq_ann']:+.1f}% annualized",
+        f"bar to beat {now['bar_ann']:+.1f}%", "",
+        f"{M['k']} of 3 months in; year-over-year growth {'rises' if float(now['dg']) > 0 else 'slips'} to {now['g_yoy']:.1f}%.")
+    add("pace_after", "Pace assumed after this quarter", f"{M['pace_ann']:.1f}% a year", "", "",
+        "A normal pace, adjusted for interest rates; the model does not forecast GDP further out.")
+    if RT.get("level") is not None and RT.get("implied_end") is not None:
+        qlabel = {q["q"]: q["label"] for q in Q}
+        end = datetime.date.fromisoformat(max(ucfg.POLICY_RATE_PATH)).strftime("%B %Y")
+        note = f"Market path to {RT['implied_end']:.2f}% by {end}; hikes reach growth two to six quarters later"
+        if RT.get("first_bite") in qlabel:
+            note += f", biting from {qlabel[RT['first_bite']]}"
+        add("fed_funds", "Fed funds rate", f"{RT['level']:.2f}%",
+            f"{RT.get('chg_8q') or 0.0:+.1f} points over two years", _level_words(C.get("fed_funds", {}).get("pctl_10y")),
+            note + ".")
+    if "real_pce" in C:
+        r = C["real_pce"]
+        add("spending", "Consumer spending", f"{r['yoy_pct']:+.1f}% year over year", "", _level_words(r.get("pctl_10y")),
+            "About two thirds of GDP. Very hot spending has been followed by slower growth about 7 times in 10.")
+    if "sentiment" in C:
+        r = C["sentiment"]
+        add("confidence", "Consumer confidence", f"{r['level']:.0f} (University of Michigan)", "", _level_words(r.get("pctl_10y")),
+            "Very low confidence has not meant weaker growth: the next quarter was higher 63% of the time.")
+    if "net_worth" in C:
+        r = C["net_worth"]
+        add("wealth", "Household wealth", f"${r['level_tn']:.0f} trillion", f"{r['yoy_pct']:+.1f}% year over year",
+            _level_words(r.get("pctl_10y")), "Fast wealth gains have meant slowing growth three to four quarters later 61% to 68% of the time.")
+    if "real_income" in C:
+        r = C["real_income"]
+        add("income", "Income after inflation", f"{r['yoy_pct']:+.1f}% year over year", "", _level_words(r.get("pctl_10y")),
+            "Weak real income is the soft spot: spending carried by a low saving rate, not by pay.")
+    if "saving_rate" in C:
+        r = C["saving_rate"]
+        add("saving", "Saving rate", f"{r['level_pct']:.1f}% of income", "", _level_words(r.get("pctl_10y")),
+            "Extremes carry no measured signal for next quarter, but it is the cushion that is gone when very low.")
+    if "mortgage_30y" in C:
+        r = C["mortgage_30y"]
+        add("mortgage", "30-year mortgage rate", f"{r['level_pct']:.2f}%", f"{r.get('chg_4q_pp') or 0.0:+.2f} points over a year",
+            _level_words(r.get("pctl_10y")), "Falling mortgage rates have been a strong lead on faster growth (75% to 79%); rising ones a weak lead on slower growth.")
+    return out
+
+
 def build_feed(sheet: dict, repo: str = "SanderHeisan/Inflation-GDP") -> dict:
     m = sheet["meta"]
     feed = {
@@ -211,7 +277,7 @@ def build_feed(sheet: dict, repo: str = "SanderHeisan/Inflation-GDP") -> dict:
         "source": f"https://github.com/{repo}",
     }
     # The regimes publish even if a block cannot be written from this sheet.
-    for key, fn in (("hit_rates", hit_rates), ("notes", notes)):
+    for key, fn in (("hit_rates", hit_rates), ("notes", notes), ("drivers", drivers)):
         try:
             feed[key] = fn(sheet)
         except Exception as e:  # noqa: BLE001 - a missing field must not stop the feed

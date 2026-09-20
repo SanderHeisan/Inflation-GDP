@@ -84,8 +84,22 @@ def test_notes_are_plain_sentences_computed_from_the_sheet(feed):
     assert sheet["meta"]["peak"]["label"] in next(n for n in notes if n["key"] == "inflation_path")["text"]
 
 
+def test_drivers_are_rows_of_figures(feed):
+    rows = feed["drivers"]
+    keys = [d["key"] for d in rows]
+    for k in ("oil", "pump", "rents", "wages", "growth_pace", "pace_after", "fed_funds", "spending"):
+        assert k in keys, k
+    for d in rows:
+        assert set(d) == {"key", "label", "value", "change", "level", "note"}
+        assert d["label"] and d["value"] and all(isinstance(v, str) for v in d.values())
+        assert "<" not in json.dumps(d) and "\u2014" not in json.dumps(d)
+    sheet = json.load(open(SHEET))
+    oil = next(d for d in rows if d["key"] == "oil")
+    assert f"${sheet['meta']['wti_now']:.0f} a barrel" == oil["value"]
+
+
 def test_no_other_vendors_names_in_the_public_blocks(feed):
-    blob = json.dumps(feed["hit_rates"]) + json.dumps(feed["notes"]) + json.dumps(feed["regimes"])
+    blob = json.dumps(feed["hit_rates"]) + json.dumps(feed["notes"]) + json.dumps(feed["drivers"]) + json.dumps(feed["regimes"])
     assert not VENDOR.search(blob), VENDOR.findall(blob)
     for row in feed["quarters"] + feed["months"]:
         for k, v in row.items():

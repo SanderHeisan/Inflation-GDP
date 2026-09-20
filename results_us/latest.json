@@ -1,5 +1,5 @@
 {
- "generated_utc": "2026-09-20T19:42:36+00:00",
+ "generated_utc": "2026-09-20T20:56:58+00:00",
  "asof": "2026-09-20",
  "cpi_through": "Aug 2026",
  "gdp_through": "Q2 2026",
@@ -563,6 +563,112 @@
    "key": "consumer",
    "title": "The consumer",
    "text": "Consumer spending is about two thirds of GDP. Right now consumer spending is +2.1% on a year ago (normal against the last ten years); consumer confidence is 55 (very low against the last ten years); household wealth is +11.8% on a year ago (high against the last ten years); income after inflation is +0.5% (low against the last ten years); the saving rate is 3.0% of income (very low against the last ten years); the 30-year mortgage rate is 6.81%. Weak income after inflation is the soft spot: spending is being carried by a low saving rate, not by pay."
+  }
+ ],
+ "drivers": [
+  {
+   "key": "oil",
+   "label": "Oil (WTI)",
+   "value": "$97 a barrel",
+   "change": "+14 since Aug 2026",
+   "level": "",
+   "note": "Each $1 on a barrel has been worth about 0.03 points on inflation since 2000."
+  },
+  {
+   "key": "pump",
+   "label": "Pump price",
+   "value": "$4.24 a gallon",
+   "change": "+4.4% this month so far",
+   "level": "",
+   "note": "Adds +0.20 points to Sep 2026 inflation; pump prices follow oil by a few weeks."
+  },
+  {
+   "key": "rents",
+   "label": "Market rents, new leases",
+   "value": "+2.5% year over year",
+   "change": "",
+   "level": "",
+   "note": "Rents in the index follow with about a year's lag, about 0.08 points a month."
+  },
+  {
+   "key": "wages",
+   "label": "Wages",
+   "value": "+3.1% year over year",
+   "change": "",
+   "level": "",
+   "note": "Feeds services prices slowly."
+  },
+  {
+   "key": "growth_pace",
+   "label": "Growth pace, Q3 2026",
+   "value": "+2.4% annualized",
+   "change": "bar to beat +4.4%",
+   "level": "",
+   "note": "1 of 3 months in; year-over-year growth slips to 1.6%."
+  },
+  {
+   "key": "pace_after",
+   "label": "Pace assumed after this quarter",
+   "value": "2.0% a year",
+   "change": "",
+   "level": "",
+   "note": "A normal pace, adjusted for interest rates; the model does not forecast GDP further out."
+  },
+  {
+   "key": "fed_funds",
+   "label": "Fed funds rate",
+   "value": "3.64%",
+   "change": "-1.6 points over two years",
+   "level": "normal against the last ten years",
+   "note": "Market path to 4.63% by July 2027; hikes reach growth two to six quarters later, biting from Q3 2027."
+  },
+  {
+   "key": "spending",
+   "label": "Consumer spending",
+   "value": "+2.1% year over year",
+   "change": "",
+   "level": "normal against the last ten years",
+   "note": "About two thirds of GDP. Very hot spending has been followed by slower growth about 7 times in 10."
+  },
+  {
+   "key": "confidence",
+   "label": "Consumer confidence",
+   "value": "55 (University of Michigan)",
+   "change": "",
+   "level": "very low against the last ten years",
+   "note": "Very low confidence has not meant weaker growth: the next quarter was higher 63% of the time."
+  },
+  {
+   "key": "wealth",
+   "label": "Household wealth",
+   "value": "$196 trillion",
+   "change": "+11.8% year over year",
+   "level": "high against the last ten years",
+   "note": "Fast wealth gains have meant slowing growth three to four quarters later 61% to 68% of the time."
+  },
+  {
+   "key": "income",
+   "label": "Income after inflation",
+   "value": "+0.5% year over year",
+   "change": "",
+   "level": "low against the last ten years",
+   "note": "Weak real income is the soft spot: spending carried by a low saving rate, not by pay."
+  },
+  {
+   "key": "saving",
+   "label": "Saving rate",
+   "value": "3.0% of income",
+   "change": "",
+   "level": "very low against the last ten years",
+   "note": "Extremes carry no measured signal for next quarter, but it is the cushion that is gone when very low."
+  },
+  {
+   "key": "mortgage",
+   "label": "30-year mortgage rate",
+   "value": "6.81%",
+   "change": "+0.12 points over a year",
+   "level": "normal against the last ten years",
+   "note": "Falling mortgage rates have been a strong lead on faster growth (75% to 79%); rising ones a weak lead on slower growth."
   }
  ]
 }
