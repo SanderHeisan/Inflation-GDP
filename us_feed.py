@@ -282,6 +282,14 @@ def build_feed(sheet: dict, repo: str = "SanderHeisan/Inflation-GDP") -> dict:
             feed[key] = fn(sheet)
         except Exception as e:  # noqa: BLE001 - a missing field must not stop the feed
             print(f"[us_feed] {key} skipped: {type(e).__name__}: {e}")
+    # What each regime has meant for the sector funds: us_sectors.py writes it
+    # when it runs; the feed carries it when the file is there.
+    sectors_path = RESULTS_DIR / "us_sectors_feed.json"
+    if sectors_path.exists():
+        try:
+            feed["sectors"] = json.loads(sectors_path.read_text())
+        except Exception as e:  # noqa: BLE001
+            print(f"[us_feed] sectors skipped: {type(e).__name__}: {e}")
     return feed
 
 

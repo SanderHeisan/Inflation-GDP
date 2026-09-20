@@ -280,6 +280,51 @@ it to the `live-us-regime` branch on weekdays. `tests/test_us_feed.py` holds
 the contract and that no other vendor's product names are in the public
 blocks.
 
+## Sectors by regime
+
+`python us_sectors.py` answers "which sectors have done best in which R" with the SPDR
+sector funds (XLE, XLF, XLK, XLV, XLI, XLP, XLY, XLU, XLB, XLRE, XLC), SPY, long and
+intermediate Treasuries (TLT, IEF) and gold (GLD), from dividend-adjusted month-end
+closes (Yahoo Finance, cached in `data/us/sector_etf_monthly.csv`). It writes
+`results_us/us_sectors_by_regime.csv` (every cell: count, mean, median, share
+positive, excess over SPY, t-statistic) and `results_us/us_sectors_feed.json`, which
+`us_feed.py` folds into `latest.json` as `sectors`. Three bases, kept apart:
+
+- **Realized, monthly** (Feb 2008 to Jul 2026, 222 months): the regime each month turned
+  out to be, from the published data (the monthly growth measure's year-over-year change
+  and the CPI's, signs only). Known only after the fact.
+- **Called, monthly** (Jan 2017 to Sep 2026, 117 months): the model's point-in-time call for
+  month M made at the end of M-1 (the backtest's vintage builder). The version a reader
+  could have acted on; the call agrees with the outcome 57% of the time.
+- **Realized, quarterly** (Q4 1998 to Q2 2026, 111 quarters): real GDP year-over-year
+  direction x CPI year-over-year direction.
+
+Average month per regime (realized), SPY's average and share of positive months, and the
+funds with the best and worst average excess over SPY in that regime:
+
+| R | months | SPY | best vs SPY (pp a month) | worst vs SPY |
+|---|---|---|---|---|
+| R1 | 58 | +1.38% (64%) | Consumer discretionary (+0.91), Industrials (+0.57), Technology (+0.48) | Energy (-1.34), Treasuries (7 to 10 years) (-0.75), Consumer staples (-0.64) |
+| R2 | 55 | +1.69% (69%) | Technology (+0.96), Industrials (+0.09), Consumer discretionary (+0.05) | Treasuries (7 to 10 years) (-1.63), Long Treasuries (20+ years) (-1.54), Gold (-1.06) |
+| R3 | 58 | +0.84% (71%) | Energy (+1.16), Technology (+0.42), Communication services (+0.40) | Long Treasuries (20+ years) (-1.43), Treasuries (7 to 10 years) (-0.98), Utilities (-0.53) |
+| R4 | 51 | +0.10% (63%) | Health care (+0.90), Consumer staples (+0.74), Long Treasuries (20+ years) (+0.41) | Real estate (-0.65), Consumer discretionary (-0.52), Financials (-0.32) |
+
+On the model's own calls (Jan 2017 to Sep 2026):
+
+| R | months | SPY | best vs SPY | worst vs SPY |
+|---|---|---|---|---|
+| R1 | 36 | +1.93% (69%) | Technology (+1.18), Consumer discretionary (+0.64), Energy (+0.44) | Long Treasuries (20+ years) (-1.91), Treasuries (7 to 10 years) (-1.80), Consumer staples (-1.64) |
+| R2 | 20 | +2.83% (85%) | Technology (+1.41), Financials (+0.08), Energy (-0.24) | Treasuries (7 to 10 years) (-2.73), Long Treasuries (20+ years) (-2.58), Consumer staples (-2.08) |
+| R3 | 24 | +1.26% (71%) | Technology (+1.11), Consumer discretionary (+0.39), Communication services (-0.10) | Health care (-1.68), Long Treasuries (20+ years) (-1.48), Treasuries (7 to 10 years) (-1.14) |
+| R4 | 37 | -0.17% (62%) | Gold (+1.31), Health care (+1.25), Consumer staples (+1.15) | Consumer discretionary (-1.06), Communication services (-0.33), Materials (-0.33) |
+
+The pattern is the textbook one and it holds on the model's own calls: R2 (growth up,
+inflation up) is the strong regime for stocks and the weak one for bonds; R4 (both down)
+is the weak regime for stocks, where health care, staples, Treasuries and gold lead; R3
+(growth down, inflation up) is where energy and gold earn their keep. Plain averages over
+a handful of dozens of months each, so read the counts: nothing here is fitted, and none
+of it is a recommendation.
+
 ## The stats
 
 Walk-forward and point-in-time. At each as-of date the information set is

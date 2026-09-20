@@ -1,5 +1,5 @@
 {
- "generated_utc": "2026-09-20T20:56:58+00:00",
+ "generated_utc": "2026-09-20T22:18:24+00:00",
  "asof": "2026-09-20",
  "cpi_through": "Aug 2026",
  "gdp_through": "Q2 2026",
@@ -670,5 +670,1366 @@
    "level": "normal against the last ten years",
    "note": "Falling mortgage rates have been a strong lead on faster growth (75% to 79%); rising ones a weak lead on slower growth."
   }
- ]
+ ],
+ "sectors": {
+  "generated": "2026-09-20",
+  "funds": {
+   "SPY": "S&P 500",
+   "XLE": "Energy",
+   "XLF": "Financials",
+   "XLK": "Technology",
+   "XLV": "Health care",
+   "XLI": "Industrials",
+   "XLP": "Consumer staples",
+   "XLY": "Consumer discretionary",
+   "XLU": "Utilities",
+   "XLB": "Materials",
+   "XLRE": "Real estate",
+   "XLC": "Communication services",
+   "TLT": "Long Treasuries (20+ years)",
+   "IEF": "Treasuries (7 to 10 years)",
+   "GLD": "Gold"
+  },
+  "realized_monthly": {
+   "span": "Feb 2008 to Jul 2026",
+   "n": 222,
+   "regimes": {
+    "1": {
+     "n": 58,
+     "spy_mean": 1.38,
+     "spy_hit": 0.64,
+     "best": [
+      {
+       "fund": "XLY",
+       "name": "Consumer discretionary",
+       "mean": 2.3,
+       "excess": 0.91,
+       "hit": 0.71,
+       "n": 58
+      },
+      {
+       "fund": "XLI",
+       "name": "Industrials",
+       "mean": 1.96,
+       "excess": 0.57,
+       "hit": 0.66,
+       "n": 58
+      },
+      {
+       "fund": "XLK",
+       "name": "Technology",
+       "mean": 1.87,
+       "excess": 0.48,
+       "hit": 0.66,
+       "n": 58
+      }
+     ],
+     "worst": [
+      {
+       "fund": "XLE",
+       "name": "Energy",
+       "mean": 0.05,
+       "excess": -1.34,
+       "hit": 0.45,
+       "n": 58
+      },
+      {
+       "fund": "IEF",
+       "name": "Treasuries (7 to 10 years)",
+       "mean": 0.64,
+       "excess": -0.75,
+       "hit": 0.67,
+       "n": 58
+      },
+      {
+       "fund": "XLP",
+       "name": "Consumer staples",
+       "mean": 0.74,
+       "excess": -0.64,
+       "hit": 0.57,
+       "n": 58
+      }
+     ]
+    },
+    "2": {
+     "n": 55,
+     "spy_mean": 1.69,
+     "spy_hit": 0.69,
+     "best": [
+      {
+       "fund": "XLK",
+       "name": "Technology",
+       "mean": 2.66,
+       "excess": 0.96,
+       "hit": 0.67,
+       "n": 55
+      },
+      {
+       "fund": "XLI",
+       "name": "Industrials",
+       "mean": 1.79,
+       "excess": 0.09,
+       "hit": 0.65,
+       "n": 55
+      },
+      {
+       "fund": "XLY",
+       "name": "Consumer discretionary",
+       "mean": 1.74,
+       "excess": 0.05,
+       "hit": 0.65,
+       "n": 55
+      }
+     ],
+     "worst": [
+      {
+       "fund": "IEF",
+       "name": "Treasuries (7 to 10 years)",
+       "mean": 0.07,
+       "excess": -1.63,
+       "hit": 0.42,
+       "n": 55
+      },
+      {
+       "fund": "TLT",
+       "name": "Long Treasuries (20+ years)",
+       "mean": 0.15,
+       "excess": -1.54,
+       "hit": 0.47,
+       "n": 55
+      },
+      {
+       "fund": "GLD",
+       "name": "Gold",
+       "mean": 0.64,
+       "excess": -1.06,
+       "hit": 0.51,
+       "n": 55
+      }
+     ]
+    },
+    "3": {
+     "n": 58,
+     "spy_mean": 0.84,
+     "spy_hit": 0.71,
+     "best": [
+      {
+       "fund": "XLE",
+       "name": "Energy",
+       "mean": 1.99,
+       "excess": 1.16,
+       "hit": 0.67,
+       "n": 58
+      },
+      {
+       "fund": "XLK",
+       "name": "Technology",
+       "mean": 1.26,
+       "excess": 0.42,
+       "hit": 0.62,
+       "n": 58
+      },
+      {
+       "fund": "XLC",
+       "name": "Communication services",
+       "mean": 1.03,
+       "excess": 0.4,
+       "hit": 0.67,
+       "n": 21
+      }
+     ],
+     "worst": [
+      {
+       "fund": "TLT",
+       "name": "Long Treasuries (20+ years)",
+       "mean": -0.59,
+       "excess": -1.43,
+       "hit": 0.38,
+       "n": 58
+      },
+      {
+       "fund": "IEF",
+       "name": "Treasuries (7 to 10 years)",
+       "mean": -0.14,
+       "excess": -0.98,
+       "hit": 0.45,
+       "n": 58
+      },
+      {
+       "fund": "XLU",
+       "name": "Utilities",
+       "mean": 0.3,
+       "excess": -0.53,
+       "hit": 0.57,
+       "n": 58
+      }
+     ]
+    },
+    "4": {
+     "n": 51,
+     "spy_mean": 0.1,
+     "spy_hit": 0.63,
+     "best": [
+      {
+       "fund": "XLV",
+       "name": "Health care",
+       "mean": 1.0,
+       "excess": 0.9,
+       "hit": 0.61,
+       "n": 51
+      },
+      {
+       "fund": "XLP",
+       "name": "Consumer staples",
+       "mean": 0.84,
+       "excess": 0.74,
+       "hit": 0.63,
+       "n": 51
+      },
+      {
+       "fund": "TLT",
+       "name": "Long Treasuries (20+ years)",
+       "mean": 0.51,
+       "excess": 0.41,
+       "hit": 0.57,
+       "n": 51
+      }
+     ],
+     "worst": [
+      {
+       "fund": "XLRE",
+       "name": "Real estate",
+       "mean": -0.32,
+       "excess": -0.65,
+       "hit": 0.5,
+       "n": 28
+      },
+      {
+       "fund": "XLY",
+       "name": "Consumer discretionary",
+       "mean": -0.42,
+       "excess": -0.52,
+       "hit": 0.49,
+       "n": 51
+      },
+      {
+       "fund": "XLF",
+       "name": "Financials",
+       "mean": -0.22,
+       "excess": -0.32,
+       "hit": 0.55,
+       "n": 51
+      }
+     ]
+    }
+   },
+   "table": [
+    {
+     "fund": "SPY",
+     "name": "S&P 500",
+     "all": 1.02,
+     "all_n": 222,
+     "r1": 1.38,
+     "r1_n": 58,
+     "r2": 1.69,
+     "r2_n": 55,
+     "r3": 0.84,
+     "r3_n": 58,
+     "r4": 0.1,
+     "r4_n": 51
+    },
+    {
+     "fund": "XLE",
+     "name": "Energy",
+     "all": 0.8,
+     "all_n": 222,
+     "r1": 0.05,
+     "r1_n": 58,
+     "r2": 0.7,
+     "r2_n": 55,
+     "r3": 1.99,
+     "r3_n": 58,
+     "r4": 0.42,
+     "r4_n": 51
+    },
+    {
+     "fund": "XLF",
+     "name": "Financials",
+     "all": 0.78,
+     "all_n": 222,
+     "r1": 1.17,
+     "r1_n": 58,
+     "r2": 1.26,
+     "r2_n": 55,
+     "r3": 0.81,
+     "r3_n": 58,
+     "r4": -0.22,
+     "r4_n": 51
+    },
+    {
+     "fund": "XLK",
+     "name": "Technology",
+     "all": 1.5,
+     "all_n": 222,
+     "r1": 1.87,
+     "r1_n": 58,
+     "r2": 2.66,
+     "r2_n": 55,
+     "r3": 1.26,
+     "r3_n": 58,
+     "r4": 0.1,
+     "r4_n": 51
+    },
+    {
+     "fund": "XLV",
+     "name": "Health care",
+     "all": 0.94,
+     "all_n": 222,
+     "r1": 1.13,
+     "r1_n": 58,
+     "r2": 0.87,
+     "r2_n": 55,
+     "r3": 0.78,
+     "r3_n": 58,
+     "r4": 1.0,
+     "r4_n": 51
+    },
+    {
+     "fund": "XLI",
+     "name": "Industrials",
+     "all": 1.04,
+     "all_n": 222,
+     "r1": 1.96,
+     "r1_n": 58,
+     "r2": 1.79,
+     "r2_n": 55,
+     "r3": 0.4,
+     "r3_n": 58,
+     "r4": -0.09,
+     "r4_n": 51
+    },
+    {
+     "fund": "XLP",
+     "name": "Consumer staples",
+     "all": 0.81,
+     "all_n": 222,
+     "r1": 0.74,
+     "r1_n": 58,
+     "r2": 0.97,
+     "r2_n": 55,
+     "r3": 0.69,
+     "r3_n": 58,
+     "r4": 0.84,
+     "r4_n": 51
+    },
+    {
+     "fund": "XLY",
+     "name": "Consumer discretionary",
+     "all": 1.16,
+     "all_n": 222,
+     "r1": 2.3,
+     "r1_n": 58,
+     "r2": 1.74,
+     "r2_n": 55,
+     "r3": 0.85,
+     "r3_n": 58,
+     "r4": -0.42,
+     "r4_n": 51
+    },
+    {
+     "fund": "XLU",
+     "name": "Utilities",
+     "all": 0.75,
+     "all_n": 222,
+     "r1": 1.06,
+     "r1_n": 58,
+     "r2": 1.54,
+     "r2_n": 55,
+     "r3": 0.3,
+     "r3_n": 58,
+     "r4": 0.07,
+     "r4_n": 51
+    },
+    {
+     "fund": "XLB",
+     "name": "Materials",
+     "all": 0.78,
+     "all_n": 222,
+     "r1": 1.55,
+     "r1_n": 58,
+     "r2": 0.95,
+     "r2_n": 55,
+     "r3": 0.53,
+     "r3_n": 58,
+     "r4": -0.02,
+     "r4_n": 51
+    },
+    {
+     "fund": "XLRE",
+     "name": "Real estate",
+     "all": 0.7,
+     "all_n": 129,
+     "r1": 1.39,
+     "r1_n": 30,
+     "r2": 1.06,
+     "r2_n": 39,
+     "r3": 0.5,
+     "r3_n": 32,
+     "r4": -0.32,
+     "r4_n": 28
+    },
+    {
+     "fund": "XLC",
+     "name": "Communication services",
+     "all": 1.04,
+     "all_n": 97,
+     "r1": 1.46,
+     "r1_n": 24,
+     "r2": 1.73,
+     "r2_n": 28,
+     "r3": 1.03,
+     "r3_n": 21,
+     "r4": -0.17,
+     "r4_n": 24
+    },
+    {
+     "fund": "TLT",
+     "name": "Long Treasuries (20+ years)",
+     "all": 0.27,
+     "all_n": 222,
+     "r1": 1.04,
+     "r1_n": 58,
+     "r2": 0.15,
+     "r2_n": 55,
+     "r3": -0.59,
+     "r3_n": 58,
+     "r4": 0.51,
+     "r4_n": 51
+    },
+    {
+     "fund": "IEF",
+     "name": "Treasuries (7 to 10 years)",
+     "all": 0.24,
+     "all_n": 222,
+     "r1": 0.64,
+     "r1_n": 58,
+     "r2": 0.07,
+     "r2_n": 55,
+     "r3": -0.14,
+     "r3_n": 58,
+     "r4": 0.39,
+     "r4_n": 51
+    },
+    {
+     "fund": "GLD",
+     "name": "Gold",
+     "all": 0.76,
+     "all_n": 222,
+     "r1": 1.39,
+     "r1_n": 58,
+     "r2": 0.64,
+     "r2_n": 55,
+     "r3": 0.52,
+     "r3_n": 58,
+     "r4": 0.44,
+     "r4_n": 51
+    }
+   ]
+  },
+  "realized_quarterly": {
+   "span": "Q4 1998 to Q2 2026",
+   "n": 111,
+   "regimes": {
+    "1": {
+     "n": 27,
+     "spy_mean": 5.6,
+     "spy_hit": 0.85,
+     "best": [
+      {
+       "fund": "XLC",
+       "name": "Communication services",
+       "mean": 7.37,
+       "excess": 2.73,
+       "hit": 0.88,
+       "n": 8
+      },
+      {
+       "fund": "XLK",
+       "name": "Technology",
+       "mean": 6.91,
+       "excess": 1.31,
+       "hit": 0.77,
+       "n": 26
+      },
+      {
+       "fund": "XLY",
+       "name": "Consumer discretionary",
+       "mean": 6.39,
+       "excess": 0.79,
+       "hit": 0.77,
+       "n": 26
+      }
+     ],
+     "worst": [
+      {
+       "fund": "IEF",
+       "name": "Treasuries (7 to 10 years)",
+       "mean": 1.5,
+       "excess": -4.3,
+       "hit": 0.72,
+       "n": 25
+      },
+      {
+       "fund": "TLT",
+       "name": "Long Treasuries (20+ years)",
+       "mean": 2.07,
+       "excess": -3.73,
+       "hit": 0.64,
+       "n": 25
+      },
+      {
+       "fund": "GLD",
+       "name": "Gold",
+       "mean": 3.16,
+       "excess": -2.09,
+       "hit": 0.64,
+       "n": 22
+      }
+     ]
+    },
+    "2": {
+     "n": 24,
+     "spy_mean": 4.6,
+     "spy_hit": 0.83,
+     "best": [
+      {
+       "fund": "XLK",
+       "name": "Technology",
+       "mean": 6.65,
+       "excess": 2.05,
+       "hit": 0.92,
+       "n": 24
+      },
+      {
+       "fund": "XLI",
+       "name": "Industrials",
+       "mean": 5.12,
+       "excess": 0.51,
+       "hit": 0.83,
+       "n": 24
+      },
+      {
+       "fund": "XLE",
+       "name": "Energy",
+       "mean": 4.95,
+       "excess": 0.35,
+       "hit": 0.75,
+       "n": 24
+      }
+     ],
+     "worst": [
+      {
+       "fund": "TLT",
+       "name": "Long Treasuries (20+ years)",
+       "mean": -1.66,
+       "excess": -7.76,
+       "hit": 0.4,
+       "n": 20
+      },
+      {
+       "fund": "IEF",
+       "name": "Treasuries (7 to 10 years)",
+       "mean": -0.5,
+       "excess": -6.59,
+       "hit": 0.5,
+       "n": 20
+      },
+      {
+       "fund": "XLU",
+       "name": "Utilities",
+       "mean": 0.74,
+       "excess": -3.86,
+       "hit": 0.62,
+       "n": 24
+      }
+     ]
+    },
+    "3": {
+     "n": 37,
+     "spy_mean": -0.1,
+     "spy_hit": 0.59,
+     "best": [
+      {
+       "fund": "GLD",
+       "name": "Gold",
+       "mean": 3.0,
+       "excess": 3.68,
+       "hit": 0.64,
+       "n": 28
+      },
+      {
+       "fund": "XLU",
+       "name": "Utilities",
+       "mean": 1.9,
+       "excess": 2.0,
+       "hit": 0.65,
+       "n": 37
+      },
+      {
+       "fund": "XLE",
+       "name": "Energy",
+       "mean": 1.87,
+       "excess": 1.97,
+       "hit": 0.59,
+       "n": 37
+      }
+     ],
+     "worst": [
+      {
+       "fund": "XLC",
+       "name": "Communication services",
+       "mean": -4.18,
+       "excess": -2.2,
+       "hit": 0.25,
+       "n": 8
+      },
+      {
+       "fund": "XLRE",
+       "name": "Real estate",
+       "mean": -1.39,
+       "excess": -1.17,
+       "hit": 0.58,
+       "n": 12
+      },
+      {
+       "fund": "XLF",
+       "name": "Financials",
+       "mean": -0.99,
+       "excess": -0.89,
+       "hit": 0.54,
+       "n": 37
+      }
+     ]
+    },
+    "4": {
+     "n": 23,
+     "spy_mean": 0.67,
+     "spy_hit": 0.61,
+     "best": [
+      {
+       "fund": "XLY",
+       "name": "Consumer discretionary",
+       "mean": 2.89,
+       "excess": 2.22,
+       "hit": 0.61,
+       "n": 23
+      },
+      {
+       "fund": "XLV",
+       "name": "Health care",
+       "mean": 2.66,
+       "excess": 1.99,
+       "hit": 0.65,
+       "n": 23
+      },
+      {
+       "fund": "XLB",
+       "name": "Materials",
+       "mean": 2.17,
+       "excess": 1.5,
+       "hit": 0.52,
+       "n": 23
+      }
+     ],
+     "worst": [
+      {
+       "fund": "XLC",
+       "name": "Communication services",
+       "mean": 1.77,
+       "excess": -3.09,
+       "hit": 0.5,
+       "n": 8
+      },
+      {
+       "fund": "XLE",
+       "name": "Energy",
+       "mean": -0.28,
+       "excess": -0.95,
+       "hit": 0.48,
+       "n": 23
+      },
+      {
+       "fund": "XLK",
+       "name": "Technology",
+       "mean": -0.1,
+       "excess": -0.77,
+       "hit": 0.61,
+       "n": 23
+      }
+     ]
+    }
+   },
+   "table": [
+    {
+     "fund": "SPY",
+     "name": "S&P 500",
+     "all": 2.43,
+     "all_n": 110,
+     "r1": 5.6,
+     "r1_n": 26,
+     "r2": 4.6,
+     "r2_n": 24,
+     "r3": -0.1,
+     "r3_n": 37,
+     "r4": 0.67,
+     "r4_n": 23
+    },
+    {
+     "fund": "XLE",
+     "name": "Energy",
+     "all": 2.97,
+     "all_n": 110,
+     "r1": 5.6,
+     "r1_n": 26,
+     "r2": 4.95,
+     "r2_n": 24,
+     "r3": 1.87,
+     "r3_n": 37,
+     "r4": -0.28,
+     "r4_n": 23
+    },
+    {
+     "fund": "XLF",
+     "name": "Financials",
+     "all": 2.08,
+     "all_n": 110,
+     "r1": 4.83,
+     "r1_n": 26,
+     "r2": 4.68,
+     "r2_n": 24,
+     "r3": -0.99,
+     "r3_n": 37,
+     "r4": 1.2,
+     "r4_n": 23
+    },
+    {
+     "fund": "XLK",
+     "name": "Technology",
+     "all": 3.35,
+     "all_n": 110,
+     "r1": 6.91,
+     "r1_n": 26,
+     "r2": 6.65,
+     "r2_n": 24,
+     "r3": 0.87,
+     "r3_n": 37,
+     "r4": -0.1,
+     "r4_n": 23
+    },
+    {
+     "fund": "XLV",
+     "name": "Health care",
+     "all": 2.29,
+     "all_n": 110,
+     "r1": 3.54,
+     "r1_n": 26,
+     "r2": 3.24,
+     "r2_n": 24,
+     "r3": 0.56,
+     "r3_n": 37,
+     "r4": 2.66,
+     "r4_n": 23
+    },
+    {
+     "fund": "XLI",
+     "name": "Industrials",
+     "all": 2.79,
+     "all_n": 110,
+     "r1": 5.9,
+     "r1_n": 26,
+     "r2": 5.12,
+     "r2_n": 24,
+     "r3": -0.02,
+     "r3_n": 37,
+     "r4": 1.37,
+     "r4_n": 23
+    },
+    {
+     "fund": "XLP",
+     "name": "Consumer staples",
+     "all": 1.81,
+     "all_n": 110,
+     "r1": 4.1,
+     "r1_n": 26,
+     "r2": 2.19,
+     "r2_n": 24,
+     "r3": 0.1,
+     "r3_n": 37,
+     "r4": 1.59,
+     "r4_n": 23
+    },
+    {
+     "fund": "XLY",
+     "name": "Consumer discretionary",
+     "all": 2.79,
+     "all_n": 110,
+     "r1": 6.39,
+     "r1_n": 26,
+     "r2": 4.39,
+     "r2_n": 24,
+     "r3": -0.84,
+     "r3_n": 37,
+     "r4": 2.89,
+     "r4_n": 23
+    },
+    {
+     "fund": "XLU",
+     "name": "Utilities",
+     "all": 2.16,
+     "all_n": 110,
+     "r1": 3.85,
+     "r1_n": 26,
+     "r2": 0.74,
+     "r2_n": 24,
+     "r3": 1.9,
+     "r3_n": 37,
+     "r4": 2.13,
+     "r4_n": 23
+    },
+    {
+     "fund": "XLB",
+     "name": "Materials",
+     "all": 2.53,
+     "all_n": 110,
+     "r1": 6.05,
+     "r1_n": 26,
+     "r2": 4.17,
+     "r2_n": 24,
+     "r3": -0.77,
+     "r3_n": 37,
+     "r4": 2.17,
+     "r4_n": 23
+    },
+    {
+     "fund": "XLRE",
+     "name": "Real estate",
+     "all": 2.02,
+     "all_n": 42,
+     "r1": 2.67,
+     "r1_n": 9,
+     "r2": 3.34,
+     "r2_n": 13,
+     "r3": -1.39,
+     "r3_n": 12,
+     "r4": 4.27,
+     "r4_n": 8
+    },
+    {
+     "fund": "XLC",
+     "name": "Communication services",
+     "all": 3.24,
+     "all_n": 32,
+     "r1": 7.37,
+     "r1_n": 8,
+     "r2": 8.01,
+     "r2_n": 8,
+     "r3": -4.18,
+     "r3_n": 8,
+     "r4": 1.77,
+     "r4_n": 8
+    },
+    {
+     "fund": "TLT",
+     "name": "Long Treasuries (20+ years)",
+     "all": 1.09,
+     "all_n": 95,
+     "r1": 2.07,
+     "r1_n": 25,
+     "r2": -1.66,
+     "r2_n": 20,
+     "r3": 1.14,
+     "r3_n": 32,
+     "r4": 2.69,
+     "r4_n": 18
+    },
+    {
+     "fund": "IEF",
+     "name": "Treasuries (7 to 10 years)",
+     "all": 0.88,
+     "all_n": 95,
+     "r1": 1.5,
+     "r1_n": 25,
+     "r2": -0.5,
+     "r2_n": 20,
+     "r3": 0.74,
+     "r3_n": 32,
+     "r4": 1.8,
+     "r4_n": 18
+    },
+    {
+     "fund": "GLD",
+     "name": "Gold",
+     "all": 2.79,
+     "all_n": 86,
+     "r1": 3.16,
+     "r1_n": 22,
+     "r2": 3.01,
+     "r2_n": 19,
+     "r3": 3.0,
+     "r3_n": 28,
+     "r4": 1.7,
+     "r4_n": 17
+    }
+   ]
+  },
+  "called_monthly": {
+   "span": "Jan 2017 to Sep 2026",
+   "n": 117,
+   "skipped": 0,
+   "regimes": {
+    "1": {
+     "n": 36,
+     "spy_mean": 1.93,
+     "spy_hit": 0.69,
+     "best": [
+      {
+       "fund": "XLK",
+       "name": "Technology",
+       "mean": 3.11,
+       "excess": 1.18,
+       "hit": 0.72,
+       "n": 36
+      },
+      {
+       "fund": "XLY",
+       "name": "Consumer discretionary",
+       "mean": 2.57,
+       "excess": 0.64,
+       "hit": 0.69,
+       "n": 36
+      },
+      {
+       "fund": "XLE",
+       "name": "Energy",
+       "mean": 2.37,
+       "excess": 0.44,
+       "hit": 0.53,
+       "n": 36
+      }
+     ],
+     "worst": [
+      {
+       "fund": "TLT",
+       "name": "Long Treasuries (20+ years)",
+       "mean": 0.02,
+       "excess": -1.91,
+       "hit": 0.5,
+       "n": 36
+      },
+      {
+       "fund": "IEF",
+       "name": "Treasuries (7 to 10 years)",
+       "mean": 0.14,
+       "excess": -1.8,
+       "hit": 0.58,
+       "n": 36
+      },
+      {
+       "fund": "XLP",
+       "name": "Consumer staples",
+       "mean": 0.29,
+       "excess": -1.64,
+       "hit": 0.5,
+       "n": 36
+      }
+     ]
+    },
+    "2": {
+     "n": 20,
+     "spy_mean": 2.83,
+     "spy_hit": 0.85,
+     "best": [
+      {
+       "fund": "XLK",
+       "name": "Technology",
+       "mean": 4.24,
+       "excess": 1.41,
+       "hit": 0.9,
+       "n": 20
+      },
+      {
+       "fund": "XLF",
+       "name": "Financials",
+       "mean": 2.91,
+       "excess": 0.08,
+       "hit": 0.7,
+       "n": 20
+      },
+      {
+       "fund": "XLE",
+       "name": "Energy",
+       "mean": 2.58,
+       "excess": -0.24,
+       "hit": 0.75,
+       "n": 20
+      }
+     ],
+     "worst": [
+      {
+       "fund": "IEF",
+       "name": "Treasuries (7 to 10 years)",
+       "mean": 0.1,
+       "excess": -2.73,
+       "hit": 0.45,
+       "n": 20
+      },
+      {
+       "fund": "TLT",
+       "name": "Long Treasuries (20+ years)",
+       "mean": 0.25,
+       "excess": -2.58,
+       "hit": 0.55,
+       "n": 20
+      },
+      {
+       "fund": "XLP",
+       "name": "Consumer staples",
+       "mean": 0.75,
+       "excess": -2.08,
+       "hit": 0.6,
+       "n": 20
+      }
+     ]
+    },
+    "3": {
+     "n": 24,
+     "spy_mean": 1.26,
+     "spy_hit": 0.71,
+     "best": [
+      {
+       "fund": "XLK",
+       "name": "Technology",
+       "mean": 2.37,
+       "excess": 1.11,
+       "hit": 0.54,
+       "n": 24
+      },
+      {
+       "fund": "XLY",
+       "name": "Consumer discretionary",
+       "mean": 1.65,
+       "excess": 0.39,
+       "hit": 0.62,
+       "n": 24
+      },
+      {
+       "fund": "XLC",
+       "name": "Communication services",
+       "mean": 1.24,
+       "excess": -0.1,
+       "hit": 0.65,
+       "n": 20
+      }
+     ],
+     "worst": [
+      {
+       "fund": "XLV",
+       "name": "Health care",
+       "mean": -0.42,
+       "excess": -1.68,
+       "hit": 0.5,
+       "n": 24
+      },
+      {
+       "fund": "TLT",
+       "name": "Long Treasuries (20+ years)",
+       "mean": -0.22,
+       "excess": -1.48,
+       "hit": 0.58,
+       "n": 24
+      },
+      {
+       "fund": "IEF",
+       "name": "Treasuries (7 to 10 years)",
+       "mean": 0.12,
+       "excess": -1.14,
+       "hit": 0.62,
+       "n": 24
+      }
+     ]
+    },
+    "4": {
+     "n": 37,
+     "spy_mean": -0.17,
+     "spy_hit": 0.62,
+     "best": [
+      {
+       "fund": "GLD",
+       "name": "Gold",
+       "mean": 1.14,
+       "excess": 1.31,
+       "hit": 0.51,
+       "n": 37
+      },
+      {
+       "fund": "XLV",
+       "name": "Health care",
+       "mean": 1.09,
+       "excess": 1.25,
+       "hit": 0.59,
+       "n": 37
+      },
+      {
+       "fund": "XLP",
+       "name": "Consumer staples",
+       "mean": 0.98,
+       "excess": 1.15,
+       "hit": 0.59,
+       "n": 37
+      }
+     ],
+     "worst": [
+      {
+       "fund": "XLY",
+       "name": "Consumer discretionary",
+       "mean": -1.23,
+       "excess": -1.06,
+       "hit": 0.54,
+       "n": 37
+      },
+      {
+       "fund": "XLC",
+       "name": "Communication services",
+       "mean": -0.67,
+       "excess": -0.33,
+       "hit": 0.48,
+       "n": 33
+      },
+      {
+       "fund": "XLB",
+       "name": "Materials",
+       "mean": -0.5,
+       "excess": -0.33,
+       "hit": 0.46,
+       "n": 37
+      }
+     ]
+    }
+   },
+   "table": [
+    {
+     "fund": "SPY",
+     "name": "S&P 500",
+     "all": 1.28,
+     "all_n": 117,
+     "r1": 1.93,
+     "r1_n": 36,
+     "r2": 2.83,
+     "r2_n": 20,
+     "r3": 1.26,
+     "r3_n": 24,
+     "r4": -0.17,
+     "r4_n": 37
+    },
+    {
+     "fund": "XLE",
+     "name": "Energy",
+     "all": 1.18,
+     "all_n": 117,
+     "r1": 2.37,
+     "r1_n": 36,
+     "r2": 2.58,
+     "r2_n": 20,
+     "r3": 0.25,
+     "r3_n": 24,
+     "r4": -0.13,
+     "r4_n": 37
+    },
+    {
+     "fund": "XLF",
+     "name": "Financials",
+     "all": 1.06,
+     "all_n": 117,
+     "r1": 1.32,
+     "r1_n": 36,
+     "r2": 2.91,
+     "r2_n": 20,
+     "r3": 0.91,
+     "r3_n": 24,
+     "r4": -0.11,
+     "r4_n": 37
+    },
+    {
+     "fund": "XLK",
+     "name": "Technology",
+     "all": 2.04,
+     "all_n": 117,
+     "r1": 3.11,
+     "r1_n": 36,
+     "r2": 4.24,
+     "r2_n": 20,
+     "r3": 2.37,
+     "r3_n": 24,
+     "r4": -0.4,
+     "r4_n": 37
+    },
+    {
+     "fund": "XLV",
+     "name": "Health care",
+     "all": 0.99,
+     "all_n": 117,
+     "r1": 1.53,
+     "r1_n": 36,
+     "r2": 1.53,
+     "r2_n": 20,
+     "r3": -0.42,
+     "r3_n": 24,
+     "r4": 1.09,
+     "r4_n": 37
+    },
+    {
+     "fund": "XLI",
+     "name": "Industrials",
+     "all": 1.15,
+     "all_n": 117,
+     "r1": 1.77,
+     "r1_n": 36,
+     "r2": 2.58,
+     "r2_n": 20,
+     "r3": 0.88,
+     "r3_n": 24,
+     "r4": -0.05,
+     "r4_n": 37
+    },
+    {
+     "fund": "XLP",
+     "name": "Consumer staples",
+     "all": 0.69,
+     "all_n": 117,
+     "r1": 0.29,
+     "r1_n": 36,
+     "r2": 0.75,
+     "r2_n": 20,
+     "r3": 0.8,
+     "r3_n": 24,
+     "r4": 0.98,
+     "r4_n": 37
+    },
+    {
+     "fund": "XLY",
+     "name": "Consumer discretionary",
+     "all": 1.12,
+     "all_n": 117,
+     "r1": 2.57,
+     "r1_n": 36,
+     "r2": 2.19,
+     "r2_n": 20,
+     "r3": 1.65,
+     "r3_n": 24,
+     "r4": -1.23,
+     "r4_n": 37
+    },
+    {
+     "fund": "XLU",
+     "name": "Utilities",
+     "all": 0.8,
+     "all_n": 117,
+     "r1": 0.34,
+     "r1_n": 36,
+     "r2": 2.22,
+     "r2_n": 20,
+     "r3": 0.71,
+     "r3_n": 24,
+     "r4": 0.55,
+     "r4_n": 37
+    },
+    {
+     "fund": "XLB",
+     "name": "Materials",
+     "all": 0.91,
+     "all_n": 117,
+     "r1": 1.76,
+     "r1_n": 36,
+     "r2": 2.03,
+     "r2_n": 20,
+     "r3": 0.85,
+     "r3_n": 24,
+     "r4": -0.5,
+     "r4_n": 37
+    },
+    {
+     "fund": "XLRE",
+     "name": "Real estate",
+     "all": 0.67,
+     "all_n": 117,
+     "r1": 0.88,
+     "r1_n": 36,
+     "r2": 2.04,
+     "r2_n": 20,
+     "r3": 0.63,
+     "r3_n": 24,
+     "r4": -0.24,
+     "r4_n": 37
+    },
+    {
+     "fund": "XLC",
+     "name": "Communication services",
+     "all": 1.04,
+     "all_n": 99,
+     "r1": 1.72,
+     "r1_n": 32,
+     "r2": 3.25,
+     "r2_n": 14,
+     "r3": 1.24,
+     "r3_n": 20,
+     "r4": -0.67,
+     "r4_n": 33
+    },
+    {
+     "fund": "TLT",
+     "name": "Long Treasuries (20+ years)",
+     "all": -0.02,
+     "all_n": 117,
+     "r1": 0.02,
+     "r1_n": 36,
+     "r2": 0.25,
+     "r2_n": 20,
+     "r3": -0.22,
+     "r3_n": 24,
+     "r4": -0.06,
+     "r4_n": 37
+    },
+    {
+     "fund": "IEF",
+     "name": "Treasuries (7 to 10 years)",
+     "all": 0.09,
+     "all_n": 117,
+     "r1": 0.14,
+     "r1_n": 36,
+     "r2": 0.1,
+     "r2_n": 20,
+     "r3": 0.12,
+     "r3_n": 24,
+     "r4": 0.02,
+     "r4_n": 37
+    },
+    {
+     "fund": "GLD",
+     "name": "Gold",
+     "all": 1.21,
+     "all_n": 117,
+     "r1": 1.84,
+     "r1_n": 36,
+     "r2": 1.16,
+     "r2_n": 20,
+     "r3": 0.4,
+     "r3_n": 24,
+     "r4": 1.14,
+     "r4_n": 37
+    }
+   ],
+   "agreement": 0.574,
+   "agreement_n": 115
+  }
+ }
 }

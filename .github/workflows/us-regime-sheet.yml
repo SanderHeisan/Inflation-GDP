@@ -52,6 +52,10 @@ jobs:
           python us_sheet.py
           python run_us.py > results_us/us_run.txt
 
+      - name: Sector returns by regime (fund prices from Yahoo; the feed carries the block when this succeeds)
+        continue-on-error: true
+        run: python us_sectors.py
+
       - name: Assemble the feed
         run: |
           mkdir -p feed
