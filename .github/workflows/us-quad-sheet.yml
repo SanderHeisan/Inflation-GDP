@@ -58,31 +58,8 @@ jobs:
           cp results_us/us_sheet.json feed/us_sheet.json
           cp results_us/us_quad_sheet.html feed/us_quad_sheet.html
           cp results_us/us_run.txt feed/us_run.txt
-          python - <<'PY'
-          import json, datetime
-          d = json.load(open("feed/us_sheet.json"))
-          m = d["meta"]
-          out = {
-              "generated_utc": datetime.datetime.now(datetime.timezone.utc).isoformat(timespec="seconds"),
-              "asof": m["asof_iso"], "cpi_through": m["cpi_through"], "gdp_through": m["gdp_through"],
-              "quarters": [{"quarter": q["q"], "label": q["label"], "quad": q["quad"], "name": q["name"],
-                            "too_close_to_call": q["close"], "realized": q["realized"],
-                            "growth_yoy": round(q["g_yoy"], 2), "growth_dir": q["g_dir"],
-                            "inflation_yoy": round(q["i_yoy"], 2), "inflation_dir": q["i_dir"],
-                            "backtest_hit": q["quad_hit"]} for q in d["quarters"]],
-              "months": [{"month": mm["m"], "label": mm["label"], "quad": mm["mquad"]["quad"],
-                          "too_close_to_call": mm["mquad"]["close"], "status": mm["mquad"]["status"],
-                          "growth_measure_yoy": round(mm["mg"]["yoy"], 2), "growth_dir": mm["mg"]["dir"],
-                          "growth_conviction": mm["mg"]["bucket"], "growth_hit": mm["mg"]["hit"],
-                          "cpi_yoy": round(mm["yoy"], 2), "cpi_mom": round(mm["mom"], 2), "cpi_dir": mm["dir"],
-                          "cpi_conviction": mm["word"], "cpi_hit": round(mm["hit"], 3),
-                          "hedgeye_quad": (mm.get("hedgeye") or {}).get("quad")}
-                         for mm in d["months"] if mm.get("mquad") and mm.get("mg")],
-              "source": "https://github.com/${{ github.repository }}",
-          }
-          json.dump(out, open("feed/latest.json", "w"), indent=1)
-          print("latest.json:", len(out["quarters"]), "quarters,", len(out["months"]), "months, as of", out["asof"])
-          PY
+          python us_feed.py
+          cp results_us/latest.json feed/latest.json
           cat > feed/README.md <<'MD'
           # US quad sheet feed
 
