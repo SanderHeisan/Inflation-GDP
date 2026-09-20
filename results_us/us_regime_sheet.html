@@ -1,0 +1,337 @@
+<title>US Macro Regime</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Libre+Franklin:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+:root{
+  --ground:#F3F5F8; --surface:#FFFFFF; --ink:#14213D; --ink-2:#5B6478; --rule:#D9DEE7; --rule-2:#EDF0F5;
+  --accent:#0F6E8C; --accent-soft:#E3F1F6; --actual:#EEF1F6;
+  --q1:#2E8B6E; --q2:#C7861B; --q3:#B23A3A; --q4:#3C6FB0;
+  --q1-soft:#DDF1E9; --q2-soft:#F7E9CF; --q3-soft:#F5DCDC; --q4-soft:#DDE7F5;
+  --s-infl:#9333EA; --s-growth:#0891B2;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --ground:#0F1523; --surface:#161E30; --ink:#E6EAF2; --ink-2:#9AA5BA; --rule:#2A3448; --rule-2:#1F2839;
+  --accent:#57B8D3; --accent-soft:#16303C; --actual:#1B2437;
+  --q1:#5CC39E; --q2:#E2A94B; --q3:#E06A6A; --q4:#7AA3E0;
+  --q1-soft:#173428; --q2-soft:#3A2B12; --q3-soft:#3A1A1A; --q4-soft:#1A2A45;
+  --s-infl:#B070EE; --s-growth:#22A4C8;
+} }
+:root[data-theme="dark"]{
+  --ground:#0F1523; --surface:#161E30; --ink:#E6EAF2; --ink-2:#9AA5BA; --rule:#2A3448; --rule-2:#1F2839;
+  --accent:#57B8D3; --accent-soft:#16303C; --actual:#1B2437;
+  --q1:#5CC39E; --q2:#E2A94B; --q3:#E06A6A; --q4:#7AA3E0;
+  --q1-soft:#173428; --q2-soft:#3A2B12; --q3-soft:#3A1A1A; --q4-soft:#1A2A45;
+  --s-infl:#B070EE; --s-growth:#22A4C8;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--ground);color:var(--ink);font-family:"Libre Franklin",Franklin Gothic,Arial,sans-serif;font-size:15.5px;line-height:1.55;padding:0 16px 64px}
+.wrap{max-width:1120px;margin:0 auto}
+header{padding-block:36px 18px;border-bottom:2px solid var(--ink);display:grid;grid-template-columns:1fr auto;gap:20px;align-items:end}
+.eyebrow{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);font-weight:600;margin:0 0 8px}
+h1{font-size:clamp(30px,4.5vw,44px);line-height:1.02;margin:0;font-weight:800;letter-spacing:-.02em;text-wrap:balance}
+.asof{font-family:"IBM Plex Mono",Menlo,Consolas,monospace;font-size:13px;color:var(--ink-2);text-align:right;line-height:1.7}
+.asof b{color:var(--ink);font-weight:600}
+h2{font-size:22px;margin:44px 0 6px;font-weight:800;letter-spacing:-.01em}
+h3{font-size:16px;margin:24px 0 6px;font-weight:700}
+.lede{margin:0 0 16px;color:var(--ink-2);max-width:70ch}
+p{max-width:72ch} ul.story{padding-left:20px;max-width:80ch} ul.story li{margin:0 0 10px}
+b{font-weight:700}
+/* quad cards */
+.cards{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:14px}
+@media (max-width:900px){ .cards{grid-template-columns:repeat(2,1fr)} }
+@media (max-width:420px){ .cards{grid-template-columns:1fr} }
+.card{position:relative;border-radius:6px;padding:12px 12px 11px 16px;background:var(--surface);border:1px solid var(--rule);display:flex;flex-direction:column;gap:2px;overflow:hidden}
+.card::before{content:"";position:absolute;left:0;top:0;bottom:0;width:7px;background:currentColor}
+.card.q1{color:var(--q1);background:var(--q1-soft)} .card.q2{color:var(--q2);background:var(--q2-soft)}
+.card.q3{color:var(--q3);background:var(--q3-soft)} .card.q4{color:var(--q4);background:var(--q4-soft)}
+.card.past{background:var(--actual);color:var(--ink-2)}
+.card.now{outline:2px solid currentColor;outline-offset:-1px}
+.card-q{font-family:"IBM Plex Mono",monospace;font-size:12.5px;color:var(--ink-2);font-weight:600} .card-m{font-weight:400}
+.nowtag{display:block;font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink);font-weight:700;margin-top:2px}
+.card-quad{font-weight:800;font-size:26px;letter-spacing:-.02em;line-height:1.1;margin-top:4px}
+.card-name{font-weight:700;font-size:14px} .card-plain{font-size:12.5px;color:var(--ink-2)}
+.card-nums{display:flex;flex-direction:column;gap:1px;margin-top:6px;font-size:12.5px;color:var(--ink)} .card-nums b{font-family:"IBM Plex Mono",monospace}
+.card-conf{font-size:11.5px;color:var(--ink-2);margin-top:6px} .card-flat{font-size:11.5px;color:var(--ink-2);font-style:italic}
+.closetag{display:inline-block;font-size:10px;letter-spacing:.06em;text-transform:uppercase;border:1px solid currentColor;border-radius:3px;padding:0 5px;margin-left:4px;vertical-align:1px}
+.legend-inline{font-size:12.5px;color:var(--ink-2);margin-top:10px} .legend-inline b{font-weight:700}
+/* chart */
+.chartbox{background:var(--surface);border:1px solid var(--rule);border-radius:6px;padding:14px 14px 8px;margin-top:12px;position:relative}
+.chart{width:100%;height:auto;display:block}
+.chart .grid{stroke:var(--rule-2);stroke-width:1} .chart .tick{font:11.5px "IBM Plex Mono",monospace;fill:var(--ink-2)}
+.chart .bandlbl{font:600 11px "Libre Franklin",sans-serif}
+.chart .line{fill:none;stroke-width:2.2;stroke-linejoin:round;stroke-linecap:round} .chart .line.infl{stroke:var(--s-infl)} .chart .line.growth{stroke:var(--s-growth)}
+.chart .line.dashed{stroke-dasharray:5 4}
+.chart .dot{stroke:var(--surface);stroke-width:2} .chart .dot.infl{fill:var(--s-infl)} .chart .dot.growth{fill:var(--s-growth)} .chart .dot.growth.open{fill:var(--surface);stroke:var(--s-growth);stroke-width:2.2}
+.chart .endlbl{font:600 12px "Libre Franklin",sans-serif;fill:var(--ink)}
+.chart .xhair{stroke:var(--ink-2);stroke-width:1;stroke-dasharray:3 3}
+.legend{display:flex;flex-wrap:wrap;gap:8px 20px;font-size:12.5px;color:var(--ink-2);margin:0 0 6px}
+.legend .sw{display:inline-block;width:18px;height:0;border-top:2.5px solid;vertical-align:middle;margin-right:6px}
+.legend .sw.infl{border-color:var(--s-infl)} .legend .sw.growth{border-color:var(--s-growth)} .legend .sw.dash{border-top-style:dashed}
+.tip{position:absolute;pointer-events:none;background:var(--ink);color:var(--ground);font:12.5px "IBM Plex Mono",monospace;padding:6px 9px;border-radius:4px;white-space:nowrap;visibility:hidden;z-index:2}
+/* tables */
+.tblwrap{overflow-x:auto;border:1px solid var(--rule);border-radius:6px;background:var(--surface);margin-top:12px}
+table{border-collapse:collapse;width:100%;font-size:13.5px} table.wide{min-width:900px} table.months{min-width:1260px}
+thead th{text-align:left;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-2);font-weight:600;padding:10px 10px 8px;border-bottom:2px solid var(--ink);white-space:nowrap;vertical-align:bottom}
+thead th.num{text-align:right} thead .grp th{border-bottom:1px solid var(--rule);color:var(--accent);letter-spacing:.12em;padding-top:12px}
+tbody td{padding:7px 10px;border-bottom:1px solid var(--rule-2);vertical-align:middle}
+tbody tr:last-child td{border-bottom:0} tbody tr.qstart td{border-top:2px solid var(--rule)}
+tbody tr.realized td{background:var(--actual);color:var(--ink-2)} tbody tr.realized td.strong-num{color:var(--ink)}
+td.lbl{font-weight:600;white-space:nowrap}
+td.num{text-align:right;font-family:"IBM Plex Mono",Menlo,Consolas,monospace;font-variant-numeric:tabular-nums;font-size:13px;white-space:nowrap}
+td.strong-num{font-weight:600;font-size:14px} td.gq{vertical-align:middle;border-left:1px solid var(--rule-2)}
+td.muted,.muted{color:var(--ink-2)} td.scell{white-space:nowrap} td.scell .sub{margin-left:6px}
+.tag{font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-2);font-weight:600;margin-left:4px}
+.sub{font-family:"IBM Plex Mono",monospace;font-size:11.5px;color:var(--ink-2);margin-left:4px}
+.dir{font-weight:600;white-space:nowrap} .dir .tri{display:inline-block;width:1.1em;font-size:11px;vertical-align:1px}
+.dir.strong{color:var(--ink)} .dir.weak{color:var(--ink-2);font-weight:500}
+.quad{display:inline-block;font-weight:700;padding:2px 8px;border-radius:3px;font-size:12.5px;border-left:4px solid currentColor;white-space:nowrap}
+.quad.q1{color:var(--q1);background:var(--q1-soft)} .quad.q2{color:var(--q2);background:var(--q2-soft)}
+.quad.q3{color:var(--q3);background:var(--q3-soft)} .quad.q4{color:var(--q4);background:var(--q4-soft)}
+.quad.close{border-left-style:dashed;opacity:.85} .quad.mini{padding:1px 6px;font-size:12px;border-left-width:3px}
+abbr.flag{text-decoration:none;color:var(--accent);cursor:help;font-weight:700;margin-left:2px}
+/* boxes */
+.box{background:var(--surface);border:1px solid var(--rule);border-left:4px solid var(--accent);border-radius:6px;padding:14px 16px;margin:14px 0}
+.box-h{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--accent);font-weight:700;margin-bottom:8px}
+.box p{margin:0 0 8px} .box p:last-child{margin:0}
+.box.view{border-left-color:var(--q4)} .box.view .box-h{color:var(--q4)}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin:10px 0 6px} .kpis>div{display:flex;flex-direction:column;gap:2px}
+.sk{font-size:11px;color:var(--ink-2);text-transform:uppercase;letter-spacing:.06em} .sv{font-family:"IBM Plex Mono",monospace;font-size:22px;font-weight:600} .ss{font-size:12.5px;color:var(--ink-2)}
+.ss b.ok{color:var(--q1)} .ss b.miss{color:var(--q3)}
+/* consumer */
+.consumer{background:var(--surface);border:1px solid var(--rule);border-radius:6px;overflow:hidden;margin-top:12px}
+.crow{display:grid;grid-template-columns:1.1fr 1.6fr 1.3fr;gap:6px 16px;align-items:center;padding:11px 14px;border-bottom:1px solid var(--rule-2)} .crow:last-child{border-bottom:0}
+.cname{font-weight:700} .cval{font-family:"IBM Plex Mono",monospace;font-size:13.5px;font-variant-numeric:tabular-nums}
+.lvl{display:inline-block;font-size:11px;letter-spacing:.04em;text-transform:uppercase;font-weight:700;padding:3px 7px;border-radius:3px}
+.lvl.warn{color:var(--q3);background:var(--q3-soft)} .lvl.cool{color:var(--q4);background:var(--q4-soft)} .lvl.calm{color:var(--ink-2);background:var(--actual)}
+.cbase{grid-column:1 / -1;font-size:12.5px;color:var(--ink-2)}
+@media (max-width:760px){ .crow{grid-template-columns:1fr} }
+table.trust td{vertical-align:top;white-space:normal} table.trust td.num{white-space:nowrap}
+.notes{margin-top:28px;border-top:1px solid var(--rule);padding-top:14px;font-size:13px;color:var(--ink-2);max-width:80ch} .notes p{margin:0 0 8px} .notes b{color:var(--ink)}
+code{font-family:"IBM Plex Mono",monospace;font-size:12px;background:var(--actual);padding:1px 4px;border-radius:3px}
+@media (max-width:640px){ header{grid-template-columns:1fr} .asof{text-align:left} }
+</style>
+<div class="wrap">
+<header>
+  <div><p class="eyebrow">United States · growth and inflation</p><h1>US Macro Regime</h1></div>
+  <div class="asof">as of <b>20 Sep 2026</b><br>inflation data to <b>Aug 2026</b> · GDP data to <b>Q2 2026</b><br>headline CPI, all items</div>
+</header>
+
+<h2>The regimes ahead</h2>
+<p class="lede">Each quarter gets a regime from two questions: is year-over-year growth going up or down, and is year-over-year inflation going up or down. Filled arrows are the calls the backtest says to trust. The month-by-month regimes further down use a monthly growth measure instead of quarterly GDP.</p>
+<div class="cards"><div class="card q1 past">
+<div class="card-q">Q1 2026 <span class="card-m">Jan–Mar</span></div>
+<div class="card-quad">Sweet spot</div>
+<div class="card-name">growth up, inflation down <span class="closetag">too close to call</span></div>
+<div class="card-nums"><span>Growth <b>2.7%</b> <span class="dir strong"><span class="tri">▲</span>up</span></span><span>Inflation <b>2.7%</b> <span class="dir weak"><span class="tri">▽</span>down</span></span></div>
+<div class="card-conf">actual</div></div><div class="card q3 past">
+<div class="card-q">Q2 2026 <span class="card-m">Apr–Jun</span></div>
+<div class="card-quad">Squeeze</div>
+<div class="card-name">growth down, inflation up</div>
+<div class="card-nums"><span>Growth <b>2.1%</b> <span class="dir strong"><span class="tri">▼</span>down</span></span><span>Inflation <b>3.8%</b> <span class="dir strong"><span class="tri">▲</span>up</span></span></div>
+<div class="card-conf">actual</div></div><div class="card q4 now">
+<div class="card-q">Q3 2026 <span class="card-m">Jul–Sep</span><span class="nowtag">this quarter</span></div>
+<div class="card-quad">Cooling</div>
+<div class="card-name">growth down, inflation down</div>
+<div class="card-nums"><span>Growth <b>1.6%</b> <span class="dir weak"><span class="tri">▽</span>down</span></span><span>Inflation <b>3.4%</b> <span class="dir strong"><span class="tri">▼</span>down</span></span></div>
+<div class="card-conf">right 64% of the time at this distance</div></div><div class="card q2">
+<div class="card-q">Q4 2026 <span class="card-m">Oct–Dec</span></div>
+<div class="card-quad">Heating</div>
+<div class="card-name">growth up, inflation up</div>
+<div class="card-nums"><span>Growth <b>2.1%</b> <span class="dir weak"><span class="tri">△</span>up</span></span><span>Inflation <b>3.5%</b> <span class="dir weak"><span class="tri">△</span>up</span></span></div>
+<div class="card-conf">right 38% of the time at this distance</div></div><div class="card q1">
+<div class="card-q">Q1 2027 <span class="card-m">Jan–Mar</span></div>
+<div class="card-quad">Sweet spot</div>
+<div class="card-name">growth up, inflation down <span class="closetag">too close to call</span></div>
+<div class="card-nums"><span>Growth <b>2.1%</b> <span class="dir weak"><span class="tri">△</span>up</span></span><span>Inflation <b>3.2%</b> <span class="dir strong"><span class="tri">▼</span>down</span></span></div>
+<div class="card-conf">right 39% of the time at this distance</div><div class="card-flat">without the rate effect: Cooling (too close to call)</div></div><div class="card q1">
+<div class="card-q">Q2 2027 <span class="card-m">Apr–Jun</span></div>
+<div class="card-quad">Sweet spot</div>
+<div class="card-name">growth up, inflation down</div>
+<div class="card-nums"><span>Growth <b>2.2%</b> <span class="dir weak"><span class="tri">△</span>up</span></span><span>Inflation <b>2.2%</b> <span class="dir strong"><span class="tri">▼</span>down</span></span></div>
+<div class="card-conf">right 35% of the time at this distance</div></div><div class="card q3">
+<div class="card-q">Q3 2027 <span class="card-m">Jul–Sep</span></div>
+<div class="card-quad">Squeeze</div>
+<div class="card-name">growth down, inflation up</div>
+<div class="card-nums"><span>Growth <b>2.1%</b> <span class="dir weak"><span class="tri">▽</span>down</span></span><span>Inflation <b>2.4%</b> <span class="dir weak"><span class="tri">△</span>up</span></span></div>
+<div class="card-conf">right 25% of the time at this distance</div></div><div class="card q4">
+<div class="card-q">Q4 2027 <span class="card-m">Oct–Dec</span></div>
+<div class="card-quad">Cooling</div>
+<div class="card-name">growth down, inflation down</div>
+<div class="card-nums"><span>Growth <b>1.9%</b> <span class="dir weak"><span class="tri">▽</span>down</span></span><span>Inflation <b>2.2%</b> <span class="dir weak"><span class="tri">▽</span>down</span></span></div>
+<div class="card-conf">beyond the backtest</div><div class="card-flat">without the rate effect: Cooling (too close to call)</div></div></div>
+<p class="legend-inline"><b>Sweet spot</b> growth up, inflation down (best for stocks) &nbsp;·&nbsp; <b>Heating</b> both up &nbsp;·&nbsp; <b>Squeeze</b> growth down, inflation up (worst) &nbsp;·&nbsp; <b>Cooling</b> both down (bonds, defensives). "Too close to call" means one side moves by less than 0.10pp.</p>
+
+<h3>What is going on, in short</h3>
+<ul class="story"><li><b>Now, Q3 2026: Cooling, growth down, inflation down.</b> Growth this quarter is running at about +2.4% annualized on the data so far, which falls short of the +4.4% pace of the same quarter last year; year-over-year growth slips to 1.6%. Inflation falls to 3.4% on the quarter as the spring 2026 oil spike drops out of the 12-month comparison.</li><li><b>Q4 2026: Heating, growth up, inflation up.</b> Growth 2.1% year over year (up 0.5pp), because the assumed +2.3% pace beats the +0.5% pace of the same quarter last year. Inflation 3.5% (up 0.15pp): monthly prices keep rising while last year's comparison is soft.</li><li><b>Q1 2027: Sweet spot, growth up, inflation down.</b> Growth 2.1% year over year (up 0.0pp), because the assumed +2.2% pace beats the +2.1% pace of the same quarter last year. Inflation 3.2% (down 0.33pp): the spring 2026 oil spike drops out of the 12-month comparison. Too close to call on one side.</li><li><b>Q2 2027: Sweet spot, growth up, inflation down.</b> Growth 2.2% year over year (up 0.1pp), because the assumed +1.9% pace beats the +1.5% pace of the same quarter last year. Inflation 2.2% (down 0.95pp): the spring 2026 oil spike drops out of the 12-month comparison.</li><li><b>Q3 2027: Squeeze, growth down, inflation up.</b> Growth 2.1% year over year (down 0.2pp), because the assumed +1.7% pace falls short of the +2.4% pace of the same quarter last year. Inflation 2.4% (up 0.22pp): monthly prices keep rising while last year's comparison is soft.</li><li><b>Q4 2027: Cooling, growth down, inflation down.</b> Growth 1.9% year over year (down 0.2pp), because the assumed +1.6% pace falls short of the +2.3% pace of the same quarter last year. Inflation 2.2% (down 0.21pp): prices rise more slowly than a year ago.</li></ul>
+
+<h2>Inflation and growth on one chart</h2>
+<p class="lede">Both year over year. Shading is the regime of each quarter. Solid lines are published data, dashed lines are the forecast. Hover for the numbers.</p>
+<div class="chartbox">
+<div class="legend"><span><span class="sw infl"></span>Inflation, year over year (monthly)</span><span><span class="sw growth"></span>GDP growth, year over year (quarterly)</span><span><span class="sw dash" style="border-color:var(--ink-2)"></span>forecast</span></div>
+<svg viewBox="0 0 1000 330" class="chart" role="img" aria-label="Inflation and growth, year over year, with the regime of each quarter shaded"><rect x="23.4" y="30" width="45.2" height="266" fill="var(--q3-soft)"/><rect x="68.6" y="30" width="135.5" height="266" fill="var(--q4-soft)"/><text x="136.3" y="20" text-anchor="middle" class="bandlbl" fill="var(--q4)">Q3 2026 · Cooling</text><rect x="204.1" y="30" width="135.5" height="266" fill="var(--q2-soft)"/><text x="271.8" y="20" text-anchor="middle" class="bandlbl" fill="var(--q2)">Q4 2026 · Heating</text><rect x="339.5" y="30" width="135.5" height="266" fill="var(--q1-soft)"/><text x="407.3" y="20" text-anchor="middle" class="bandlbl" fill="var(--q1)">Q1 2027 · Sweet spot</text><rect x="475.0" y="30" width="135.5" height="266" fill="var(--q1-soft)"/><text x="542.7" y="20" text-anchor="middle" class="bandlbl" fill="var(--q1)">Q2 2027 · Sweet spot</text><rect x="610.5" y="30" width="135.5" height="266" fill="var(--q3-soft)"/><text x="678.2" y="20" text-anchor="middle" class="bandlbl" fill="var(--q3)">Q3 2027 · Squeeze</text><rect x="745.9" y="30" width="135.5" height="266" fill="var(--q4-soft)"/><text x="813.7" y="20" text-anchor="middle" class="bandlbl" fill="var(--q4)">Q4 2027 · Cooling</text><line x1="46" x2="904" y1="296.0" y2="296.0" class="grid"/><text x="38" y="300.0" text-anchor="end" class="tick">0%</text><line x1="46" x2="904" y1="229.5" y2="229.5" class="grid"/><text x="38" y="233.5" text-anchor="end" class="tick">1%</text><line x1="46" x2="904" y1="163.0" y2="163.0" class="grid"/><text x="38" y="167.0" text-anchor="end" class="tick">2%</text><line x1="46" x2="904" y1="96.5" y2="96.5" class="grid"/><text x="38" y="100.5" text-anchor="end" class="tick">3%</text><line x1="46" x2="904" y1="30.0" y2="30.0" class="grid"/><text x="38" y="34.0" text-anchor="end" class="tick">4%</text><text x="91.2" y="314" text-anchor="middle" class="tick">Jul 26</text><text x="226.6" y="314" text-anchor="middle" class="tick">Oct 26</text><text x="362.1" y="314" text-anchor="middle" class="tick">Jan 27</text><text x="497.6" y="314" text-anchor="middle" class="tick">Apr 27</text><text x="633.1" y="314" text-anchor="middle" class="tick">Jul 27</text><text x="768.5" y="314" text-anchor="middle" class="tick">Oct 27</text><text x="904.0" y="314" text-anchor="middle" class="tick">Jan 28</text><polyline points="46.0,65.7 91.2,76.3 136.3,73.0" class="line infl"/><polyline points="136.3,73.0 181.5,66.7 226.6,62.5 271.8,58.2 316.9,66.0 362.1,65.1 407.3,70.9 452.4,117.5 497.6,148.6 542.7,168.2 587.9,127.0 633.1,119.4 678.2,133.7 723.4,147.3 768.5,147.3 813.7,147.3 858.8,147.2 904.0,147.0" class="line infl dashed"/><circle cx="136.3" cy="73.0" r="4" class="dot infl"/><circle cx="904.0" cy="147.0" r="4" class="dot infl"/><text x="914.0" y="151.0" class="endlbl infl-t">Inflation 2.2%</text><polyline points="46.0,156.5" class="line growth"/><polyline points="46.0,156.5 136.3,188.8 271.8,158.9 407.3,156.3 542.7,148.6 678.2,159.6 813.7,170.1" class="line growth dashed"/><circle cx="46.0" cy="156.5" r="4.5" class="dot growth"/><circle cx="136.3" cy="188.8" r="4.5" class="dot growth open"/><circle cx="271.8" cy="158.9" r="4.5" class="dot growth open"/><circle cx="407.3" cy="156.3" r="4.5" class="dot growth open"/><circle cx="542.7" cy="148.6" r="4.5" class="dot growth open"/><circle cx="678.2" cy="159.6" r="4.5" class="dot growth open"/><circle cx="813.7" cy="170.1" r="4.5" class="dot growth open"/><text x="823.7" y="174.1" class="endlbl growth-t">Growth 1.9%</text><rect class="hov" data-i="0" x="23.4" y="30" width="45.2" height="266" fill="transparent"/><rect class="hov" data-i="1" x="68.6" y="30" width="45.2" height="266" fill="transparent"/><rect class="hov" data-i="2" x="113.7" y="30" width="45.2" height="266" fill="transparent"/><rect class="hov" data-i="3" x="158.9" y="30" width="45.2" height="266" fill="transparent"/><rect class="hov" data-i="4" x="204.1" y="30" width="45.2" height="266" fill="transparent"/><rect class="hov" data-i="5" x="249.2" y="30" width="45.2" height="266" fill="transparent"/><rect class="hov" data-i="6" x="294.4" y="30" width="45.2" height="266" fill="transparent"/><rect class="hov" data-i="7" x="339.5" y="30" width="45.2" height="266" fill="transparent"/><rect class="hov" data-i="8" x="384.7" y="30" width="45.2" height="266" fill="transparent"/><rect class="hov" data-i="9" x="429.8" y="30" width="45.2" height="266" fill="transparent"/><rect class="hov" data-i="10" x="475.0" y="30" width="45.2" height="266" fill="transparent"/><rect class="hov" data-i="11" x="520.2" y="30" width="45.2" height="266" fill="transparent"/><rect class="hov" data-i="12" x="565.3" y="30" width="45.2" height="266" fill="transparent"/><rect class="hov" data-i="13" x="610.5" y="30" width="45.2" height="266" fill="transparent"/><rect class="hov" data-i="14" x="655.6" y="30" width="45.2" height="266" fill="transparent"/><rect class="hov" data-i="15" x="700.8" y="30" width="45.2" height="266" fill="transparent"/><rect class="hov" data-i="16" x="745.9" y="30" width="45.2" height="266" fill="transparent"/><rect class="hov" data-i="17" x="791.1" y="30" width="45.2" height="266" fill="transparent"/><rect class="hov" data-i="18" x="836.3" y="30" width="45.2" height="266" fill="transparent"/><rect class="hov" data-i="19" x="881.4" y="30" width="45.2" height="266" fill="transparent"/><line id="xhair" x1="0" x2="0" y1="30" y2="296" class="xhair" visibility="hidden"/></svg>
+<div class="tip" id="tip"></div>
+</div>
+
+<h2>Month by month</h2>
+<p class="lede">A regime for every month. The month's growth reading is a <b>monthly growth measure</b> built from real consumer spending (55%), industrial production, real income, real retail sales and hours worked, published through Jul 2026; the next months are called the way next month's CPI is (this month's change minus what drops out of the 12-month window). GDP itself only comes quarterly and sits at the right beside its three months. Hedgeye's column is their monthly map of mid-Sep 2026, with the probability they put on it, so both can be scored as the months print.</p>
+<div class="tblwrap"><table class="wide months">
+<thead><tr class="grp"><th></th><th colspan="2">Regime, this month</th><th colspan="3">Growth measure (monthly)</th><th colspan="3">Inflation (CPI)</th><th colspan="3">GDP growth (the quarter)</th></tr>
+<tr><th>Month</th><th>This sheet</th><th>Hedgeye</th><th class="num">Month on month</th><th class="num">Year over year</th><th>Up or down</th><th class="num">Month on month</th><th class="num">Year over year</th><th>Up or down</th><th class="num">The quarter, annualized</th><th class="num">Year over year</th><th>Up or down</th></tr></thead>
+<tbody><tr class="realized qstart"><td class="lbl">Jun 2026 <span class="tag">actual</span></td>
+<td class="quadcell"><span class="quad q1 mini">Sweet</span></td><td class="quadcell"><span class="muted">—</span></td>
+<td class="num">+0.37%</td><td class="num strong-num">2.03%</td><td class="dircell"><span class="dir weak"><span class="tri">△</span>up</span> <span class="sub">lean · actual</span></td>
+<td class="num">−0.42%</td><td class="num strong-num">3.46%</td><td class="dircell"><span class="dir strong"><span class="tri">▼</span>down</span> <span class="sub">strong · 100%</span></td><td rowspan="1" class="num gq">+1.5%<br><span class="sub">actual</span></td><td rowspan="1" class="num gq strong-num">2.1%</td><td rowspan="1" class="gq"><span class="dir strong"><span class="tri">▼</span>down</span> <span class="sub">actual</span></td></tr><tr class="realized qstart"><td class="lbl">Jul 2026 <span class="tag">actual</span></td>
+<td class="quadcell"><span class="quad q4 mini">Cool</span></td><td class="quadcell"><span class="quad q4 mini">Cool</span></td>
+<td class="num">−0.01%</td><td class="num strong-num">1.52%</td><td class="dircell"><span class="dir strong"><span class="tri">▼</span>down</span> <span class="sub">strong · actual</span></td>
+<td class="num">+0.07%</td><td class="num strong-num">3.30%</td><td class="dircell"><span class="dir strong"><span class="tri">▼</span>down</span> <span class="sub">good · 89%</span></td><td rowspan="3" class="num gq">+2.4%<br><span class="sub">from data so far</span></td><td rowspan="3" class="num gq strong-num">1.6%</td><td rowspan="3" class="gq"><span class="dir weak"><span class="tri">▽</span>down</span> <span class="sub">weak · 47%</span></td></tr><tr class="realized"><td class="lbl">Aug 2026 <span class="tag">actual</span></td>
+<td class="quadcell"><span class="quad q2 close mini">Heat</span> <span class="sub">nowcast</span></td><td class="quadcell"><span class="quad q3 mini">Squeeze</span><span class="sub">55%</span></td>
+<td class="num">+0.26%</td><td class="num strong-num">1.66%</td><td class="dircell"><span class="dir weak"><span class="tri">△</span>up</span> <span class="sub">lean · 71%</span></td>
+<td class="num">+0.40%</td><td class="num strong-num">3.35%</td><td class="dircell"><span class="dir weak"><span class="tri">△</span>up</span> <span class="sub">toss-up · 67%</span></td></tr><tr class=""><td class="lbl">Sep 2026</td>
+<td class="quadcell"><span class="quad q2 mini">Heat</span></td><td class="quadcell"><span class="quad q2 mini">Heat</span><span class="sub">63%</span></td>
+<td class="num">+0.21%</td><td class="num strong-num">1.79%</td><td class="dircell"><span class="dir weak"><span class="tri">△</span>up</span> <span class="sub">lean · 65%</span></td>
+<td class="num">+0.39%</td><td class="num strong-num">3.45%</td><td class="dircell"><span class="dir weak"><span class="tri">△</span>up</span> <span class="sub">lean · 90%</span></td></tr><tr class=" qstart"><td class="lbl">Oct 2026</td>
+<td class="quadcell"><span class="quad q2 mini">Heat</span></td><td class="quadcell"><span class="quad q2 mini">Heat</span><span class="sub">44%</span></td>
+<td class="num">+0.21%</td><td class="num strong-num">1.98%</td><td class="dircell"><span class="dir strong"><span class="tri">▲</span>up</span> <span class="sub">good · 83%</span></td>
+<td class="num">+0.19%</td><td class="num strong-num">3.51% <abbr class="flag" title="Compared with October 2025, a month BLS never published (filled in by averaging September and November 2025)">†</abbr></td><td class="dircell"><span class="dir weak"><span class="tri">△</span>up</span> <span class="sub">lean · 90%</span></td><td rowspan="3" class="num gq">+2.3%<br><span class="sub">normal pace + rates</span></td><td rowspan="3" class="num gq strong-num">2.1%</td><td rowspan="3" class="gq"><span class="dir weak"><span class="tri">△</span>up</span> <span class="sub">weak · 47%</span></td></tr><tr class=""><td class="lbl">Nov 2026</td>
+<td class="quadcell"><span class="quad q2 mini">Heat</span></td><td class="quadcell"><span class="quad q1 mini">Sweet</span><span class="sub">39%</span></td>
+<td class="num">+0.21%</td><td class="num strong-num">2.13%</td><td class="dircell"><span class="dir weak"><span class="tri">△</span>up</span> <span class="sub">lean · path</span></td>
+<td class="num">+0.19%</td><td class="num strong-num">3.58%</td><td class="dircell"><span class="dir weak"><span class="tri">△</span>up</span> <span class="sub">lean · 90%</span></td></tr><tr class=""><td class="lbl">Dec 2026</td>
+<td class="quadcell"><span class="quad q1 mini">Sweet</span></td><td class="quadcell"><span class="quad q2 mini">Heat</span><span class="sub">70%</span></td>
+<td class="num">+0.21%</td><td class="num strong-num">2.31%</td><td class="dircell"><span class="dir strong"><span class="tri">▲</span>up</span> <span class="sub">good · path</span></td>
+<td class="num">+0.18%</td><td class="num strong-num">3.46%</td><td class="dircell"><span class="dir weak"><span class="tri">▽</span>down</span> <span class="sub">lean · 90%</span></td></tr><tr class=" qstart"><td class="lbl">Jan 2027</td>
+<td class="quadcell"><span class="quad q2 close mini">Heat</span></td><td class="quadcell"><span class="quad q2 mini">Heat</span><span class="sub">54%</span></td>
+<td class="num">+0.21%</td><td class="num strong-num">2.67%</td><td class="dircell"><span class="dir strong"><span class="tri">▲</span>up</span> <span class="sub">strong · path</span></td>
+<td class="num">+0.18%</td><td class="num strong-num">3.47%</td><td class="dircell"><span class="dir weak"><span class="tri">△</span>up</span> <span class="sub">toss-up · 67%</span></td><td rowspan="3" class="num gq">+2.2%<br><span class="sub">normal pace + rates</span></td><td rowspan="3" class="num gq strong-num">2.1%</td><td rowspan="3" class="gq"><span class="dir weak"><span class="tri">△</span>up</span> <span class="sub">weak · 47%</span></td></tr><tr class=""><td class="lbl">Feb 2027</td>
+<td class="quadcell"><span class="quad q4 mini">Cool</span></td><td class="quadcell"><span class="quad q4 mini">Cool</span><span class="sub">63%</span></td>
+<td class="num">+0.21%</td><td class="num strong-num">2.62%</td><td class="dircell"><span class="dir weak"><span class="tri">▽</span>down</span> <span class="sub">lean · path</span></td>
+<td class="num">+0.18%</td><td class="num strong-num">3.39%</td><td class="dircell"><span class="dir weak"><span class="tri">▽</span>down</span> <span class="sub">lean · 90%</span></td></tr><tr class=""><td class="lbl">Mar 2027</td>
+<td class="quadcell"><span class="quad q1 close mini">Sweet</span></td><td class="quadcell"><span class="quad q1 mini">Sweet</span><span class="sub">63%</span></td>
+<td class="num">+0.21%</td><td class="num strong-num">2.64%</td><td class="dircell"><span class="dir weak"><span class="tri">△</span>up</span> <span class="sub">toss-up · path</span></td>
+<td class="num">+0.18%</td><td class="num strong-num">2.68%</td><td class="dircell"><span class="dir strong"><span class="tri">▼</span>down</span> <span class="sub">strong · 100%</span></td></tr><tr class=" qstart"><td class="lbl">Apr 2027</td>
+<td class="quadcell"><span class="quad q4 close mini">Cool</span></td><td class="quadcell"><span class="quad q1 mini">Sweet</span><span class="sub">54%</span></td>
+<td class="num">+0.21%</td><td class="num strong-num">2.62%</td><td class="dircell"><span class="dir weak"><span class="tri">▽</span>down</span> <span class="sub">toss-up · path</span></td>
+<td class="num">+0.18%</td><td class="num strong-num">2.22%</td><td class="dircell"><span class="dir strong"><span class="tri">▼</span>down</span> <span class="sub">strong · 100%</span></td><td rowspan="3" class="num gq">+1.9%<br><span class="sub">normal pace + rates</span></td><td rowspan="3" class="num gq strong-num">2.2%</td><td rowspan="3" class="gq"><span class="dir weak"><span class="tri">△</span>up</span> <span class="sub">weak · 47%</span></td></tr><tr class=""><td class="lbl">May 2027</td>
+<td class="quadcell"><span class="quad q4 mini">Cool</span></td><td class="quadcell"><span class="quad q4 mini">Cool</span><span class="sub">78%</span></td>
+<td class="num">+0.21%</td><td class="num strong-num">2.55%</td><td class="dircell"><span class="dir weak"><span class="tri">▽</span>down</span> <span class="sub">lean · path</span></td>
+<td class="num">+0.18%</td><td class="num strong-num">1.92%</td><td class="dircell"><span class="dir strong"><span class="tri">▼</span>down</span> <span class="sub">good · 89%</span></td></tr><tr class=""><td class="lbl">Jun 2027</td>
+<td class="quadcell"><span class="quad q3 mini">Squeeze</span></td><td class="quadcell"><span class="quad q3 mini">Squeeze</span><span class="sub">41%</span></td>
+<td class="num">+0.21%</td><td class="num strong-num">2.39%</td><td class="dircell"><span class="dir strong"><span class="tri">▼</span>down</span> <span class="sub">good · path</span></td>
+<td class="num">+0.18%</td><td class="num strong-num">2.54%</td><td class="dircell"><span class="dir strong"><span class="tri">▲</span>up</span> <span class="sub">strong · 100%</span></td></tr><tr class=" qstart"><td class="lbl">Jul 2027</td>
+<td class="quadcell"><span class="quad q2 mini">Heat</span></td><td class="quadcell"><span class="quad q2 mini">Heat</span><span class="sub">68%</span></td>
+<td class="num">+0.21%</td><td class="num strong-num">2.62%</td><td class="dircell"><span class="dir strong"><span class="tri">▲</span>up</span> <span class="sub">good · path</span></td>
+<td class="num">+0.18%</td><td class="num strong-num">2.66%</td><td class="dircell"><span class="dir weak"><span class="tri">△</span>up</span> <span class="sub">lean · 90%</span></td><td rowspan="3" class="num gq">+1.7%<br><span class="sub">normal pace + rates</span></td><td rowspan="3" class="num gq strong-num">2.1%</td><td rowspan="3" class="gq"><span class="dir weak"><span class="tri">▽</span>down</span> <span class="sub">weak · 47%</span></td></tr><tr class=""><td class="lbl">Aug 2027</td>
+<td class="quadcell"><span class="quad q4 close mini">Cool</span></td><td class="quadcell"><span class="muted">—</span></td>
+<td class="num">+0.21%</td><td class="num strong-num">2.57%</td><td class="dircell"><span class="dir weak"><span class="tri">▽</span>down</span> <span class="sub">toss-up · path</span></td>
+<td class="num">+0.19%</td><td class="num strong-num">2.44%</td><td class="dircell"><span class="dir strong"><span class="tri">▼</span>down</span> <span class="sub">good · 89%</span></td></tr><tr class=""><td class="lbl">Sep 2027</td>
+<td class="quadcell"><span class="quad q4 close mini">Cool</span></td><td class="quadcell"><span class="muted">—</span></td>
+<td class="num">+0.21%</td><td class="num strong-num">2.57%</td><td class="dircell"><span class="dir weak"><span class="tri">▽</span>down</span> <span class="sub">toss-up · path</span></td>
+<td class="num">+0.19%</td><td class="num strong-num">2.24%</td><td class="dircell"><span class="dir strong"><span class="tri">▼</span>down</span> <span class="sub">good · 89%</span></td></tr><tr class=" qstart"><td class="lbl">Oct 2027</td>
+<td class="quadcell"><span class="quad q3 close mini">Squeeze</span></td><td class="quadcell"><span class="muted">—</span></td>
+<td class="num">+0.21%</td><td class="num strong-num">2.57%</td><td class="dircell"><span class="dir weak"><span class="tri">▽</span>down</span> <span class="sub">toss-up · path</span></td>
+<td class="num">+0.19%</td><td class="num strong-num">2.24%</td><td class="dircell"><span class="muted">flat</span></td><td rowspan="3" class="num gq">+1.6%<br><span class="sub">normal pace + rates</span></td><td rowspan="3" class="num gq strong-num">1.9%</td><td rowspan="3" class="gq"><span class="dir weak"><span class="tri">▽</span>down</span> <span class="sub">weak · 47%</span></td></tr><tr class=""><td class="lbl">Nov 2027</td>
+<td class="quadcell"><span class="quad q1 close mini">Sweet</span></td><td class="quadcell"><span class="muted">—</span></td>
+<td class="num">+0.21%</td><td class="num strong-num">2.57%</td><td class="dircell"><span class="dir weak"><span class="tri">△</span>up</span> <span class="sub">toss-up · path</span></td>
+<td class="num">+0.19%</td><td class="num strong-num">2.24%</td><td class="dircell"><span class="muted">flat</span></td></tr><tr class=""><td class="lbl">Dec 2027</td>
+<td class="quadcell"><span class="quad q3 close mini">Squeeze</span></td><td class="quadcell"><span class="muted">—</span></td>
+<td class="num">+0.21%</td><td class="num strong-num">2.57%</td><td class="dircell"><span class="dir weak"><span class="tri">▽</span>down</span> <span class="sub">toss-up · path</span></td>
+<td class="num">+0.19%</td><td class="num strong-num">2.24%</td><td class="dircell"><span class="muted">flat</span></td></tr><tr class=" qstart"><td class="lbl">Jan 2028</td>
+<td class="quadcell"><span class="quad q3 close mini">Squeeze</span></td><td class="quadcell"><span class="muted">—</span></td>
+<td class="num">+0.21%</td><td class="num strong-num">2.57%</td><td class="dircell"><span class="dir weak"><span class="tri">▽</span>down</span> <span class="sub">toss-up · path</span></td>
+<td class="num">+0.19%</td><td class="num strong-num">2.24%</td><td class="dircell"><span class="muted">flat</span></td><td rowspan="1" class="gq muted">—</td><td rowspan="1" class="gq"></td><td rowspan="1" class="gq"></td></tr></tbody></table></div>
+
+<h2>Inflation: what is behind the numbers</h2>
+<ul class="story">
+<li><b>Next print, Sep 2026:</b> +0.39% on the month, <b>3.45% year over year</b> (up from 3.35%). Gasoline adds +0.20pp (pump prices are +4.4% this month so far), rents +0.08pp, everything else +0.10pp.</li>
+<li><b>Then a peak, then a big fall.</b> Inflation tops out at <b>3.58% in Nov 2026</b> with oil high, and falls to <b>1.92% by May 2027</b>. The fall is arithmetic more than forecast: the big monthly price rises of spring 2026 drop out of the 12-month comparison one by one. Those months carry the sheet's strongest calls.</li>
+<li><b>Oil.</b> The rule of thumb is <b>$1 on a barrel of oil ≈ 0.03 percentage points on inflation</b> (Hedgeye's number; the data since 2000 say 0.031). Oil is $97 now against $84 in Aug 2026, and the pump price $4.24 a gallon. That is what makes Sep 2026 hot.</li>
+<li><b>Rents</b> follow new-lease rents (Zillow) with about a year's lag; those are up 2.5%, so rents add a steady 0.08pp a month. <b>Wages</b> are up 3.1%, which feeds services prices slowly.</li>
+</ul>
+<div class="box"><div class="box-h">Last print · August 2026</div>
+<div class="kpis"><div><span class="sk">actual</span><span class="sv">3.35%</span><span class="ss">+0.40% on the month · year over year up</span></div>
+<div><span class="sk">this sheet said</span><span class="sv">3.22%</span><span class="ss">called down → <b class="miss">miss</b>, off by +0.13pp</span></div>
+<div><span class="sk">Hedgeye said</span><span class="sv">3.56%</span><span class="ss">off by -0.21pp</span></div></div>
+<p class="ss">The miss was gasoline: it rose 3.9% in August because pump prices lag oil by a few weeks, and the model was reading oil. It now reads pump prices directly, which are public every Monday. In the backtest that change takes the next-month call from 84% to 90% right.</p></div>
+<div class="tblwrap"><table>
+<thead><tr><th>Month</th><th class="num">Oil (WTI), $/barrel</th><th class="num">Pump price, $/gallon</th><th class="num">Gasoline in the CPI, month on month</th><th class="num">Gasoline's push on inflation that month</th></tr></thead>
+<tbody><tr class="realized"><td class="lbl">May 2026</td><td class="num">$102</td><td class="num">$4.48</td><td class="num">+7.0%</td><td class="num strong-num">actual</td></tr><tr class="realized"><td class="lbl">Jun 2026</td><td class="num">$85</td><td class="num">$4.05</td><td class="num">-9.7%</td><td class="num strong-num">actual</td></tr><tr class="realized"><td class="lbl">Jul 2026</td><td class="num">$80</td><td class="num">$3.93</td><td class="num">-2.9%</td><td class="num strong-num">actual</td></tr><tr class="realized"><td class="lbl">Aug 2026</td><td class="num">$84</td><td class="num">$4.06</td><td class="num">+3.9%</td><td class="num strong-num">actual</td></tr><tr class=""><td class="lbl">Sep 2026 <span class=tag>so far</span></td><td class="num">$97</td><td class="num">$4.24</td><td class="num">—</td><td class="num strong-num">+0.20pp</td></tr><tr class=""><td class="lbl">Oct 2026</td><td class="num">—</td><td class="num">—</td><td class="num">—</td><td class="num strong-num">+0.00pp</td></tr><tr class=""><td class="lbl">Nov 2026</td><td class="num">—</td><td class="num">—</td><td class="num">—</td><td class="num strong-num">+0.00pp</td></tr></tbody></table></div>
+
+<h2>Growth: what is behind the numbers</h2>
+<ul class="story">
+<li><b>This quarter (Q3 2026): about +2.4% annualized</b>, estimated from jobs, industrial production, retail sales and jobless claims with 1 of 3 months in. (Annualized = the pace over a full year if the quarter repeated.)</li>
+<li><b>After this quarter we do not forecast GDP.</b> Nobody can, two to four quarters out; every method tried did worse than a constant. So the sheet assumes the economy's normal pace, <b>2.0% a year</b>, from the quarter after next, adjusted for interest rates as below. (The old setting, the last six years' typical pace of 3.1%, is backward looking: it assumes the post-2020 boom continues.)</li>
+<li><b>Up or down is decided by the bar to beat.</b> Year-over-year growth rises in a quarter only if that quarter grows faster than the same quarter a year earlier. Those bars are already published, so each quarter's call is "does our assumed pace clear a known bar". The table shows the bar, our path, and what a slower economy would do to the regime.</li>
+</ul>
+<div class="tblwrap"><table class="wide">
+<thead><tr><th>Quarter</th><th class="num">Bar to beat (last year's pace)</th><th class="num">Inflation change</th><th>our path</th><th>2% a year</th><th>1% a year</th><th>0% (stall)</th></tr></thead>
+<tbody><tr><td class="lbl">Q3 2026</td><td class="num">+4.4%<br><span class="sub">last year's print</span></td><td class="num">−0.43pp</td><td class="scell"><span class="quad q4 mini">Cool</span><span class="sub">+2.4%</span></td><td class="scell"><span class="quad q4 mini">Cool</span><span class="sub">+2.4%</span></td><td class="scell"><span class="quad q4 mini">Cool</span><span class="sub">+2.4%</span></td><td class="scell"><span class="quad q4 mini">Cool</span><span class="sub">+2.4%</span></td></tr><tr><td class="lbl">Q4 2026</td><td class="num">+0.5%<br><span class="sub">last year's print</span></td><td class="num">+0.15pp</td><td class="scell"><span class="quad q2 mini">Heat</span><span class="sub">+2.3%</span></td><td class="scell"><span class="quad q2 mini">Heat</span><span class="sub">+2.0%</span></td><td class="scell"><span class="quad q2 mini">Heat</span><span class="sub">+1.0%</span></td><td class="scell"><span class="quad q3 mini">Squeeze</span><span class="sub">+0.0%</span></td></tr><tr><td class="lbl">Q1 2027</td><td class="num">+2.1%<br><span class="sub">last year's print</span></td><td class="num">−0.33pp</td><td class="scell"><span class="quad q1 mini">Sweet</span><span class="sub">+2.2%</span></td><td class="scell"><span class="quad q4 mini">Cool</span><span class="sub">+2.0%</span></td><td class="scell"><span class="quad q4 mini">Cool</span><span class="sub">+1.0%</span></td><td class="scell"><span class="quad q4 mini">Cool</span><span class="sub">+0.0%</span></td></tr><tr><td class="lbl">Q2 2027</td><td class="num">+1.5%<br><span class="sub">last year's print</span></td><td class="num">−0.95pp</td><td class="scell"><span class="quad q1 mini">Sweet</span><span class="sub">+1.9%</span></td><td class="scell"><span class="quad q1 mini">Sweet</span><span class="sub">+2.0%</span></td><td class="scell"><span class="quad q4 mini">Cool</span><span class="sub">+1.0%</span></td><td class="scell"><span class="quad q4 mini">Cool</span><span class="sub">+0.0%</span></td></tr><tr><td class="lbl">Q3 2027</td><td class="num">+2.4%<br><span class="sub">our estimate for Q3 2026</span></td><td class="num">+0.22pp</td><td class="scell"><span class="quad q3 mini">Squeeze</span><span class="sub">+1.7%</span></td><td class="scell"><span class="quad q3 mini">Squeeze</span><span class="sub">+2.0%</span></td><td class="scell"><span class="quad q3 mini">Squeeze</span><span class="sub">+1.0%</span></td><td class="scell"><span class="quad q3 mini">Squeeze</span><span class="sub">+0.0%</span></td></tr><tr><td class="lbl">Q4 2027</td><td class="num">+2.3%<br><span class="sub">our estimate for Q4 2026</span></td><td class="num">−0.21pp</td><td class="scell"><span class="quad q4 mini">Cool</span><span class="sub">+1.6%</span></td><td class="scell"><span class="quad q4 mini">Cool</span><span class="sub">+2.0%</span></td><td class="scell"><span class="quad q4 mini">Cool</span><span class="sub">+1.0%</span></td><td class="scell"><span class="quad q4 mini">Cool</span><span class="sub">+0.0%</span></td></tr></tbody></table></div>
+<p class="legend-inline">Each cell is the regime if growth ran at that pace, with the pace under it. The inflation side is the same in every column.</p>
+
+<h3>The consumer</h3>
+<p class="lede">Consumer spending is about two thirds of GDP. Each line says where it stands against the last ten years, and what that has historically meant for the next quarter.</p>
+<div class="consumer"><div class="crow"><div class="cname">Consumer spending</div><div class="cval">+2.1% vs a year ago; last quarter +3.4% annualized</div><div class="clvl"><span class="lvl calm">normal</span></div><div class="cbase">When spending runs very hot, the next quarter's growth is lower about 7 times in 10. Not the case now.</div></div><div class="crow"><div class="cname">Consumer confidence</div><div class="cval">55 (University of Michigan)</div><div class="clvl"><span class="lvl cool">very low (bottom 10%)</span></div><div class="cbase">Very low confidence has not meant weaker growth: the next quarter was higher 63% of the time. High confidence carries no signal.</div></div><div class="crow"><div class="cname">Household wealth</div><div class="cval">$196 trillion, +11.8% vs a year ago</div><div class="clvl"><span class="lvl warn">high (top 20%)</span></div><div class="cbase">When wealth has grown this fast, growth was slowing 3–4 quarters later 61–68% of the time. This one points to late 2027.</div></div><div class="crow"><div class="cname">Mortgage rate</div><div class="cval">6.81%, +0.12pp over a year</div><div class="clvl"><span class="lvl calm">normal</span></div><div class="cbase">Falling mortgage rates have been a strong lead on faster growth (75–79%); rising ones a weak lead on slower growth (54–57%).</div></div><div class="crow"><div class="cname">Income after inflation</div><div class="cval">+0.5% vs a year ago</div><div class="clvl"><span class="lvl warn">low (bottom 20%)</span></div><div class="cbase">Weak real income is the soft spot: spending is being carried by a low saving rate, not by pay.</div></div><div class="crow"><div class="cname">Saving rate</div><div class="cval">3.0% of income</div><div class="clvl"><span class="lvl cool">very low (bottom 10%)</span></div><div class="cbase">Very low. Extremes here carry no measured signal for next quarter, but it is the cushion that is gone.</div></div></div>
+
+<h3>Interest rates</h3>
+<ul class="story">
+<li><b>Where rates are.</b> The Fed funds rate was 3.64% through mid-September; the September hike takes it to about 3.88%, and the market expects <b>4.63% by July 2027</b>, roughly three more hikes.</li>
+<li><b>How the sheet uses that.</b> Rate hikes slow growth with a lag: in the data since 1960, growth is lower for the four quarters that start two quarters after the hikes, by about 0.4pp of annual growth per 1pp of hikes. So each quarter's assumed pace is the trend plus the effect of rate changes over the year ending two quarters earlier.</li>
+<li><b>What that means now.</b> The Fed <b>cut</b> 1.6pp over the last two years, and under that lag the cuts still help growth through Q1 2027. The new hikes start to bite in <b>Q3 2027</b>, at −0.3 to −0.4pp of annualized growth, and first change a regime in Q1 2027.</li>
+</ul>
+<div class="tblwrap"><table class="wide">
+<thead><tr class="grp"><th></th><th colspan="2">Market path (curve of 2026-09-18)</th><th colspan="3">If the Fed hikes at every meeting, to 5.63%</th><th></th><th></th></tr>
+<tr><th>Quarter</th><th class="num">Fed rate</th><th class="num">Effect on growth</th><th class="num">Fed rate</th><th class="num">Effect on growth</th><th class="num">…even at the fastest bite history shows</th><th class="num">Bar to beat</th><th>Regime</th></tr></thead>
+<tbody><tr><td class="lbl">Q3 2026</td><td class="num">3.67%</td><td class="num">this quarter: from the data</td><td class="num">3.67%</td><td class="num">—</td><td class="num">—</td><td class="num">+4.4%</td><td class="scell"><span class="quad q4 mini">Cool</span></td></tr><tr><td class="lbl">Q4 2026</td><td class="num">4.03%</td><td class="num">+0.3pp</td><td class="num">4.12%</td><td class="num">+0.3pp</td><td class="num">+0.0pp</td><td class="num">+0.5%</td><td class="scell"><span class="quad q2 mini">Heat</span></td></tr><tr><td class="lbl">Q1 2027</td><td class="num">4.31%</td><td class="num">+0.2pp</td><td class="num">4.60%</td><td class="num">+0.2pp</td><td class="num">-0.0pp</td><td class="num">+2.1%</td><td class="scell"><span class="quad q1 close mini">Sweet</span></td></tr><tr><td class="lbl">Q2 2027</td><td class="num">4.54%</td><td class="num">-0.1pp</td><td class="num">5.12%</td><td class="num">-0.1pp</td><td class="num">-0.5pp</td><td class="num">+1.5%</td><td class="scell"><span class="quad q1 mini">Sweet</span></td></tr><tr><td class="lbl">Q3 2027</td><td class="num">4.63%</td><td class="num">-0.3pp</td><td class="num">5.56%</td><td class="num">-0.4pp</td><td class="num">-0.5pp</td><td class="num">+2.4%</td><td class="scell"><span class="quad q3 mini">Squeeze</span></td></tr><tr><td class="lbl">Q4 2027</td><td class="num">4.63%</td><td class="num">-0.4pp</td><td class="num">5.63%</td><td class="num">-0.6pp</td><td class="num">-0.6pp</td><td class="num">+2.3%</td><td class="scell"><span class="quad q4 mini">Cool</span></td></tr></tbody></table></div>
+<p class="legend-inline">Effects in percentage points of annualized growth. "Fastest bite" applies the strongest single-quarter response in the 1960–2026 record (two quarters after a hike) instead of the measured average.</p>
+
+<div class="box view"><div class="box-h">Your view: the Fed keeps hiking, and growth slows in Q1 and Q2 2027</div>
+<p><b>If that is right, both quarters are Cooling</b>, because inflation is falling hard in both anyway (−0.33pp and −0.95pp). What growth has to do: come in <b>under +2.1% annualized in Q1 2027</b> and <b>under +1.5% in Q2 2027</b>. The bars are low because early 2026 was weak, so it does not take a recession, just a real slowdown.</p>
+<p><b>What the sheet says.</b> Its own path is +2.2% in Q1 2027 and +1.9% in Q2 2027, against bars of +2.1% and +1.5%: Sweet spot (too close to call) and Sweet spot. Q1 2027 is a margin of +0.2pp, so it is a coin flip whichever way the data lean. Q2 2027 is a margin of +0.5pp; a hike at every meeting with the fastest response on record takes about 0.5pp off it, which is <b>enough to tip it to Cooling</b> on its own. Hikes take at least two quarters to bite, and the 2024–26 cuts are still working in the other direction; so the timing, not the size, is what decides it.</p>
+<p><b>What would confirm your view early:</b> jobless claims rising through the autumn, retail sales going flat, the Q4 2026 GDP print (28 January 2027) coming in under +0.5% annualized, and the Q1 2027 print (late April) under +2.1%. The consumer lines above are where it would show first: real income is already weak and the saving rate is already very low.</p>
+<p class="ss"><b>Honesty note.</b> In the 2017–2026 backtest the rate effect made the growth calls slightly worse, not better: it reversed 42 of 540 calls and was right on 24% of those against 76% without it. Both times it mattered (2018, 2023) the Fed hiked into an economy that kept growing. It is on because you asked for it; the cards above say where it changes a regime.</p></div>
+
+<h2>Against Hedgeye</h2>
+<div class="tblwrap"><table>
+<thead><tr><th>Question</th><th>Hedgeye (16 Sep 2026)</th><th>This sheet</th><th>Verdict</th></tr></thead><tbody>
+<tr><td class="lbl">Inflation in Q4 2026</td><td>rising, NowCast about 3.67%</td><td>3.52% for the quarter, peak 3.58% in Nov 2026</td><td>same direction</td></tr>
+<tr><td class="lbl">Then "cut roughly in half" by mid-2027</td><td>yes</td><td>3.58% → 1.92% by May 2027, −46%</td><td>agree, strong call</td></tr>
+<tr><td class="lbl">Regime in Q2 2027</td><td>Cooling (their "Quad 4")</td><td>Sweet spot: inflation side agrees, growth needs a print under +1.5% annualized</td><td>hinges on growth</td></tr>
+<tr><td class="lbl">Rate hikes slow growth</td><td>yes, hard, into 2027</td><td>yes, but with the lag the data show the bite lands in the second half of 2027</td><td>same story, later date</td></tr>
+<tr><td class="lbl">Monthly regime path, Jul 2026–Jul 2027</td><td>their monthly map (mid-Sep 2026)</td><td>the sheet's monthly regimes agree in <b>9 of 13 months</b>; they differ in Aug (they Squeeze, we Heating), Nov (they Sweet spot, we Heating), Dec (they Heating, we Sweet spot), Apr (they Sweet spot, we Cooling)</td><td>same arithmetic, different growth measure</td></tr>
+</tbody></table></div>
+
+<h2>How often is this right?</h2>
+<p class="lede">Every number comes from a backtest of 114 month-end runs from January 2017, each using only what was published at the time. Nothing here is a live track record yet.</p>
+<div class="tblwrap"><table class="trust">
+<thead><tr><th>The call</th><th class="num">How often it was right</th><th>What that means</th></tr></thead><tbody>
+<tr><td class="lbl">Next month's inflation: up or down</td><td class="num strong-num">90%</td><td>100% when the call is strong, 89% when good, 90% on a lean, 67% on a toss-up. The sharpest tool on the sheet.</td></tr>
+<tr><td class="lbl">Inflation for the quarter: up or down</td><td class="num strong-num">87% · 71% · 68%</td><td>this quarter · next · the one after. Strong calls (a move of 0.30pp or more) are right about 4 times in 5.</td></tr>
+<tr><td class="lbl">Growth measure, next month: up or down</td><td class="num strong-num">85% · 79% · 81%</td><td>one, two, three months past the last complete month, on the measure's own path; 90% for the month that already has most components in. Strong calls (over 0.30pp) 100%, good 94%, lean 71%, toss-up 65%. But it agrees with the <em>quarter's</em> GDP direction only 54% month by month: the monthly regime is the consumer-and-production trend, not the GDP print.</td></tr>
+<tr><td class="lbl">Growth for the quarter: up or down</td><td class="num strong-num">65% · 57% · 58%</td><td>this quarter · next · the one after. Strong calls (0.50pp or more) 73%; weak ones 47%. Without the rate effect: 65% · 59% · 64%.</td></tr>
+<tr><td class="lbl">The regime</td><td class="num strong-num">64% · 38% · 39% · 35%</td><td>this quarter · next · +2 · +3, against the first GDP release. A random guess is 25%. This quarter rises to 70% when neither side is too close to call. Without the rate effect the average is 45% instead of 40%.</td></tr>
+</tbody></table></div>
+
+<div class="notes">
+<p><b>†</b> BLS never published the October 2025 CPI (the autumn 2025 shutdown). It is filled in by averaging September and November 2025 so 12-month comparisons stay honest; October 2026's rate is compared against that fill.</p>
+<p><b>How to read the growth levels.</b> After this quarter they are an assumption (the economy's normal pace, 2.0% a year, from the quarter after next, plus the rate effect), not a forecast. What the sheet stands behind is the direction, up or down against the bar, and the inflation path.</p>
+<p><b>Caveats.</b> The backtest uses simulated first releases of GDP (the real-time archives are unreachable from where this is built), which costs it 5–8 points of growth accuracy. The interest-rate path ahead is read off a curve dated 2026-09-18; the actual Fed rate replaces it as it prints. The sample is one inflation cycle. Regenerate with <code>python us_sheet.py</code> after each data release.</p>
+</div>
+</div>
+<script>
+(function(){
+  var box=document.querySelector('.chartbox'), tip=document.getElementById('tip'), xh=document.getElementById('xhair');
+  var months=["Jun 26", "Jul 26", "Aug 26", "Sep 26", "Oct 26", "Nov 26", "Dec 26", "Jan 27", "Feb 27", "Mar 27", "Apr 27", "May 27", "Jun 27", "Jul 27", "Aug 27", "Sep 27", "Oct 27", "Nov 27", "Dec 27", "Jan 28"], infl=[3.46, 3.3, 3.35, 3.45, 3.51, 3.58, 3.46, 3.47, 3.39, 2.68, 2.22, 1.92, 2.54, 2.66, 2.44, 2.24, 2.24, 2.24, 2.24, 2.24];
+  var names={"1": "Sweet spot", "2": "Heating", "3": "Squeeze", "4": "Cooling"}, bands=[{"q": "2026Q2", "label": "Q2 2026", "quad": 3, "i0": 0, "i1": 0}, {"q": "2026Q3", "label": "Q3 2026", "quad": 4, "i0": 1, "i1": 3}, {"q": "2026Q4", "label": "Q4 2026", "quad": 2, "i0": 4, "i1": 6}, {"q": "2027Q1", "label": "Q1 2027", "quad": 1, "i0": 7, "i1": 9}, {"q": "2027Q2", "label": "Q2 2027", "quad": 1, "i0": 10, "i1": 12}, {"q": "2027Q3", "label": "Q3 2027", "quad": 3, "i0": 13, "i1": 15}, {"q": "2027Q4", "label": "Q4 2027", "quad": 4, "i0": 16, "i1": 18}], growth={"2026Q2": 2.1, "2026Q3": 1.61, "2026Q4": 2.06, "2027Q1": 2.1, "2027Q2": 2.22, "2027Q3": 2.05, "2027Q4": 1.89};
+  function bandOf(i){for(var k=0;k<bands.length;k++){if(i>=bands[k].i0&&i<=bands[k].i1)return bands[k];}return null;}
+  box.querySelectorAll('.hov').forEach(function(r){
+    r.addEventListener('mousemove',function(e){
+      var i=+r.getAttribute('data-i'), bd=bandOf(i);
+      var x=parseFloat(r.getAttribute('x'))+parseFloat(r.getAttribute('width'))/2;
+      xh.setAttribute('x1',x); xh.setAttribute('x2',x); xh.setAttribute('visibility','visible');
+      tip.innerHTML='<b>'+months[i]+'</b> · inflation '+infl[i].toFixed(2)+'%'+(bd?' · growth '+growth[bd.q].toFixed(2)+'% · '+names[bd.quad]:'');
+      var bb=box.getBoundingClientRect(); var lx=e.clientX-bb.left+12, ly=e.clientY-bb.top-34;
+      if(lx+tip.offsetWidth>bb.width-8) lx=e.clientX-bb.left-tip.offsetWidth-12;
+      tip.style.left=lx+'px'; tip.style.top=ly+'px'; tip.style.visibility='visible';
+    });
+    r.addEventListener('mouseleave',function(){tip.style.visibility='hidden'; xh.setAttribute('visibility','hidden');});
+  });
+})();
+</script>

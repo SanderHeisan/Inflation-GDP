@@ -161,14 +161,19 @@ def test_broken_default_table_falls_back_to_legacy_then_discovers(monkeypatch):
 
 
 def test_adopted_table_is_persisted_and_reused(tmp_path, monkeypatch):
-    ds = _fake_ds(new_end="2026-06", new_base=50.0)
+    # The remembered table is re-discovered once its data looks stale against
+    # TODAY (fetch_data measures age with Timestamp.today()), so the mock has
+    # to end at last month whatever day the suite runs on -- a fixed
+    # "2026-06" turned this test into a date bomb.
+    fresh_end = str(pd.Period(pd.Timestamp.today(), freq="M") - 1)
+    ds = _fake_ds(new_end=fresh_end, new_base=50.0)
     fetched_tables = []
     orig = ds.fetch_cpi_by_group
 
     def tracking_fetch(start_year=2000, content_code=None, table_id=None):
         fetched_tables.append(table_id)
         if table_id == "99999":
-            return _index_series("2000-01", "2026-06",
+            return _index_series("2000-01", fresh_end,
                                  base=50.0).to_frame("TOTAL")
         return orig(start_year, content_code)
 
@@ -183,7 +188,7 @@ def test_adopted_table_is_persisted_and_reused(tmp_path, monkeypatch):
     cpi2, _ = fetch_data._fetch_cpi_freshest(ds, data_dir=tmp_path)
     # second run goes straight to the remembered table - no discovery
     assert fetched_tables == ["99999"]
-    assert cpi2.index[-1] == pd.Period("2026-06", freq="M")
+    assert cpi2.index[-1] == pd.Period(fresh_end, freq="M")
 
 
 def test_wildcard_rejection_retries_with_explicit_values(monkeypatch):

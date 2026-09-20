@@ -1,0 +1,96 @@
+# Rebuilds the US macro regime sheet from fresh data and publishes it as a feed.
+#
+# Everything lands on the 'live-us-regime' branch, one commit, force-pushed,
+# so any consumer reads a stable raw URL with no token (the repo is public):
+#
+#   https://raw.githubusercontent.com/<owner>/<repo>/live-us-regime/latest.json
+#       the regimes only: current + projected quarters, and every month
+#   https://raw.githubusercontent.com/<owner>/<repo>/live-us-regime/us_sheet.json
+#       the full data behind the page (33 KB)
+#   https://raw.githubusercontent.com/<owner>/<repo>/live-us-regime/us_regime_sheet.html
+#       the page itself
+#
+# Runs weekdays at 13:45 UTC, after the 08:30 ET releases (CPI, PCE, GDP,
+# payrolls) have reached FRED, and on demand from the Actions tab. GitHub
+# fires schedules from the default branch only; on any other branch this
+# workflow runs on demand. The whole run is ~3 minutes on a free runner and
+# touches nothing but this repository -- the model never runs on the
+# website's server.
+name: US macro regime
+
+on:
+  schedule:
+    - cron: "45 13 * * 1-5"
+  workflow_dispatch:
+
+concurrency:
+  group: us-regime-sheet
+  cancel-in-progress: false
+
+jobs:
+  sheet:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Fetch the latest US data (FRED + Zillow, ~1 minute)
+        run: python -m usmodel.fetch_data_us --data-dir data/us
+
+      - name: Build the sheet and the live run
+        run: |
+          python us_sheet.py
+          python run_us.py > results_us/us_run.txt
+
+      - name: Assemble the feed
+        run: |
+          mkdir -p feed
+          cp results_us/us_sheet.json feed/us_sheet.json
+          cp results_us/us_regime_sheet.html feed/us_regime_sheet.html
+          cp results_us/us_run.txt feed/us_run.txt
+          python us_feed.py
+          cp results_us/latest.json feed/latest.json
+          cat > feed/README.md <<'MD'
+          # US macro regime feed
+
+          Rebuilt by the "US macro regime" workflow from fresh FRED and Zillow data.
+
+          - `latest.json` -- the regimes only: each quarter (from GDP) and each month
+            (from the monthly growth measure), with directions, conviction and the
+            backtested hit rate of that kind of call
+          - `us_sheet.json` -- the full data behind the page
+          - `us_regime_sheet.html` -- the page
+          - `us_run.txt` -- the console output of the live run
+
+          Read them by raw URL, e.g.
+          `https://raw.githubusercontent.com/OWNER/REPO/live-us-regime/latest.json`.
+          MD
+          sed -i "s#OWNER/REPO#${{ github.repository }}#" feed/README.md
+
+      - name: Upload the feed as a workflow artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: us-regime-sheet-${{ github.run_id }}
+          path: feed/
+
+      - name: Publish to the live-us-regime branch
+        run: |
+          cd feed
+          git init -b live-us-regime
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "US macro regime $(date -u +%F)"
+          git push --force \
+            "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" \
+            live-us-regime

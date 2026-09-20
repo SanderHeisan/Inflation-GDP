@@ -101,8 +101,20 @@ GDP_NOWCAST_WEIGHTS = {
     "payrolls":          0.20,   # nonfarm payroll momentum
     "retail":            0.15,   # real retail sales momentum
 }
-GDP_TREND_QOQ = 0.0045           # ~1.8% annualized potential (per quarter)
-GDP_CONVERGENCE = 0.5
+GDP_TREND_QOQ = 0.0045           # ~1.8% annualized potential (per quarter);
+                                 # only a fallback -- the trend is normally
+                                 # re-estimated per vintage, see below.
+# Trend is the trailing MEDIAN of published QoQ over this window. The median,
+# not the mean: the 2020 crash-and-rebound pair drags a mean badly, and the
+# constant is what every multi-quarter growth call is measured against.
+GDP_TREND_WINDOW_Q = 24
+# Persistence carried past the nowcast quarter. Measured to be worth ZERO:
+# beyond the current quarter US real GDP QoQ is not forecastable (see the
+# README's growth-axis section), so any non-constant path adds error that is
+# uncorrelated with the truth to a call whose only real signal is the KNOWN
+# year-ago QoQ. Backtested, direction accuracy falls monotonically as this
+# rises: 0.653 at 0.0, 0.644 at 0.30, 0.639 at 0.50 (the old default).
+GDP_CONVERGENCE = 0.0
 
 # Publication lags (calendar days): US CPI ~13 days after month end, the
 # BEA advance GDP estimate ~28 days after quarter end (heavily revised
@@ -113,3 +125,70 @@ GDP_PUB_LAG_DAYS = 28
 # Quad deadband (percentage points of YoY acceleration): below this the
 # quarter is flagged low-conviction. Shared convention with the NO model.
 QUAD_DEADBAND_PP = 0.10
+
+# ---------------------------------------------------------------------------
+# The rate channel (usmodel.rates): policy-rate changes as a drag on the
+# growth path past the nowcast quarter. Priced in on request; its measured
+# cost to the growth-direction call is stated in the README rather than
+# hidden -- turn it off here to get the flat path back.
+# ---------------------------------------------------------------------------
+RATE_CHANNEL_ENABLED = True
+# Hikes over the year ending two quarters before the target quarter: the
+# 1960-2026 distributed lag puts the drag at lags 2-8 with the largest
+# single coefficient at lag 2, and this window is its parsimonious form.
+RATE_LAG_QUARTERS = (2, 6)
+# The sample the sensitivity is fitted on, point-in-time. 1985+ alone has
+# NO measurable drag (the slope is zero to positive), so the fit must reach
+# back to the Volcker era to find the effect the channel encodes.
+RATE_FIT_START = "1960Q1"
+RATE_FIT_EXCLUDE = ("2020Q1", "2020Q2", "2020Q3", "2020Q4", "2021Q1", "2021Q2")
+# pp of quarterly growth per 1pp of policy-rate change over the window. The
+# sign is IMPOSED (a hike never adds to growth); the size is estimated and
+# runs about -0.10 on the full history.
+RATE_SENSITIVITY_CLIP = (-0.30, 0.0)
+# A number here replaces the estimate (e.g. -0.20 for FRB/US-strength
+# transmission, where 100bp costs ~0.8% of GDP over two years).
+RATE_SENSITIVITY_OVERRIDE = None
+# Market-implied policy path, LIVE runs only: dated steps in the effective
+# rate, day-weighted into monthly means by usmodel.rates. Source: the
+# meeting-date implied path read off a Hedgeye slide supplied on
+# 2026-09-18 (0.57 hikes priced for 28 Oct 2026 rising to 3.00 hikes by
+# 28 Jul 2027). The first entry is the post-September-meeting rate that
+# slide implies (4.03 - 0.57 x 0.25); the daily effective rate confirms or
+# corrects it as it is published. Replace when the curve moves -- the
+# backtest never sees this (it holds the rate flat, having no futures
+# history), so it cannot leak.
+POLICY_RATE_PATH_ASOF = "2026-09-18"
+POLICY_RATE_PATH = {
+    "2026-09-18": 3.88,
+    "2026-10-28": 4.03,
+    "2026-12-09": 4.21,
+    "2027-01-27": 4.31,
+    "2027-03-17": 4.47,
+    "2027-04-28": 4.55,
+    "2027-06-09": 4.62,
+    "2027-07-28": 4.63,
+}
+
+# ---------------------------------------------------------------------------
+# The pace the growth path assumes past the nowcast quarter (usmodel.gdp).
+#   "trailing_median"  the vintage's trailing 24-quarter median QoQ. Backward-
+#                      looking: 3.1% annualized today because the window is the
+#                      post-2020 boom. Scored best on 2017-2026, a period in
+#                      which the past kept repeating.
+#   "potential"        a long-run potential pace (GDP_POTENTIAL_ANN_PCT) from
+#                      q+2 on: "this quarter from the data, then the economy's
+#                      normal pace". Forward-looking in the sense that it does
+#                      not assume the boom continues.
+#   "nowcast"          this quarter's nowcast carried forward: the latest
+#                      activity data set the pace.
+#   "glide"            the nowcast fading toward potential with persistence
+#                      GDP_GLIDE_PERSISTENCE per quarter.
+# The rate channel's drag sits on top in every mode (relative to the nowcast
+# quarter in "nowcast" mode, which already sees the rate environment). All
+# four are measured by `python us_backtest.py` (us_pace_modes.csv).
+# ---------------------------------------------------------------------------
+GDP_PACE_MODE = "potential"
+GDP_POTENTIAL_ANN_PCT = 2.0        # CBO-style potential; the bar the boom-era median overstates
+GDP_GLIDE_PERSISTENCE = 0.5
+GDP_PACE_MODES = ("trailing_median", "potential", "nowcast", "glide")

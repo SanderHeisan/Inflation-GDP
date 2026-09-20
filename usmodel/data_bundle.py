@@ -1,20 +1,42 @@
 """
-US data bundle: synthetic-but-plausible series so the whole US pipeline runs
-and is testable offline (FRED/BLS are unreachable from the sandbox, exactly
-like SSB was). Real data drops in via fetch_data_us.py on a networked machine.
+US data bundle.
 
-The synthetic CPI is *coupled* to its drivers (oil, market rents, the dollar,
-wages) the way real US CPI is, so the model sees genuine signal rather than
-noise -- otherwise a backtest would be meaningless.
+Two ways to fill it:
+
+  load_bundle()      REAL data cached by `python -m usmodel.fetch_data_us`
+                     (FRED + Zillow ZORI). Both hosts are reachable from
+                     the sandbox, so this is the default for the backtest
+                     and the accuracy numbers quoted in the README.
+  make_demo_bundle() synthetic-but-plausible series, for offline tests and
+                     for validating the pipeline without a network. The
+                     synthetic CPI is *coupled* to its drivers (oil, market
+                     rents, the dollar, wages) the way real US CPI is, so
+                     the plumbing sees signal rather than noise -- but no
+                     accuracy claim may ever be quoted off it.
 """
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
+from pathlib import Path
 
 import numpy as np
 import pandas as pd
 
 from . import config
+
+DATA_DIR = Path(__file__).resolve().parent.parent / "data" / "us"
+
+# Activity indicators the GDP nowcast may use, if cached.
+INDICATOR_NAMES = ("payrolls", "indpro", "retail", "claims", "cfnai",
+                   "sentiment", "yield_curve", "hours",
+                   "nfci", "credit_spread", "permits", "capex_orders",
+                   "stocks", "real_m2", "housing_starts",
+                   "real_pce", "real_income", "saving_rate",
+                   "real_pce_durables", "real_pce_nondurables",
+                   "real_pce_services", "real_retail", "consumer_credit",
+                   "gasoline_retail", "fed_funds", "treasury_10y",
+                   "mortgage_30y", "household_net_worth",
+                   "real_income_ex_transfers", "hours_all", "bbk_gdp", "wei")
 
 
 @dataclass
@@ -25,7 +47,128 @@ class USDataBundle:
     dollar: pd.Series        # Period[M] broad USD index (higher = stronger)
     market_rent: pd.Series   # Period[M] market/new-lease rent index
     wages: pd.Series         # Period[M] avg hourly earnings index
+    # Optional extras: used for diagnostics and for the NSA robustness
+    # check (CPIAUCNS is never revised; CPIAUCSL's seasonal factors are).
+    cpi_nsa: pd.Series | None = None
+    cpi_core: pd.Series | None = None
+    cpi_shelter: pd.Series | None = None
+    cpi_gasoline: pd.Series | None = None
+    cpi_supercore: pd.Series | None = None
+    cpi_food: pd.Series | None = None
+    cpi_energy: pd.Series | None = None
+    gdp_vintages: pd.DataFrame | None = None
+    # Real GDP from 1947, untruncated by `start`: the rate channel fits its
+    # sensitivity on 1960+ (usmodel.rates), which the modelling window
+    # starting 2004 cannot supply.
+    gdp_long: pd.Series | None = None
+    # Growth-side activity indicators (Period[M]), keyed by the names in
+    # fetch_data_us.INDICATOR_PUB_LAG_DAYS.
+    indicators: dict[str, pd.Series] = field(default_factory=dict)
+    # {series name: [months filled by interpolation]} -- see
+    # fill_single_month_gaps; empty when the data had no holes.
+    filled: dict[str, list[str]] = field(default_factory=dict)
     source: str = "unknown"
+
+    def has_vintage_panel(self) -> bool:
+        return self.gdp_vintages is not None and not self.gdp_vintages.empty
+
+
+def _read_series(path: Path, freq: str) -> pd.Series:
+    df = pd.read_csv(path)
+    return pd.Series(pd.to_numeric(df["value"], errors="coerce").values,
+                     index=pd.PeriodIndex(df["period"].astype(str),
+                                          freq=freq)).dropna()
+
+
+def fill_single_month_gaps(series: pd.Series,
+                           max_gap: int = 1) -> tuple[pd.Series, list[str]]:
+    """Complete a monthly index and fill isolated holes of up to `max_gap`
+    months by geometric interpolation, returning the filled months.
+
+    Why this exists: BLS never published the October 2025 CPI (the autumn
+    2025 shutdown), and FRED carries the month as missing. Every positional
+    12-row shift downstream then silently turned into a 13-month change for
+    any window spanning the hole -- the live YoY read 3.54% where the true
+    12-month rate was 3.30%. A geometric fill (the standard analyst
+    treatment, and what the two-month change BLS did publish implies) keeps
+    base effects on a calendar footing; the filled months are recorded on
+    the bundle so any output can flag them. Longer gaps are left as NaN
+    rather than invented."""
+    if series.empty or series.index.freqstr not in ("M", "ME"):
+        return series, []
+    full = pd.period_range(series.index[0], series.index[-1], freq="M")
+    if len(full) == len(series):
+        return series, []
+    out = series.reindex(full)
+    missing = out.index[out.isna()]
+    filled = []
+    for m in missing:
+        prev, nxt = m - 1, m + 1
+        if prev in series.index and nxt in series.index and max_gap >= 1:
+            out[m] = float(np.sqrt(series[prev] * series[nxt]))
+            filled.append(str(m))
+    return out.dropna(), filled
+
+
+def load_bundle(data_dir: Path | str = DATA_DIR,
+                start: str | None = "2004-01") -> USDataBundle:
+    """Load the real cached US series. Raises if the required files are
+    missing -- run `python -m usmodel.fetch_data_us` first."""
+    d = Path(data_dir)
+    required = ["cpi", "gdp", "wti", "dollar", "wages", "market_rent"]
+    missing = [f for f in required if not (d / f"{f}.csv").exists()]
+    if missing:
+        raise FileNotFoundError(
+            f"missing {missing} in {d} - run `python -m usmodel.fetch_data_us`")
+
+    filled: dict[str, list[str]] = {}
+
+    QUARTERLY = {"household_net_worth"}
+
+    def monthly(name: str) -> pd.Series | None:
+        p = d / f"{name}.csv"
+        if not p.exists():
+            return None
+        if name in QUARTERLY:
+            return _read_series(p, "Q")
+        series, gaps = fill_single_month_gaps(_read_series(p, "M"))
+        if gaps:
+            filled[name] = gaps
+        return series
+
+    opt = monthly
+    cpi = monthly("cpi")
+    gdp = _read_series(d / "gdp.csv", "Q")
+    gdp_long = gdp.copy()
+    if start:
+        cpi = cpi[cpi.index >= pd.Period(start, "M")]
+        gdp = gdp[gdp.index >= pd.Period(start, "M").asfreq("Q")]
+
+    panel = None
+    vpath = d / "gdp_vintages.csv"
+    if vpath.exists():
+        raw = pd.read_csv(vpath, index_col=0)
+        raw.index = pd.PeriodIndex(raw.index.astype(str), freq="Q")
+        raw.columns = pd.to_datetime(raw.columns)
+        panel = raw
+
+    return USDataBundle(
+        cpi=cpi, gdp=gdp,
+        wti=monthly("wti"),
+        dollar=monthly("dollar"),
+        wages=monthly("wages"),
+        market_rent=monthly("market_rent"),
+        cpi_nsa=opt("cpi_nsa"), cpi_core=opt("cpi_core"),
+        cpi_shelter=opt("cpi_shelter"), cpi_gasoline=opt("cpi_gasoline"),
+        cpi_supercore=opt("cpi_supercore"),
+        cpi_food=opt("cpi_food"),
+        cpi_energy=opt("cpi_energy"),
+        gdp_vintages=panel,
+        gdp_long=gdp_long,
+        indicators={k: s for k in INDICATOR_NAMES
+                    if (s := opt(k)) is not None and len(s)},
+        filled=filled,
+        source=f"real ({d})")
 
 
 def make_demo_bundle(seed: int = 11, start: str = "2004-01",

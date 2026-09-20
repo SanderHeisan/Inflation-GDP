@@ -1,0 +1,363 @@
+"""
+US GIP quad model -- walk-forward backtest CLI.
+
+    python -m usmodel.fetch_data_us          # once, to cache real data
+    python us_backtest.py                    # full run, real FRED+Zillow data
+    python us_backtest.py --start 2017 --end 2026 --horizon 4
+    python us_backtest.py --revision-mode none      # upper bound (final GDP)
+    python us_backtest.py --no-self-calibrate       # static config constants
+
+Writes to results_us/:
+    us_backtest_results.parquet   every quad prediction, with vintage bookkeeping
+    us_summary.csv                per-horizon hit rates + benchmark edges
+    us_axis_accuracy.csv          MAE of the growth/inflation YoY levels
+    us_cpi_errors.csv             CPI YoY/MoM MAE vs naive benchmarks
+    us_cpi_direction.csv          next-print direction hit rate by conviction
+    us_confusion_h*.csv           confusion matrices per horizon
+    us_growth_variants.csv        --growth-variants: the growth-side 2x2
+    us_growth_ceiling.csv         per-horizon ceiling for the growth call
+    us_direction.csv              the four direction calls: hit by call x horizon
+    us_direction_conviction.csv   the same by conviction bucket
+    us_direction_calls.csv        every direction call made (or abstained)
+    us_rate_channel.csv           the rate channel on vs off on the same vintages
+    us_pace_modes.csv             the four growth-pace modes on the same vintages
+    us_growth_monthly.csv         the monthly growth measure's 1-3 month calls, by horizon and conviction
+    us_growth_monthly_calls.csv   every one of those calls
+"""
+from __future__ import annotations
+
+import argparse
+from dataclasses import replace
+from pathlib import Path
+
+import numpy as np
+import pandas as pd
+
+from usbacktest import direction, growth_monthly, monthly, scoring
+from usbacktest.btconfig import BACKTEST_START, RESULTS_DIR, USVintageConfig
+from usbacktest.engine import run_backtest
+from usmodel import data_bundle
+
+
+def growth_variants(bundle, start, end, horizon, cfg, real_first, real_final
+                    ) -> pd.DataFrame:
+    """The growth-side selection surface, published rather than just its
+    winner. Two independent switches: whether the nowcast quarter uses the
+    fitted activity-indicator regression, and whether the path past it
+    glides (geometric convergence from the nowcast) or steps straight to a
+    trend re-estimated per vintage. Effective sample is only ~38 distinct
+    target quarters, so treat differences of a couple of points as noise."""
+    variants = {
+        # the original: momentum-only nowcast, geometric glide to a static trend
+        "momentum nowcast + glide (original)":
+            replace(cfg, use_indicator_nowcast=False, fit_trend=False,
+                    fit_convergence=True, rate_channel=False,
+                    pace_mode="trailing_median"),
+        "fitted nowcast + glide":
+            replace(cfg, use_indicator_nowcast=True, fit_trend=False,
+                    fit_convergence=True, rate_channel=False,
+                    pace_mode="trailing_median"),
+        "fitted nowcast + static trend, flat":
+            replace(cfg, use_indicator_nowcast=True, fit_trend=False,
+                    fit_convergence=False, rate_channel=False,
+                    pace_mode="trailing_median"),
+        "fitted nowcast + fitted trend, flat":
+            replace(cfg, use_indicator_nowcast=True, fit_trend=True,
+                    fit_convergence=False, rate_channel=False,
+                    pace_mode="trailing_median"),
+        # the same path with the rate channel's drag on it (usmodel.rates)
+        "fitted nowcast + fitted trend + rate channel":
+            replace(cfg, use_indicator_nowcast=True, fit_trend=True,
+                    fit_convergence=False, rate_channel=True,
+                    pace_mode="trailing_median"),
+        # forward-looking paces past the nowcast quarter, rate channel on
+        "fitted nowcast + potential pace + rate channel":
+            replace(cfg, use_indicator_nowcast=True, rate_channel=True,
+                    pace_mode="potential"),
+        "fitted nowcast carried forward + rate channel":
+            replace(cfg, use_indicator_nowcast=True, rate_channel=True,
+                    pace_mode="nowcast"),
+        "fitted nowcast gliding to potential + rate channel":
+            replace(cfg, use_indicator_nowcast=True, rate_channel=True,
+                    pace_mode="glide"),
+    }
+    variants = {(k + " (shipped)" if v.pace_mode == cfg.pace_mode and v.rate_channel == cfg.rate_channel
+                 and v.use_indicator_nowcast and (v.pace_mode != "trailing_median" or v.fit_trend) else k): v
+                for k, v in variants.items()}
+    rows = {}
+    for name, vcfg in variants.items():
+        preds = run_backtest(bundle, start, end, max_horizon=horizon,
+                             cfg=vcfg)
+        sc = scoring.score(preds, real_first, "fr", range(horizon + 1)).loc[
+            ("fr", "model")]
+        ax = scoring.axis_accuracy(preds, real_final)
+        rows[name] = pd.Series({
+            "quad_hit_h0": sc["hit_rate"][0],
+            "quad_hit_mean": sc["hit_rate"].mean(),
+            "growth_dir_h0": sc["growth_dir_hit"][0],
+            "growth_dir_h1plus": sc["growth_dir_hit"][1:].mean(),
+            "growth_dir_mean": sc["growth_dir_hit"].mean(),
+            "mae_growth_yoy_h0": ax["mae_growth_yoy_pp"][0],
+            "mae_growth_yoy_mean": ax["mae_growth_yoy_pp"].mean(),
+        })
+    return pd.DataFrame(rows).T
+
+
+def rate_channel_comparison(bundle, start, end, horizon, cfg, preds, dcalls,
+                            real_first, real_final) -> pd.DataFrame:
+    """The rate channel on and off on the same vintages: growth-direction
+    hit rate by horizon (the direction backtest), quad hit rate (first-
+    release truth), growth-level error, and -- the part that matters --
+    what happened on the rows where the drag actually flipped the growth
+    call. Everything else is identical between the two runs, so any
+    difference is the channel."""
+    other = replace(cfg, rate_channel=not cfg.rate_channel)
+    preds2 = run_backtest(bundle, start, end, max_horizon=horizon, cfg=other)
+    dcalls2 = direction.direction_backtest(bundle, start, end, horizon, other)
+    real = real_final["d_growth"].astype(float)
+
+    def one(p, d, c):
+        sc = scoring.score(p, real_first, "fr", range(horizon + 1)).loc[
+            ("fr", "model")]
+        ax = scoring.axis_accuracy(p, real_final)
+        gh = direction.summarize_by_horizon(d).loc["growth_yoy", "hit"]
+        row = {"rate_channel": c.rate_channel,
+               "quad_hit_h0": sc["hit_rate"][0],
+               "quad_hit_mean": sc["hit_rate"].mean(),
+               "mae_growth_yoy_mean": ax["mae_growth_yoy_pp"].mean()}
+        row.update({f"growth_dir_h{h}": float(gh.get(h, np.nan))
+                    for h in range(horizon + 1)})
+        return row
+    rows = {"shipped setting": one(preds, dcalls, cfg),
+            "the other setting": one(preds2, dcalls2, other)}
+    m = preds.merge(preds2, on=["asof", "target_quarter", "horizon"],
+                    suffixes=("_a", "_b"))
+    m["real"] = real.reindex(
+        pd.PeriodIndex(m["target_quarter"], freq="Q")).to_numpy()
+    m = m.dropna(subset=["real"])
+    flipped = m[np.sign(m["pred_d_growth_a"]) != np.sign(m["pred_d_growth_b"])]
+    for key, suf in (("shipped setting", "_a"), ("the other setting", "_b")):
+        rows[key]["n_rows"] = int(len(m))
+        rows[key]["n_flipped_by_channel"] = int(len(flipped))
+        rows[key]["hit_on_flipped_rows"] = (
+            float((np.sign(flipped["pred_d_growth" + suf])
+                   == np.sign(flipped["real"])).mean())
+            if len(flipped) else np.nan)
+    return pd.DataFrame(rows).T
+
+
+def pace_mode_comparison(bundle, start, end, horizon, cfg, preds, dcalls,
+                         real_first, real_final) -> pd.DataFrame:
+    """The four paces past the nowcast quarter on identical vintages, rate
+    channel as configured: growth-direction hit by horizon (the direction
+    backtest), quad hit by horizon (first-release truth) and the growth
+    level error. The shipped mode reuses the main run's results."""
+    from usmodel import config as uconfig
+    rows = {}
+    for mode in uconfig.GDP_PACE_MODES:
+        if mode == cfg.pace_mode:
+            p, d = preds, dcalls
+        else:
+            other = replace(cfg, pace_mode=mode)
+            p = run_backtest(bundle, start, end, max_horizon=horizon, cfg=other)
+            d = direction.direction_backtest(bundle, start, end, horizon, other)
+        sc = scoring.score(p, real_first, "fr", range(horizon + 1)).loc[("fr", "model")]
+        scf = scoring.score(p, real_final, "final", range(horizon + 1)).loc[("final", "model")]
+        ax = scoring.axis_accuracy(p, real_final)
+        gh = direction.summarize_by_horizon(d).loc["growth_yoy", "hit"]
+        row = {"shipped": mode == cfg.pace_mode, "rate_channel": cfg.rate_channel}
+        row.update({f"quad_hit_h{h}": float(sc["hit_rate"][h]) for h in range(horizon + 1)})
+        row["quad_hit_mean"] = float(sc["hit_rate"].mean())
+        row["quad_hit_mean_final"] = float(scf["hit_rate"].mean())
+        row.update({f"growth_dir_h{h}": float(gh.get(h, np.nan)) for h in range(horizon + 1)})
+        row["growth_dir_h1_4"] = float(gh[1:].mean())
+        row["mae_growth_yoy_mean"] = float(ax["mae_growth_yoy_pp"].mean())
+        rows[mode] = row
+    return pd.DataFrame(rows).T
+
+
+def main() -> None:
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--start", default=BACKTEST_START)
+    ap.add_argument("--end", default=None,
+                    help="default: the last month with published CPI")
+    ap.add_argument("--horizon", type=int, default=4,
+                    help="max quad horizon in quarters")
+    ap.add_argument("--freq", default="M", choices=["M", "Q"],
+                    help="as-of date frequency")
+    ap.add_argument("--revision-mode", default="auto",
+                    choices=["auto", "realtime", "noise", "none"])
+    ap.add_argument("--sigma", type=float, default=None,
+                    help="GDP revision sigma in pp of QoQ (noise mode)")
+    ap.add_argument("--no-indicator-nowcast", action="store_true",
+                    help="disable the fitted activity-indicator GDP nowcast "
+                         "and fall back to trailing momentum (the growth-side "
+                         "before/after)")
+    ap.add_argument("--no-self-calibrate", action="store_true",
+                    help="use the static config coefficients instead of "
+                         "re-fitting them on each vintage's own history")
+    ap.add_argument("--pace-mode", default=None,
+                    help="pace past the nowcast quarter: trailing_median, "
+                         "potential, nowcast, glide (default: config)")
+    ap.add_argument("--no-rate-channel", action="store_true",
+                    help="drop the rate channel's drag from the growth path "
+                         "(usmodel.rates); the run measures both either way")
+    ap.add_argument("--growth-variants", action="store_true",
+                    help="also run the 2x2 of growth-side settings "
+                         "(momentum vs fitted nowcast) x (static vs fitted "
+                         "convergence) and write us_growth_variants.csv")
+    ap.add_argument("--out-dir", default=str(RESULTS_DIR))
+    args = ap.parse_args()
+
+    bundle = data_bundle.load_bundle()
+    end = args.end or str(bundle.cpi.index[-1])
+    cfg = USVintageConfig(
+        revision_mode=args.revision_mode,
+        self_calibrate=not args.no_self_calibrate,
+        use_indicator_nowcast=not args.no_indicator_nowcast,
+        rate_channel=not args.no_rate_channel,
+        **({"pace_mode": args.pace_mode} if args.pace_mode else {}))
+    if args.sigma is not None:
+        cfg.revision_sigma_pp = args.sigma
+
+    out = Path(args.out_dir)
+    out.mkdir(parents=True, exist_ok=True)
+
+    print(f"US GIP backtest | data: {bundle.source}")
+    print(f"  CPI  {bundle.cpi.index[0]}..{bundle.cpi.index[-1]}   "
+          f"GDP {bundle.gdp.index[0]}..{bundle.gdp.index[-1]}   "
+          f"ZORI {bundle.market_rent.index[0]}..{bundle.market_rent.index[-1]}")
+    print(f"  as-of {args.start}..{end} ({args.freq})   horizon "
+          f"0..{args.horizon}q   revisions={cfg.revision_mode}"
+          f"{'  self-calibrating' if cfg.self_calibrate else ''}"
+          f"{'  indicator-nowcast' if cfg.use_indicator_nowcast else '  momentum-nowcast'}"
+          f"{'  rate-channel' if cfg.rate_channel else '  flat-path'}"
+          f"  pace={cfg.pace_mode}")
+
+    # ---- Quad backtest -----------------------------------------------------
+    preds = run_backtest(bundle, args.start, end, freq=args.freq,
+                         max_horizon=args.horizon, cfg=cfg)
+    preds.to_parquet(out / "us_backtest_results.parquet")
+    print(f"\n{len(preds)} quad predictions over "
+          f"{preds['asof'].nunique()} as-of dates "
+          f"(revision mode: {preds['revision_mode'].unique().tolist()})")
+
+    real_final = scoring.realized_quads_final(bundle)
+    real_first = scoring.realized_quads_first_release(bundle, cfg)
+    summary = pd.concat([
+        scoring.score(preds, real_final, "final", range(args.horizon + 1)),
+        scoring.score(preds, real_first, "first_release",
+                      range(args.horizon + 1)),
+    ])
+    summary.to_csv(out / "us_summary.csv")
+
+    show = ["n", "hit_rate", "hit_rate_high_conviction", "growth_dir_hit",
+            "inflation_dir_hit", "edge_vs_persistence", "edge_vs_base_effects"]
+    print("\n=== Quad hit rate by horizon (vs FINAL-vintage realized quads) ===")
+    print(summary.loc["final"].reindex(columns=show).round(3).to_string())
+    print("\n=== Same, vs FIRST-RELEASE realized quads (the real-time truth) ===")
+    print(summary.loc["first_release"].reindex(columns=show).round(3)
+          .to_string())
+
+    ceil = scoring.growth_direction_ceiling(bundle, preds)
+    gdir = summary.loc[("first_release", "model"), "growth_dir_hit"]
+    ceil["model"] = gdir
+    ceil["gap"] = ceil["model"] - ceil["ceiling"]
+    ceil.to_csv(out / "us_growth_ceiling.csv")
+    print("\n=== Growth-direction call vs its structural ceiling ===")
+    print("  d_growth(q) ~= qoq(q) - qoq(q-4), and the year-ago term is")
+    print("  already published at most horizons, so the call is 'trend vs a")
+    print("  known base'. With no skill on qoq(q) -- which is what the")
+    print("  experiments found past the nowcast quarter -- that IS the best")
+    print("  available call, and how often it is right is the ceiling.")
+    print(ceil.round(3).to_string())
+
+    axis = scoring.axis_accuracy(preds, real_final)
+    axis.to_csv(out / "us_axis_accuracy.csv")
+    print("\n=== Forecast error of the two axes (pp, vs final vintage) ===")
+    print(axis.round(3).to_string())
+
+    for h, cm in scoring.confusion_by_horizon(
+            preds, real_final, range(args.horizon + 1)).items():
+        cm.to_csv(out / f"us_confusion_h{h}.csv")
+
+    # ---- Monthly CPI backtest ---------------------------------------------
+    errs = monthly.monthly_backtest(bundle, args.start, end, cfg)
+    err_summary = monthly.summarize_errors(errs)
+    err_summary.to_csv(out / "us_cpi_errors.csv")
+    print("\n=== CPI forecast error, pp (MAE of YoY at h months ahead) ===")
+    print(err_summary.round(3).to_string())
+
+    cpi_dir = monthly.direction_backtest(bundle, args.start, end, cfg)
+    dir_summary = monthly.summarize_direction(cpi_dir)
+    dir_summary.to_csv(out / "us_cpi_direction.csv")
+    cpi_dir.to_csv(out / "us_cpi_direction_calls.csv", index=False)
+    print("\n=== Next CPI print: YoY direction call by conviction ===")
+    print(dir_summary.round(3).to_string())
+
+    # ---- Direction calls: growth and inflation, QoQ and YoY ---------------
+    dcalls = direction.direction_backtest(bundle, args.start, end,
+                                          args.horizon, cfg)
+    dcalls.to_csv(out / "us_direction_calls.csv", index=False)
+    by_h = direction.summarize_by_horizon(dcalls)
+    by_h.to_csv(out / "us_direction.csv")
+    by_c = direction.summarize_by_conviction(dcalls)
+    by_c.to_csv(out / "us_direction_conviction.csv")
+    by_g = direction.summarize_by_grade(dcalls)
+    by_g.to_csv(out / "us_direction_growth_qoq_grade.csv")
+    stretch = direction.summarize_stretch(dcalls)
+    stretch.to_csv(out / "us_consumer_stretch.csv")
+    print("\n=== Sequential growth call by grade (two votes: GDP + real PCE) ===")
+    print(by_g.round(3).to_string())
+    print("\n=== Stretched consumer as a supporting flag on growth YoY ===")
+    print(stretch.round(3).to_string())
+    print("\n=== Direction calls: hit rate by horizon (call share in brackets) ===")
+    wide = by_h["hit"].unstack("horizon")
+    share = by_h["call_share"].unstack("horizon")
+    disp = (wide * 100).round(1).astype(str) + " (" + \
+        (share * 100).round(0).astype(int).astype(str) + "%)"
+    disp = disp.mask(wide.isna(), "no call")
+    disp.index = [direction.CALL_LABELS[c] for c in disp.index]
+    print(disp.to_string())
+    print("\n=== Direction calls: hit rate by conviction (all horizons) ===")
+    print(by_c.round(3).to_string())
+
+    # ---- The monthly growth measure: 1-3 months ahead ----------------------
+    mgc = growth_monthly.monthly_growth_backtest(bundle, "2010-01", end, 3, cfg)
+    mgc.to_csv(out / "us_growth_monthly_calls.csv", index=False)
+    mgs = growth_monthly.summarize_monthly_growth(mgc)
+    mgs.to_csv(out / "us_growth_monthly.csv")
+    print("\n=== The monthly growth measure: next-month direction by horizon and "
+          "conviction (own truth / BBK monthly GDP / the quarter's GDP) ===")
+    print(mgs.round(3).to_string())
+
+    # ---- The rate channel, on vs off ----------------------------------------
+    rc = rate_channel_comparison(bundle, args.start, end, args.horizon, cfg,
+                                 preds, dcalls, real_first, real_final)
+    rc.to_csv(out / "us_rate_channel.csv")
+    print("\n=== The rate channel (policy-rate drag on the growth path), "
+          "on vs off ===")
+    print("  'hit_on_flipped_rows' scores only the growth calls the drag "
+          "reversed -- the rows where the channel is doing anything.")
+    print(rc.T.to_string())
+
+    # ---- The pace past the nowcast quarter, all four modes ---------------
+    pm = pace_mode_comparison(bundle, args.start, end, args.horizon, cfg,
+                              preds, dcalls, real_first, real_final)
+    pm.to_csv(out / "us_pace_modes.csv")
+    print("\n=== The pace past the nowcast quarter: trailing median vs "
+          "potential vs nowcast carried vs glide ===")
+    print(pm.T.to_string())
+
+    if args.growth_variants:
+        print("\n=== Growth-side variants (first-release truth) ===")
+        var = growth_variants(bundle, args.start, end, args.horizon, cfg,
+                              real_first, real_final)
+        var.to_csv(out / "us_growth_variants.csv")
+        print(var.round(3).to_string())
+
+    print(f"\nWrote {out}/")
+
+
+if __name__ == "__main__":
+    main()
