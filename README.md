@@ -268,6 +268,18 @@ consumer, interest rates and the subscriber's own view against the model's
 — with every hit rate read from `results_us/` so the page cannot quote a
 number the backtest did not produce. Regenerate it after each data release.
 
+`python us_feed.py` then writes `results_us/latest.json`, the compact feed a
+website reads: the quarters and months with their regimes, directions,
+conviction and hit rates; `hit_rates`, the backtest's scorecard in one block
+(the regime by distance, next month's inflation and the growth measure by
+conviction); and `notes`, the story behind the numbers as plain text with no
+markup (the next inflation print, the inflation path, oil, rents, this
+quarter's growth, the pace assumed after it, rates, the consumer), every
+sentence computed from the sheet. The "US macro regime" workflow publishes
+it to the `live-us-regime` branch on weekdays. `tests/test_us_feed.py` holds
+the contract and that no other vendor's product names are in the public
+blocks.
+
 ## The stats
 
 Walk-forward and point-in-time. At each as-of date the information set is

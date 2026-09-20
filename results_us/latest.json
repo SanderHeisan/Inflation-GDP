@@ -1,5 +1,5 @@
 {
- "generated_utc": "2026-09-20T15:51:53+00:00",
+ "generated_utc": "2026-09-20T19:42:36+00:00",
  "asof": "2026-09-20",
  "cpi_through": "Aug 2026",
  "gdp_through": "Q2 2026",
@@ -477,5 +477,92 @@
    "hedgeye_regime": null
   }
  ],
- "source": "https://github.com/SanderHeisan/Inflation-GDP"
+ "source": "https://github.com/SanderHeisan/Inflation-GDP",
+ "hit_rates": {
+  "n_asof": 114,
+  "span": "January 2017 to September 2026",
+  "regime_by_horizon": {
+   "0": 0.64,
+   "1": 0.378,
+   "2": 0.389,
+   "3": 0.352,
+   "4": 0.255
+  },
+  "regime_this_quarter_clear": 0.704,
+  "growth_quarter_by_horizon": {
+   "0": 0.649,
+   "1": 0.568,
+   "2": 0.583,
+   "3": 0.581,
+   "4": 0.51
+  },
+  "inflation_quarter_by_horizon": {
+   "0": 0.871,
+   "1": 0.711,
+   "2": 0.685,
+   "3": 0.648,
+   "4": 0.638
+  },
+  "cpi_month": {
+   "all": 0.897,
+   "strong": 1.0,
+   "good": 0.895,
+   "lean": 0.903,
+   "toss-up": 0.667
+  },
+  "growth_month": {
+   "h1": 0.85,
+   "h2": 0.793,
+   "h3": 0.814,
+   "nowcast": 0.905,
+   "strong": 1.0,
+   "good": 0.935,
+   "lean": 0.708,
+   "toss-up": 0.646,
+   "vs_quarter_gdp": 0.544,
+   "n": 367
+  }
+ },
+ "notes": [
+  {
+   "key": "inflation_next",
+   "title": "The next inflation print, Sep 2026",
+   "text": "+0.39% on the month, 3.45% year over year (up from 3.35%). Gasoline adds +0.20 points (pump prices are +4.4% this month so far), rents +0.08, everything else +0.10."
+  },
+  {
+   "key": "inflation_path",
+   "title": "The inflation path",
+   "text": "Inflation tops out at 3.58% in Nov 2026 and falls to 1.92% by May 2027. Much of the fall is arithmetic rather than forecast: the largest monthly price rises of the past year drop out of the twelve-month comparison one by one, and those months carry the strongest calls."
+  },
+  {
+   "key": "energy",
+   "title": "Oil and the pump",
+   "text": "Oil is $97 a barrel against $84 in Aug 2026, and the pump price is $4.24 a gallon. In the data since 2000, $1 on a barrel of oil has been worth about 0.03 points on inflation, and pump prices follow oil by a few weeks."
+  },
+  {
+   "key": "rents_wages",
+   "title": "Rents and wages",
+   "text": "Rents in the index follow new-lease rents with about a year's lag; those are up 2.5%, so rents add a steady 0.08 points a month. Wages are up 3.1%, which feeds services prices slowly."
+  },
+  {
+   "key": "growth_now",
+   "title": "Growth this quarter, Q3 2026",
+   "text": "About +2.4% annualized, estimated from jobs, industrial production, retail sales and jobless claims with 1 of 3 months in. That falls short of the +4.4% pace of the same quarter last year, so year-over-year growth slips to 1.6%."
+  },
+  {
+   "key": "growth_after",
+   "title": "After this quarter",
+   "text": "The model does not forecast GDP two to four quarters out; every method tried did worse than a constant. It assumes the economy's normal pace, 2.0% a year, adjusted for interest rates. Up or down is then decided by the bar to beat: year-over-year growth rises only in a quarter that grows faster than the same quarter a year earlier, and those bars are already published."
+  },
+  {
+   "key": "rates",
+   "title": "Interest rates",
+   "text": "The Fed funds rate was 3.64% through September 2026, and the market path reaches 4.63% by July 2027. Rate changes reach growth with a lag: about 0.4 points of annual growth per 1 point of change, two to six quarters later. The Fed cut 1.6 points over the last two years, so the cuts still help growth for now; the new hikes start to bite in Q3 2027."
+  },
+  {
+   "key": "consumer",
+   "title": "The consumer",
+   "text": "Consumer spending is about two thirds of GDP. Right now consumer spending is +2.1% on a year ago (normal against the last ten years); consumer confidence is 55 (very low against the last ten years); household wealth is +11.8% on a year ago (high against the last ten years); income after inflation is +0.5% (low against the last ten years); the saving rate is 3.0% of income (very low against the last ten years); the 30-year mortgage rate is 6.81%. Weak income after inflation is the soft spot: spending is being carried by a low saving rate, not by pay."
+  }
+ ]
 }
