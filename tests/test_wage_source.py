@@ -180,3 +180,27 @@ def test_the_feed_shows_the_tracker_but_the_model_still_runs_on_ahe():
     row2 = next(d for d in us_feed.drivers(bare) if d["key"] == "wages")
     assert row2["value"] == "+3.1% year over year"
     assert "Average hourly earnings" in row2["note"]
+
+
+def test_the_frozen_passthrough_is_research_only_and_off_by_default():
+    """Round 2 asked what the wage SERIES is worth once the per-vintage refit
+    stops absorbing its quirks. The override that answers it must not be on
+    in production, and must take both halves of the line or neither."""
+    cfg = btconfig.USVintageConfig()
+    assert cfg.supercore_passthrough_fixed is None
+    assert cfg.supercore_intercept_fixed is None
+
+    b = _bundle()
+    live = vt.build_vintage(b, "2026-09-20", cfg).diagnostics
+    frozen = vt.build_vintage(b, "2026-09-20", btconfig.USVintageConfig(
+        supercore_passthrough_fixed=0.7, supercore_intercept_fixed=0.4)).diagnostics
+    assert frozen["supercore_b"] == pytest.approx(0.7)
+    assert frozen["supercore_a"] == pytest.approx(0.4)
+    assert live["supercore_b"] != pytest.approx(0.7)
+    # shelter is deliberately untouched, so the override isolates supercore
+    assert frozen["shelter_b"] == pytest.approx(live["shelter_b"])
+
+    # half a pair is ignored rather than silently using a zero intercept
+    half = vt.build_vintage(b, "2026-09-20", btconfig.USVintageConfig(
+        supercore_passthrough_fixed=0.7)).diagnostics
+    assert half["supercore_b"] == pytest.approx(live["supercore_b"])

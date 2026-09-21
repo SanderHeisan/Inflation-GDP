@@ -308,6 +308,13 @@ def vintage_assumptions(bundle: USDataBundle, asof: pd.Timestamp,
     else:
         sh_b, sh_a = uconfig.SHELTER_PASSTHROUGH, uconfig.SHELTER_TREND_YOY
         sc_b, sc_a = uconfig.SUPERCORE_WAGE_PASSTHROUGH, 0.0
+    # Research override: a pass-through frozen outside the vintage, so the
+    # refit cannot quietly absorb what the wage series gets wrong. Shelter is
+    # untouched, which is the point - it isolates the supercore question.
+    if (cfg.supercore_passthrough_fixed is not None
+            and cfg.supercore_intercept_fixed is not None):
+        sc_b = float(cfg.supercore_passthrough_fixed)
+        sc_a = float(cfg.supercore_intercept_fixed)
 
     assumptions = {
         "wti_recent": float(wti.loc[m0]) if m0 in wti.index

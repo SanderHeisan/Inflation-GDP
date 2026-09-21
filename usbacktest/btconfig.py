@@ -48,6 +48,13 @@ class USVintageConfig:
     wage_pub_lag_days: int = WAGE_PUB_LAG_DAYS
     wage_tracker_pub_lag_days: int = WAGE_TRACKER_PUB_LAG_DAYS
     wage_source: str = "ahe"
+    # RESEARCH ONLY. Freeze the supercore pass-through instead of refitting it
+    # on each vintage, to ask what the wage SERIES is worth once the refit is
+    # no longer absorbing its quirks. Both must be set together; None leaves
+    # `self_calibrate` in charge. Never set in production: the refit is what
+    # keeps a composition-distorted series from reaching the projection.
+    supercore_passthrough_fixed: float | None = None
+    supercore_intercept_fixed: float | None = None
     rent_pub_lag_days: int = RENT_PUB_LAG_DAYS
     market_pub_lag_days: int = MARKET_PUB_LAG_DAYS
     # Per-indicator release lags for the GDP nowcast; defaults come from

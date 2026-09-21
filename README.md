@@ -380,6 +380,69 @@ rather than headline CPI, or true vintages for both series. Both arms here use t
 current vintage with truncation only, so neither gets revision-realistic treatment; that
 is an equal handicap, not a tilt.
 
+### Round 2: the fixed pass-through, which was supposed to rescue it
+
+Round 1's own explanation named the test that would overturn it, so it was run. Freeze
+the coefficient (`supercore_passthrough_fixed` / `supercore_intercept_fixed`, research
+only, off by default and leaving shelter untouched) and the wage series has to carry its
+own weight. Both coefficients are fitted once on the SAME pre-window months and then
+frozen, so neither series gets more history than the other, and nothing after the cut
+enters the fit.
+
+**It does not rescue the tracker. It makes the case against it stronger.**
+
+| frozen arms, 2017-01 to 2026-08 | average hourly earnings | tracker |
+|---|---|---|
+| CPI direction, one print ahead | 90.5% | 90.5% |
+| CPI error, MAE at 1 / 3 / 6 / 12 months | 0.128 / 0.437 / 0.765 / 1.444 | 0.130 / 0.451 / 0.799 / 1.515 |
+| Regime hit rate, horizons 0-4 | 0.596 / 0.387 / 0.407 / 0.391 / 0.353 | 0.588 / 0.378 / 0.389 / 0.391 / 0.333 |
+
+The direction call ties exactly: each series is right where the other is wrong on one
+month apiece. Average hourly earnings is better on error at every horizon and on the
+regime call at four of five. The tracker also fails the stability clause, 1.7 points
+worse in the first half of the window. **0 of 4. Still not a promotion.**
+
+Worth recording, because it is a trap this repo can fall into again: on the supercore
+block ALONE the frozen tracker looked clearly better, MAE 0.863 against 1.002. Being
+better at one of six CPI blocks did not survive into headline CPI. Block-level evidence
+is not evidence about the published call.
+
+### What the control arm found instead
+
+The same run compared frozen against refitted for each series, and turned up something
+nobody asked for: **freezing the supercore pass-through beats refitting it per vintage,
+on the series the model already uses.** Repeated at seven cut dates, each fitting before
+the cut and testing only after it:
+
+| fit through | AHE refit, MAE 12m | AHE frozen | AHE refit dir | AHE frozen dir |
+|---|---|---|---|---|
+| 2013 | 1.4629 | **1.4199** | 88.8% | **90.1%** |
+| 2014 | 1.3756 | **1.3348** | 90.0% | **91.4%** |
+| 2015 | 1.3890 | **1.3459** | 89.1% | **90.6%** |
+| 2016 | 1.4948 | **1.4440** | 89.7% | **90.5%** |
+| 2017 | 1.6517 | **1.5938** | 88.5% | **89.4%** |
+| 2018 | 1.7306 | **1.6669** | 88.0% | **89.1%** |
+| 2019 | 1.8607 | **1.7968** | 87.5% | **90.0%** |
+
+Seven of seven on error and seven of seven on direction. For the tracker the same test
+goes the other way, refit winning six of seven, and its direction call does not move at
+all. That resolves round 1's puzzle: average hourly earnings' LONG-RUN relationship with
+supercore is stable (the frozen b sits in 0.749-0.879 across every cut date), but the
+PER-VINTAGE refit was swinging across 0.101-0.852, fitting noise in short recent windows.
+Freezing it at the long-run value removes that noise. The tracker never had the problem,
+which is why freezing does nothing for it.
+
+**This is a lead, not a result, and it is NOT PROMOTED.** It came out of a control arm
+rather than a pre-registered hypothesis, and the cut dates were chosen as a round of
+years rather than by any rule. Promoting it needs its own round with its own bar: a
+rule for choosing and re-estimating the frozen coefficient (a long rolling window is the
+obvious candidate rather than a literal constant), the quarterly regime call scored as
+the target rather than watched, and the same treatment asked of the shelter pass-through,
+which is refitted the same way and may have the same problem.
+
+
+### Where it leaves the model
+
 The tracker is kept and **shown, not used**. `latest.json`'s `wages` driver row carries
 the matched-person number with average hourly earnings beside it and the job
 switcher/stayer split (`FRBATLWGT12MMUMHWGJSW` / `...JST`), because it is the better
