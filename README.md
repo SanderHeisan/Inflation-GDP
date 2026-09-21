@@ -325,6 +325,69 @@ is the weak regime for stocks, where health care, staples, Treasuries and gold l
 a handful of dozens of months each, so read the counts: nothing here is fitted, and none
 of it is a recommendation.
 
+## The wage input, and the round that tested it
+
+Core services ex shelter is the one CPI block built from wages:
+`supercore_yoy = a + b * wage_yoy`, with `a` and `b` refitted on each vintage's own
+published history (`usbacktest.vintage.estimate_supercore_passthrough`). The series
+behind `wage_yoy` is average hourly earnings (`CES0500000003`), a **mean** across
+whoever is on payrolls, so it moves when the composition of employment changes rather
+than when anyone is paid more. April 2020 printed +8.1% while the Atlanta Fed's
+matched-person tracker printed +3.7%: low-wage workers had been laid off, not given
+raises. Through 2022-24 the bias ran the other way, the tracker up to 2.5 points
+hotter. On the raw series the case for switching looks overwhelming: against services
+inflation on the 2015+ sample the tracker correlates 0.87 at a three to six month
+lead where average hourly earnings manages 0.48-0.51, and the two series' month-to-month
+**changes** correlate 0.05.
+
+So the swap was built and scored, point-in-time, 2017-01 to 2026-08, 116 month-end
+as-of dates. `USVintageConfig(wage_source="tracker")` feeds the block the Atlanta Fed
+Wage Growth Tracker (`FRBATLWGTUMHWGO`, published lag set to a deliberately
+conservative 20 days) instead, and the pass-through refits on whichever series is
+chosen. Pre-registered bar: the tracker replaces average hourly earnings only if the
+one-print-ahead CPI direction hit rate improves by at least 1.0 point on n >= 100, the
+projection error is no worse at every horizon, the quarterly regime call is not worse
+by more than 1.0 point, and neither half of the window is worse.
+
+**Verdict: 2 of 4. NOT A PROMOTION. The model stays on average hourly earnings.**
+
+| | average hourly earnings | tracker |
+|---|---|---|
+| CPI direction, one print ahead | 89.7% | 90.5% |
+| CPI error, MAE at 1 / 3 / 6 / 12 months | 0.131 / 0.451 / 0.795 / 1.495 | 0.130 / 0.452 / 0.801 / 1.510 |
+| Regime hit rate, horizons 0-4 | 0.596 / 0.378 / 0.389 / 0.381 / 0.333 | 0.596 / 0.378 / 0.389 / 0.390 / 0.333 |
+| Fitted pass-through across the 116 vintages | mean 0.581, sd 0.248, range 0.101-0.852 | mean 0.558, sd 0.120, range 0.455-0.733 |
+
+The direction figure fails the bar at +0.9 points, and the reason matters more than the
+number: **the two arms disagree on exactly one call in 116**, January 2022, where
+average hourly earnings predicted -0.013pp and the tracker +0.003pp. Both are zero to
+any honest reading. The median absolute change in the predicted month-ahead move across
+all 116 dates is 0.0044pp, and 10 of 580 quarterly regime calls differ.
+
+Why so little, when the raw series are so different? **The self-calibration had already
+absorbed it.** A series whose level is distorted by composition gets a compensating
+intercept and slope every time the block is refitted, so the distortion never reaches
+the projection. The last row of the table is the evidence: the tracker is clearly the
+better-behaved regressor, its fitted pass-through varying across a 0.28 band where
+average hourly earnings swings across 0.75 — and it still changes nothing, because the
+refit was doing that work already. The second reason is dilution: supercore is one of
+six CPI blocks, and shelter, which is larger, already carries new-lease rents at a
+year's lag.
+
+What would change the verdict: a fixed pass-through (then the series choice would matter
+a great deal, and the tracker would be the right one), a supercore-only scoring target
+rather than headline CPI, or true vintages for both series. Both arms here use the
+current vintage with truncation only, so neither gets revision-realistic treatment; that
+is an equal handicap, not a tilt.
+
+The tracker is kept and **shown, not used**. `latest.json`'s `wages` driver row carries
+the matched-person number with average hourly earnings beside it and the job
+switcher/stayer split (`FRBATLWGT12MMUMHWGJSW` / `...JST`), because it is the better
+read for a person even though it is not a better input for this model.
+`tests/test_wage_source.py` pins the switch, the publication lag, the fact that the
+tracker is a rate and is never differenced again, the fallback when it is not cached,
+and that the default is still average hourly earnings.
+
 ## The stats
 
 Walk-forward and point-in-time. At each as-of date the information set is

@@ -22,6 +22,14 @@ CPI_PUB_LAG_DAYS = 13
 GDP_PUB_LAG_DAYS = 28
 # Average hourly earnings ride the employment report: first Friday of M+1.
 WAGE_PUB_LAG_DAYS = 8
+# The Atlanta Fed Wage Growth Tracker is built from the same CPS microdata but
+# published after it. 20 days is conservative on purpose: understating what was
+# knowable can only handicap the tracker against AHE, never flatter it.
+WAGE_TRACKER_PUB_LAG_DAYS = 20
+# Which wage series drives the supercore block: 'ahe' (average hourly
+# earnings, the published basis) or 'tracker' (the Atlanta Fed Wage Growth
+# Tracker). The passthrough is refitted on whichever is chosen, per vintage.
+WAGE_SOURCES = ("ahe", "tracker")
 # Zillow publishes ZORI for month M around the middle of M+1.
 RENT_PUB_LAG_DAYS = 20
 # WTI and the broad dollar index are daily. The model consumes monthly
@@ -38,6 +46,8 @@ class USVintageConfig:
     cpi_pub_lag_days: int = CPI_PUB_LAG_DAYS
     gdp_pub_lag_days: int = GDP_PUB_LAG_DAYS
     wage_pub_lag_days: int = WAGE_PUB_LAG_DAYS
+    wage_tracker_pub_lag_days: int = WAGE_TRACKER_PUB_LAG_DAYS
+    wage_source: str = "ahe"
     rent_pub_lag_days: int = RENT_PUB_LAG_DAYS
     market_pub_lag_days: int = MARKET_PUB_LAG_DAYS
     # Per-indicator release lags for the GDP nowcast; defaults come from

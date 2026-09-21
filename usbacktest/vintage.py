@@ -41,6 +41,7 @@ from usmodel import config as uconfig, gdp as gdp_mod, nowcast, rates
 from usmodel.data_bundle import USDataBundle
 from usmodel.fetch_data_us import INDICATOR_PUB_LAG_DAYS
 
+from . import btconfig
 from .btconfig import USVintageConfig
 
 
@@ -148,17 +149,23 @@ def estimate_shelter_passthrough(cpi_shelter: pd.Series,
 
 
 def estimate_supercore_passthrough(cpi_supercore: pd.Series,
-                                   wages: pd.Series,
+                                   wage_growth: pd.Series,
                                    default: float
                                    = uconfig.SUPERCORE_WAGE_PASSTHROUGH
                                    ) -> tuple[float, float]:
-    """Same idea for core services ex shelter against average hourly
-    earnings growth: supercore_yoy = a + b * wage_yoy, fitted on published
-    history only."""
-    if cpi_supercore is None or wages is None:
+    """Same idea for core services ex shelter against wage growth:
+    supercore_yoy = a + b * wage_yoy, fitted on published history only.
+
+    `wage_growth` is a series ALREADY IN PERCENT, so the caller decides what
+    "wage growth" means - a 12-month change of the average-hourly-earnings
+    index, or the Atlanta Fed tracker, which is published as a rate. The
+    coefficient is refitted per vintage either way, so swapping the series
+    swaps the fit with it rather than carrying a constant tuned to the
+    other one."""
+    if cpi_supercore is None or wage_growth is None:
         return default, 0.0
     sc = quads.calendar_pct_change(cpi_supercore, 12)
-    wg = quads.calendar_pct_change(wages, 12)
+    wg = pd.Series(wage_growth).astype(float)
     df = pd.concat({"y": sc, "x": wg}, axis=1).dropna()
     if len(df) < 36 or float(df["x"].var()) < 1e-6:
         return default, 0.0
@@ -210,6 +217,39 @@ def _observed_then_carried(series: pd.Series, anchor_month: pd.Period,
     return path
 
 
+def wage_growth_vintage(bundle: USDataBundle, asof: pd.Timestamp,
+                        cfg: USVintageConfig) -> tuple[pd.Series, str]:
+    """The wage-growth series in percent as published at `asof`, and which
+    source it came from.
+
+    'ahe' is the published basis: the 12-month change of average hourly
+    earnings, a mean across whoever is on payrolls, so it moves when the
+    COMPOSITION of employment changes (April 2020: +8.1% with nobody given a
+    raise). 'tracker' is the Atlanta Fed Wage Growth Tracker, the median
+    12-month growth of individuals observed in both periods, which is
+    already a rate and needs no differencing. Falling back to AHE when the
+    tracker is absent keeps a vintage before the tracker's history, or a
+    checkout without the file, on the published basis rather than failing.
+    """
+    want = str(getattr(cfg, "wage_source", "ahe") or "ahe").lower()
+    if want == "tracker":
+        tracker = truncate(getattr(bundle, "wage_tracker", None), asof,
+                           getattr(cfg, "wage_tracker_pub_lag_days",
+                                   btconfig.WAGE_TRACKER_PUB_LAG_DAYS))
+        if tracker is not None and len(tracker) >= 36:
+            return tracker.astype(float), "tracker"
+    ahe = truncate(bundle.wages, asof, cfg.wage_pub_lag_days)
+    return quads.calendar_pct_change(ahe, 12).dropna(), "ahe"
+
+
+def _last_clipped(series: pd.Series, default: float,
+                  lo: float, hi: float) -> float:
+    """The last published value of a series that is already a rate."""
+    if series is None or not len(series):
+        return default
+    return float(np.clip(float(series.iloc[-1]), lo, hi))
+
+
 def _yoy_last(series: pd.Series, default: float,
               lo: float, hi: float) -> float:
     if series is None or len(series) < 13:
@@ -234,7 +274,7 @@ def vintage_assumptions(bundle: USDataBundle, asof: pd.Timestamp,
                     market_lag)
     cpi_gasoline = truncate(getattr(bundle, "cpi_gasoline", None), asof,
                             cfg.cpi_pub_lag_days)
-    wages = truncate(bundle.wages, asof, cfg.wage_pub_lag_days)
+    wage_growth, wage_source = wage_growth_vintage(bundle, asof, cfg)
     rent = truncate(bundle.market_rent, asof, cfg.rent_pub_lag_days)
     cpi_food = truncate(bundle.cpi_food, asof, cfg.cpi_pub_lag_days)
     cpi_shelter = truncate(bundle.cpi_shelter, asof, cfg.cpi_pub_lag_days)
@@ -258,13 +298,13 @@ def vintage_assumptions(bundle: USDataBundle, asof: pd.Timestamp,
                  if not pump.empty and m0 in pump.index else {})
     gas_seasonal, gas_slope = estimate_gasoline_seasonal(cpi_gasoline, pump)
 
-    wage_yoy = _yoy_last(wages, 3.5, 0.0, 9.0)
+    wage_yoy = _last_clipped(wage_growth, 3.5, 0.0, 9.0)
     rent_yoy = _yoy_last(rent, uconfig.SHELTER_TREND_YOY, -6.0, 20.0)
     food_yoy = _yoy_last(cpi_food, uconfig.FOOD_TREND_YOY, -2.0, 14.0)
 
     if cfg.self_calibrate:
         sh_b, sh_a = estimate_shelter_passthrough(cpi_shelter, rent)
-        sc_b, sc_a = estimate_supercore_passthrough(cpi_supercore, wages)
+        sc_b, sc_a = estimate_supercore_passthrough(cpi_supercore, wage_growth)
     else:
         sh_b, sh_a = uconfig.SHELTER_PASSTHROUGH, uconfig.SHELTER_TREND_YOY
         sc_b, sc_a = uconfig.SUPERCORE_WAGE_PASSTHROUGH, 0.0
@@ -297,7 +337,8 @@ def vintage_assumptions(bundle: USDataBundle, asof: pd.Timestamp,
         "gasoline_pump_slope": gas_slope,
         "shelter_b": sh_b, "shelter_a": sh_a,
         "supercore_b": sc_b, "supercore_a": sc_a,
-        "wage_yoy": wage_yoy, "market_rent_yoy": rent_yoy,
+        "wage_yoy": wage_yoy, "wage_source": wage_source,
+        "market_rent_yoy": rent_yoy,
         "wti_anchor": assumptions["wti_recent"],
         "n_rent_obs": len(rent),
     }

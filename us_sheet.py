@@ -64,6 +64,14 @@ HEDGEYE_MONTHLY_ASOF = "mid-Sep 2026"
 FAST_BITE_COEF = -0.27
 
 
+def _last_float(series) -> float | None:
+    """The last value of an optional cached series, or None."""
+    try:
+        return float(series.iloc[-1]) if series is not None and len(series) else None
+    except (TypeError, ValueError, AttributeError):
+        return None
+
+
 def ann(qoq_pct: float) -> float:
     return ((1 + qoq_pct / 100) ** 4 - 1) * 100
 
@@ -313,7 +321,18 @@ def build() -> dict:
             "mg_last": str(mg_last) if mg_last is not None else None, "hedgeye_monthly_asof": HEDGEYE_MONTHLY_ASOF,
             "wti_last_cpi": float(v.assumptions["wti_recent"]), "wti_now": float(wti_m.iloc[-1]), "pump_now": float(pump_m.iloc[-1]),
             "pump_mom": float(pump_m.iloc[-1] / pump_m.iloc[-2] - 1) * 100, "rent_yoy": float(d["market_rent_yoy"]),
-            "wage_yoy": float(d["wage_yoy"]), "last_cpi_yoy": float(yoy[last_m]), "filled": b.filled.get("cpi", []),
+            "wage_yoy": float(d["wage_yoy"]), "wage_source": str(d.get("wage_source", "ahe")),
+            # The Atlanta Fed Wage Growth Tracker and its two cuts, for the
+            # reader. The model does not run on them (the 2026-09-21 round
+            # scored the swap and it changed one call in 116), but they are
+            # the honest read of what wages are doing: a median across
+            # individuals seen in both periods, so a change in WHO is
+            # employed cannot move it the way it moves average hourly
+            # earnings. None when the series are not cached.
+            "wage_tracker_yoy": _last_float(b.wage_tracker),
+            "wage_switcher_yoy": _last_float(b.wage_switcher),
+            "wage_stayer_yoy": _last_float(b.wage_stayer),
+            "last_cpi_yoy": float(yoy[last_m]), "filled": b.filled.get("cpi", []),
             "rate_channel": bool(ucfg.RATE_CHANNEL_ENABLED)}
     # peak / trough of the projected inflation path
     proj = [mm for mm in months if not mm["realized"]]

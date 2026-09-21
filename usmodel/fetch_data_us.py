@@ -73,6 +73,15 @@ FRED_SERIES = {
     "wti":           ("DCOILWTICO", "D"),
     "dollar":        ("DTWEXBGS", "D"),
     "wages":         ("CES0500000003", "M"),
+    # The Atlanta Fed Wage Growth Tracker: the median 12-month wage growth of
+    # individuals observed in the CPS in BOTH periods, so a change in WHO is
+    # employed cannot move it. Average hourly earnings is a mean over whoever
+    # happens to be on payrolls, which is why it printed 8.1% in April 2020
+    # while the tracker printed 3.7%: low-wage workers had been laid off, not
+    # given raises. Already a growth rate in percent, not an index.
+    "wage_tracker":  ("FRBATLWGTUMHWGO", "M"),          # overall, unweighted
+    "wage_switcher": ("FRBATLWGT12MMUMHWGJSW", "M"),    # job switchers
+    "wage_stayer":   ("FRBATLWGT12MMUMHWGJST", "M"),    # job stayers
     "cpi_shelter":   ("CUSR0000SAH1", "M"),
     "cpi_gasoline":  ("CUSR0000SETB01", "M"),
     "cpi_food":      ("CPIUFDSL", "M"),
@@ -154,6 +163,10 @@ INDICATOR_PUB_LAG_DAYS = {
     "fed_funds": 0, "treasury_10y": 0, "mortgage_30y": 0,
     "household_net_worth": 75,
     "real_income_ex_transfers": 30, "hours_all": 8, "bbk_gdp": 75, "wei": 7,
+    # The Atlanta Fed publishes the tracker after the employment report it is
+    # built from. 20 days is deliberately conservative: understating what was
+    # knowable can only handicap the tracker in a comparison against AHE.
+    "wage_tracker": 20, "wage_switcher": 20, "wage_stayer": 20,
 }
 
 DEFAULT_DATA_DIR = Path(__file__).resolve().parent.parent / "data" / "us"

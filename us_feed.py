@@ -212,7 +212,23 @@ def drivers(sheet: dict) -> List[Dict[str, str]]:
         f"Adds {c.get('gasoline', 0.0):+.2f} points to {nxt['label']} inflation; pump prices follow oil by a few weeks.")
     add("rents", "Market rents, new leases", f"{M['rent_yoy']:+.1f}% year over year", "", "",
         "Rents in the index follow with about a year's lag, about 0.08 points a month.")
-    add("wages", "Wages", f"{M['wage_yoy']:+.1f}% year over year", "", "", "Feeds services prices slowly.")
+    # Wages: the matched-person tracker is the honest read (average hourly
+    # earnings is a mean over whoever is on payrolls, so it moves when the
+    # composition of employment changes). The model still runs on average
+    # hourly earnings: the 2026-09-21 round scored the swap point-in-time
+    # and it moved one call in 116, because the pass-through is refitted on
+    # whichever series feeds it. So the tracker is shown, not used.
+    trk, sw, st = M.get("wage_tracker_yoy"), M.get("wage_switcher_yoy"), M.get("wage_stayer_yoy")
+    if trk is None:
+        add("wages", "Wages", f"{M['wage_yoy']:+.1f}% year over year", "", "",
+            "Average hourly earnings. Feeds services prices slowly.")
+    else:
+        prem = (f"job switchers {sw:+.1f}%, stayers {st:+.1f}%"
+                if sw is not None and st is not None else "")
+        add("wages", "Wages, same people year on year", f"{trk:+.1f}% year over year",
+            f"average hourly earnings {M['wage_yoy']:+.1f}%", prem,
+            "Median raise for people employed in both periods, so layoffs cannot flatter it. "
+            "Feeds services prices slowly.")
     add("growth_pace", f"Growth pace, {now['label']}", f"{now['qoq_ann']:+.1f}% annualized",
         f"bar to beat {now['bar_ann']:+.1f}%", "",
         f"{M['k']} of 3 months in; year-over-year growth {'rises' if float(now['dg']) > 0 else 'slips'} to {now['g_yoy']:.1f}%.")
