@@ -451,6 +451,93 @@ read for a person even though it is not a better input for this model.
 tracker is a rate and is never differenced again, the fallback when it is not cached,
 and that the default is still average hourly earnings.
 
+## Surveys, the dead ISM weight, and the peak that was not one
+
+`GDP_NOWCAST_WEIGHTS` carried an `ism` slot at 0.30 from the day the model was written
+and it never fired once. ISM restricted redistribution, FRED dropped the NAPM series,
+and nothing ever supplied one, so `gdp.nowcast_qoq` renormalised over its three real
+slots and a reader of the config was told a third of the growth fallback rested on an
+input that did not exist. It is gone. Removing it is numerically inert, and
+`tests/test_pmi_surveys.py` pins that rather than asking anyone to take it on trust. The
+slot was doubly dead: the live path is the ridge nowcast, and the weighted blend it sat
+in is only the fallback for vintages too early to fit.
+
+The free substitutes are the regional Fed manufacturing surveys, the same family of
+diffusion index and what forecasters use to nowcast the ISM itself. They are also the
+**timeliest** input available, published during the month they describe where payrolls
+land eight days after it and industrial production seventeen:
+
+| series | FRED id | from | publication lag used |
+|---|---|---|---|
+| Philadelphia, general activity | `GACDFSA066MSFRBPHI` | May 1968 | 0 |
+| Philadelphia, new orders | `NOCDFSA066MSFRBPHI` | May 1968 | 0 |
+| Empire State, general activity | `GACDISA066MSFRBNY` | Jul 2001 | 0 |
+| Dallas, business activity | `BACTSAMFRBDAL` | Jun 2004 | 0 |
+
+A lag of zero means "known once the month is over", which at the backtest's month-end
+as-of dates is exact and for a live run understates their timeliness. They enter the
+nowcast as LEVELS (`nowcast.SURVEY_SPEC`): a diffusion index is already a rate of change
+in disguise, so differencing it would ask for the change in the change.
+`USVintageConfig(nowcast_spec=...)` picks the panel: `base` is production, `surveys` adds
+all four, `philly` adds only the longest.
+
+### They make the size better and the direction worse
+
+Scored point-in-time, 2017-01 to 2026-08, 114 nowcasts. Pre-registered bar: the nowcast
+error improves, growth direction at horizon 0 improves by at least 2.0 points, the regime
+call is not worse by more than 1.0 point at any horizon, and neither half of the window
+is worse.
+
+| | base | + Philadelphia | + all four |
+|---|---|---|---|
+| Nowcast QoQ, MAE | 0.6609 | 0.6521 | 0.6526 |
+| Nowcast QoQ, RMSE | 1.3189 | 1.2480 | **1.1652** |
+| Growth direction, horizon 0 | **0.6667** | 0.6491 | 0.6053 |
+| Regime hit rate, horizon 0 | **0.5965** | 0.5789 | 0.5263 |
+| Growth direction, first / second half | 61.4 / 71.9 | 57.9 / 71.9 | 57.9 / 63.2 |
+
+**0 of 4. NOT A PROMOTION.** The surveys cut the nowcast's RMSE by 12%, so they genuinely
+help with the SIZE of a quarter, mostly by shrinking the large misses. They make the SIGN
+worse at every variant, and the sign is the only half the regime call uses. A more
+accurate level with a worse direction is worth nothing here. Horizons 1 to 4 barely move,
+which is expected: past the nowcast quarter this model does not forecast GDP at all.
+
+### The peak claim, tested
+
+The prompt for all this was a cycle-high PMI print and the inference that growth has
+therefore peaked and the cycle turns down. That is testable. Three point-in-time readings
+of "peaked", each against the question the model cares about: does the monthly growth
+measure's year-over-year rate come in LOWER k months later?
+
+Unconditionally it does 48.9% of the time at one month, 49.3% at three and six, 52.0% at
+twelve. A coin flip. Conditional on a survey standing at a twelve-month high:
+
+| survey (edge over base rate) | k=1 | k=3 | k=6 | k=12 | fires |
+|---|---|---|---|---|---|
+| Philadelphia, general activity | -12.9 | -21.3 | -9.3 | -12.0 | 25 |
+| Philadelphia, new orders | -5.5 | -19.3 | -12.7 | -15.4 | 30 |
+| Empire State | -19.2 | -30.8 | -27.1 | -18.7 | 27 |
+| Dallas | -11.4 | -30.6 | -27.5 | -14.5 | 32 |
+
+**Every survey, every horizon, the wrong sign for the thesis.** Eleven of twelve cells for
+"rolled over" (fell after a local high) go the same way. A survey at a twelve-month high
+has been followed by growth CONTINUING to accelerate more often than the base rate, not
+less: three months after an Empire State local high, growth was lower only 18.5% of the
+time against 49.3% unconditionally. At these horizons these indices carry momentum, not
+mean reversion into a growth decline.
+
+One cell supports the thesis and is worth naming rather than burying: Empire State in the
+top quintile of its trailing ten years is followed by lower growth twelve months later
+75.8% of the time against 52.0% base, on 33 observations. It is one survey at one horizon,
+it disagrees with the same survey's local-high result, and it is not enough to act on.
+
+Bounds on all of it: the sample is 2008-2026, 223 months, containing two downturns, so
+genuine pre-recession survey peaks are nearly absent from it; the windows overlap, so the
+effective sample is far smaller than 223; and a twelve-month high is a weak proxy for a
+cycle peak, which is only identifiable afterwards. What the test does establish is the
+narrower and more useful claim: **on this data, a high or newly-peaking survey is not by
+itself evidence that growth is about to turn down.**
+
 ## The stats
 
 Walk-forward and point-in-time. At each as-of date the information set is

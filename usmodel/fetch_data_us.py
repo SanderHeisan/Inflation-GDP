@@ -96,6 +96,15 @@ FRED_SERIES = {
     "retail":        ("RSAFS", "M"),       # retail & food services sales ($m)
     "claims":        ("ICSA", "W"),        # initial jobless claims, weekly
     "cfnai":         ("CFNAI", "M"),       # Chicago Fed national activity index
+    # Regional Fed manufacturing surveys: diffusion indices of the same family
+    # as the ISM/PMI the config's dead `ism` weight was written for. ISM
+    # restricted redistribution and FRED dropped the NAPM series; S&P Global's
+    # PMI is licensed too. These are free, long, and are what forecasters use
+    # to nowcast the ISM in the first place. Philadelphia runs from 1968.
+    "philly_fed":    ("GACDFSA066MSFRBPHI", "M"),   # Philadelphia, general activity
+    "philly_orders": ("NOCDFSA066MSFRBPHI", "M"),   # Philadelphia, new orders
+    "empire_fed":    ("GACDISA066MSFRBNY", "M"),    # Empire State, general activity
+    "dallas_fed":    ("BACTSAMFRBDAL", "M"),        # Dallas, business activity
     "sentiment":     ("UMCSENT", "M"),     # U. Michigan consumer sentiment
     "yield_curve":   ("T10Y3M", "D"),      # 10y-3m spread, daily
     "hours":         ("AWHMAN", "M"),      # avg weekly hours, manufacturing
@@ -167,6 +176,12 @@ INDICATOR_PUB_LAG_DAYS = {
     # built from. 20 days is deliberately conservative: understating what was
     # knowable can only handicap the tracker in a comparison against AHE.
     "wage_tracker": 20, "wage_switcher": 20, "wage_stayer": 20,
+    # The surveys are published DURING the month they describe (Philadelphia
+    # the third Thursday, Empire State around the 15th, Dallas near month
+    # end), so a month-end run has that month already. Zero means "known once
+    # the month is over", which at the backtest's month-end as-of dates is
+    # exactly right and for a live run understates the timeliness slightly.
+    "philly_fed": 0, "philly_orders": 0, "empire_fed": 0, "dallas_fed": 0,
 }
 
 DEFAULT_DATA_DIR = Path(__file__).resolve().parent.parent / "data" / "us"

@@ -95,9 +95,18 @@ FOOD_TREND_YOY = 2.5
 # GDP nowcast blend (reuses quadmap.gdp.project_gdp). US indicators map onto
 # the same generic slots; calibrate the multipliers on realized QoQ history.
 # ---------------------------------------------------------------------------
+# NO `ism` SLOT. It carried 0.30 here from the day the model was written and
+# never fired once: ISM restricted redistribution, FRED dropped the NAPM
+# series, and nothing ever supplied one, so the blend renormalised over the
+# three real slots and a reader of this file was told a third of the fallback
+# rested on an input that did not exist. Removing it is numerically inert
+# (tests/test_pmi_surveys.py proves it). The diffusion indices that ARE free -
+# the regional Fed manufacturing surveys - were scored in their place on
+# 2026-09-24 and made the growth DIRECTION call worse, so they are available
+# to the nowcast panel as a research spec and are not in production. See the
+# README's survey section.
 GDP_NOWCAST_WEIGHTS = {
     "momentum":          0.35,   # trailing QoQ SAAR momentum
-    "ism":               0.30,   # ISM manufacturing+services -> QoQ proxy
     "payrolls":          0.20,   # nonfarm payroll momentum
     "retail":            0.15,   # real retail sales momentum
 }

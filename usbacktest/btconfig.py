@@ -55,6 +55,11 @@ class USVintageConfig:
     # keeps a composition-distorted series from reaching the projection.
     supercore_passthrough_fixed: float | None = None
     supercore_intercept_fixed: float | None = None
+    # Which feature panel the GDP nowcast regresses on: 'base' is production,
+    # 'surveys' adds the four regional Fed diffusion indices, 'philly' adds
+    # only the longest of them, 'extended' is the leading block the README
+    # already scored as worthless. See usmodel.nowcast.NOWCAST_SPECS.
+    nowcast_spec: str = "base"
     rent_pub_lag_days: int = RENT_PUB_LAG_DAYS
     market_pub_lag_days: int = MARKET_PUB_LAG_DAYS
     # Per-indicator release lags for the GDP nowcast; defaults come from

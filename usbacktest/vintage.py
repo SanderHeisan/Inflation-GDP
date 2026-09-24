@@ -455,7 +455,9 @@ def build_vintage(bundle: USDataBundle, asof: pd.Timestamp | str,
             diagnostics.update({"trend_qoq_pct": conv[0] * 100,
                                 "convergence": conv[1]})
     if cfg.use_indicator_nowcast and panel:
-        fit = nowcast.fit_nowcast(gdp, panel, gdp.index[-1] + 1)
+        spec = nowcast.NOWCAST_SPECS.get(
+            str(getattr(cfg, "nowcast_spec", "base")), nowcast.FEATURE_SPEC)
+        fit = nowcast.fit_nowcast(gdp, panel, gdp.index[-1] + 1, spec=spec)
         if fit is not None:
             indicators["fitted_qoq_pct"] = fit["qoq_pct"]
             diagnostics.update({"nowcast_qoq_pct": fit["qoq_pct"],

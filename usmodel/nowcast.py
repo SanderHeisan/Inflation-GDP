@@ -72,6 +72,27 @@ LEADING_SPEC = (
 )
 EXTENDED_SPEC = FEATURE_SPEC + LEADING_SPEC
 
+# The regional Fed manufacturing surveys, as levels: a diffusion index is
+# already a rate of change in disguise (the share of firms reporting
+# improvement), so differencing it would ask for the change in the change.
+# Kept as its own spec so the panel with and without them is one switch,
+# which is what makes the question answerable rather than arguable.
+SURVEY_SPEC = (
+    ("philly_fed",    "lvl"),
+    ("philly_orders", "lvl"),
+    ("empire_fed",    "lvl"),
+    ("dallas_fed",    "lvl"),
+)
+BASE_PLUS_SURVEYS = FEATURE_SPEC + SURVEY_SPEC
+PHILLY_ONLY = FEATURE_SPEC + (("philly_fed", "lvl"),)
+
+NOWCAST_SPECS = {
+    "base": FEATURE_SPEC,
+    "surveys": BASE_PLUS_SURVEYS,
+    "philly": PHILLY_ONLY,
+    "extended": EXTENDED_SPEC,
+}
+
 MIN_TRAIN_QUARTERS = 40      # ~10 years before the regression is trusted
 RIDGE_LAMBDA = 1.0           # on standardized features
 
