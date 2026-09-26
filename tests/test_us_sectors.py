@@ -48,6 +48,38 @@ def test_cell_stats_are_plain_averages_with_counts_and_excess():
     assert clear[(clear.regime == 0) & (clear.fund == "SPY")].iloc[0].n == 24
 
 
+def test_beating_the_index_is_counted_not_derived_from_the_average():
+    """The website's headline question is how OFTEN a fund was ahead of the
+    index in a regime, not by how much, and the two can disagree: a fund can
+    win rarely and hugely. `beat` is the share of periods ahead, carried with
+    its own numerator and denominator because a fund that launched late has
+    fewer periods than the regime does, so a count reconstructed from the
+    rate would be wrong for exactly the funds most likely to confuse."""
+    idx = pd.period_range("2020-01", periods=12, freq="M")
+    regime = pd.Series([2] * 12, index=idx)
+    # XLK is ahead of SPY in 3 months of 12 and miles ahead in those, so its
+    # AVERAGE excess is positive while it loses three quarters of the time.
+    spy = np.zeros(12)
+    xlk = np.array([12.0, -1.0, -1.0, -1.0, 12.0, -1.0, -1.0, -1.0, 12.0, -1.0, -1.0, -1.0])
+    # XLU launches half way through and beats SPY in every month it exists
+    xlu = np.concatenate([np.full(6, np.nan), np.full(6, 1.0)])
+    rets = pd.DataFrame({"SPY": spy, "XLK": xlk, "XLU": xlu}, index=idx)
+    st = us.cell_stats(rets, regime, basis="t")
+    k = st[(st.regime == 2) & (st.fund == "XLK")].iloc[0]
+    assert k.excess > 0 and k.beat == 0.25 and k.beat_n == 3 and k.beat_d == 12
+    u = st[(st.regime == 2) & (st.fund == "XLU")].iloc[0]
+    assert u.beat == 1.0 and u.beat_n == 6 and u.beat_d == 6      # its own denominator, not 12
+    assert pd.isna(st[(st.regime == 2) & (st.fund == "SPY")].iloc[0].beat)
+
+    blk = us._block(st, regime, ["XLK", "XLU"], top=2)
+    best = {b["fund"]: b for b in blk["regimes"]["2"]["best"]}
+    assert best["XLK"]["beat"] == 0.25 and best["XLK"]["beat_n"] == 3 and best["XLK"]["beat_d"] == 12
+    table = {row["fund"]: row for row in blk["table"]}
+    assert table["XLU"]["r2_beat_n"] == 6 and table["XLU"]["r2_beat_d"] == 6
+    assert table["SPY"]["r2_beat_n"] is None and table["SPY"]["r2_beat_d"] is None
+    assert json.dumps(blk)
+
+
 def test_the_block_ranks_funds_by_excess_over_spy_per_regime():
     rets, regime, close = _frame()
     st = us.cell_stats(rets, regime, close, basis="t")

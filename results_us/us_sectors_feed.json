@@ -1,5 +1,5 @@
 {
- "generated": "2026-09-20",
+ "generated": "2026-09-26",
  "funds": {
   "SPY": "S&P 500",
   "XLE": "Energy",
@@ -32,7 +32,10 @@
       "mean": 2.3,
       "excess": 0.91,
       "hit": 0.71,
-      "n": 58
+      "n": 58,
+      "beat": 0.71,
+      "beat_n": 41,
+      "beat_d": 58
      },
      {
       "fund": "XLI",
@@ -40,7 +43,10 @@
       "mean": 1.96,
       "excess": 0.57,
       "hit": 0.66,
-      "n": 58
+      "n": 58,
+      "beat": 0.6,
+      "beat_n": 35,
+      "beat_d": 58
      },
      {
       "fund": "XLK",
@@ -48,7 +54,10 @@
       "mean": 1.87,
       "excess": 0.48,
       "hit": 0.66,
-      "n": 58
+      "n": 58,
+      "beat": 0.5,
+      "beat_n": 29,
+      "beat_d": 58
      }
     ],
     "worst": [
@@ -58,7 +67,10 @@
       "mean": 0.05,
       "excess": -1.34,
       "hit": 0.45,
-      "n": 58
+      "n": 58,
+      "beat": 0.34,
+      "beat_n": 20,
+      "beat_d": 58
      },
      {
       "fund": "IEF",
@@ -66,7 +78,10 @@
       "mean": 0.64,
       "excess": -0.75,
       "hit": 0.67,
-      "n": 58
+      "n": 58,
+      "beat": 0.38,
+      "beat_n": 22,
+      "beat_d": 58
      },
      {
       "fund": "XLP",
@@ -74,7 +89,10 @@
       "mean": 0.74,
       "excess": -0.64,
       "hit": 0.57,
-      "n": 58
+      "n": 58,
+      "beat": 0.45,
+      "beat_n": 26,
+      "beat_d": 58
      }
     ]
    },
@@ -89,7 +107,10 @@
       "mean": 2.66,
       "excess": 0.96,
       "hit": 0.67,
-      "n": 55
+      "n": 55,
+      "beat": 0.56,
+      "beat_n": 31,
+      "beat_d": 55
      },
      {
       "fund": "XLI",
@@ -97,7 +118,10 @@
       "mean": 1.79,
       "excess": 0.09,
       "hit": 0.65,
-      "n": 55
+      "n": 55,
+      "beat": 0.51,
+      "beat_n": 28,
+      "beat_d": 55
      },
      {
       "fund": "XLY",
@@ -105,7 +129,10 @@
       "mean": 1.74,
       "excess": 0.05,
       "hit": 0.65,
-      "n": 55
+      "n": 55,
+      "beat": 0.45,
+      "beat_n": 25,
+      "beat_d": 55
      }
     ],
     "worst": [
@@ -115,7 +142,10 @@
       "mean": 0.07,
       "excess": -1.63,
       "hit": 0.42,
-      "n": 55
+      "n": 55,
+      "beat": 0.33,
+      "beat_n": 18,
+      "beat_d": 55
      },
      {
       "fund": "TLT",
@@ -123,7 +153,10 @@
       "mean": 0.15,
       "excess": -1.54,
       "hit": 0.47,
-      "n": 55
+      "n": 55,
+      "beat": 0.27,
+      "beat_n": 15,
+      "beat_d": 55
      },
      {
       "fund": "GLD",
@@ -131,7 +164,10 @@
       "mean": 0.64,
       "excess": -1.06,
       "hit": 0.51,
-      "n": 55
+      "n": 55,
+      "beat": 0.4,
+      "beat_n": 22,
+      "beat_d": 55
      }
     ]
    },
@@ -146,7 +182,10 @@
       "mean": 1.99,
       "excess": 1.16,
       "hit": 0.67,
-      "n": 58
+      "n": 58,
+      "beat": 0.53,
+      "beat_n": 31,
+      "beat_d": 58
      },
      {
       "fund": "XLK",
@@ -154,7 +193,10 @@
       "mean": 1.26,
       "excess": 0.42,
       "hit": 0.62,
-      "n": 58
+      "n": 58,
+      "beat": 0.53,
+      "beat_n": 31,
+      "beat_d": 58
      },
      {
       "fund": "XLC",
@@ -162,7 +204,10 @@
       "mean": 1.03,
       "excess": 0.4,
       "hit": 0.67,
-      "n": 21
+      "n": 21,
+      "beat": 0.67,
+      "beat_n": 14,
+      "beat_d": 21
      }
     ],
     "worst": [
@@ -172,7 +217,10 @@
       "mean": -0.59,
       "excess": -1.43,
       "hit": 0.38,
-      "n": 58
+      "n": 58,
+      "beat": 0.36,
+      "beat_n": 21,
+      "beat_d": 58
      },
      {
       "fund": "IEF",
@@ -180,7 +228,10 @@
       "mean": -0.14,
       "excess": -0.98,
       "hit": 0.45,
-      "n": 58
+      "n": 58,
+      "beat": 0.33,
+      "beat_n": 19,
+      "beat_d": 58
      },
      {
       "fund": "XLU",
@@ -188,7 +239,10 @@
       "mean": 0.3,
       "excess": -0.53,
       "hit": 0.57,
-      "n": 58
+      "n": 58,
+      "beat": 0.5,
+      "beat_n": 29,
+      "beat_d": 58
      }
     ]
    },
@@ -203,7 +257,10 @@
       "mean": 1.0,
       "excess": 0.9,
       "hit": 0.61,
-      "n": 51
+      "n": 51,
+      "beat": 0.61,
+      "beat_n": 31,
+      "beat_d": 51
      },
      {
       "fund": "XLP",
@@ -211,7 +268,10 @@
       "mean": 0.84,
       "excess": 0.74,
       "hit": 0.63,
-      "n": 51
+      "n": 51,
+      "beat": 0.61,
+      "beat_n": 31,
+      "beat_d": 51
      },
      {
       "fund": "TLT",
@@ -219,7 +279,10 @@
       "mean": 0.51,
       "excess": 0.41,
       "hit": 0.57,
-      "n": 51
+      "n": 51,
+      "beat": 0.47,
+      "beat_n": 24,
+      "beat_d": 51
      }
     ],
     "worst": [
@@ -229,7 +292,10 @@
       "mean": -0.32,
       "excess": -0.65,
       "hit": 0.5,
-      "n": 28
+      "n": 28,
+      "beat": 0.43,
+      "beat_n": 12,
+      "beat_d": 28
      },
      {
       "fund": "XLY",
@@ -237,7 +303,10 @@
       "mean": -0.42,
       "excess": -0.52,
       "hit": 0.49,
-      "n": 51
+      "n": 51,
+      "beat": 0.39,
+      "beat_n": 20,
+      "beat_d": 51
      },
      {
       "fund": "XLF",
@@ -245,7 +314,10 @@
       "mean": -0.22,
       "excess": -0.32,
       "hit": 0.55,
-      "n": 51
+      "n": 51,
+      "beat": 0.53,
+      "beat_n": 27,
+      "beat_d": 51
      }
     ]
    }
@@ -256,210 +328,360 @@
     "name": "S&P 500",
     "all": 1.02,
     "all_n": 222,
+    "all_beat_n": null,
+    "all_beat_d": null,
     "r1": 1.38,
     "r1_n": 58,
+    "r1_beat_n": null,
+    "r1_beat_d": null,
     "r2": 1.69,
     "r2_n": 55,
+    "r2_beat_n": null,
+    "r2_beat_d": null,
     "r3": 0.84,
     "r3_n": 58,
+    "r3_beat_n": null,
+    "r3_beat_d": null,
     "r4": 0.1,
-    "r4_n": 51
+    "r4_n": 51,
+    "r4_beat_n": null,
+    "r4_beat_d": null
    },
    {
     "fund": "XLE",
     "name": "Energy",
     "all": 0.8,
     "all_n": 222,
+    "all_beat_n": 97,
+    "all_beat_d": 222,
     "r1": 0.05,
     "r1_n": 58,
+    "r1_beat_n": 20,
+    "r1_beat_d": 58,
     "r2": 0.7,
     "r2_n": 55,
+    "r2_beat_n": 24,
+    "r2_beat_d": 55,
     "r3": 1.99,
     "r3_n": 58,
+    "r3_beat_n": 31,
+    "r3_beat_d": 58,
     "r4": 0.42,
-    "r4_n": 51
+    "r4_n": 51,
+    "r4_beat_n": 22,
+    "r4_beat_d": 51
    },
    {
     "fund": "XLF",
     "name": "Financials",
     "all": 0.78,
     "all_n": 222,
+    "all_beat_n": 107,
+    "all_beat_d": 222,
     "r1": 1.17,
     "r1_n": 58,
+    "r1_beat_n": 26,
+    "r1_beat_d": 58,
     "r2": 1.26,
     "r2_n": 55,
+    "r2_beat_n": 25,
+    "r2_beat_d": 55,
     "r3": 0.81,
     "r3_n": 58,
+    "r3_beat_n": 29,
+    "r3_beat_d": 58,
     "r4": -0.22,
-    "r4_n": 51
+    "r4_n": 51,
+    "r4_beat_n": 27,
+    "r4_beat_d": 51
    },
    {
     "fund": "XLK",
     "name": "Technology",
     "all": 1.5,
     "all_n": 222,
+    "all_beat_n": 120,
+    "all_beat_d": 222,
     "r1": 1.87,
     "r1_n": 58,
+    "r1_beat_n": 29,
+    "r1_beat_d": 58,
     "r2": 2.66,
     "r2_n": 55,
+    "r2_beat_n": 31,
+    "r2_beat_d": 55,
     "r3": 1.26,
     "r3_n": 58,
+    "r3_beat_n": 31,
+    "r3_beat_d": 58,
     "r4": 0.1,
-    "r4_n": 51
+    "r4_n": 51,
+    "r4_beat_n": 29,
+    "r4_beat_d": 51
    },
    {
     "fund": "XLV",
     "name": "Health care",
     "all": 0.94,
     "all_n": 222,
+    "all_beat_n": 107,
+    "all_beat_d": 222,
     "r1": 1.13,
     "r1_n": 58,
+    "r1_beat_n": 26,
+    "r1_beat_d": 58,
     "r2": 0.87,
     "r2_n": 55,
+    "r2_beat_n": 18,
+    "r2_beat_d": 55,
     "r3": 0.78,
     "r3_n": 58,
+    "r3_beat_n": 32,
+    "r3_beat_d": 58,
     "r4": 1.0,
-    "r4_n": 51
+    "r4_n": 51,
+    "r4_beat_n": 31,
+    "r4_beat_d": 51
    },
    {
     "fund": "XLI",
     "name": "Industrials",
     "all": 1.04,
     "all_n": 222,
+    "all_beat_n": 110,
+    "all_beat_d": 222,
     "r1": 1.96,
     "r1_n": 58,
+    "r1_beat_n": 35,
+    "r1_beat_d": 58,
     "r2": 1.79,
     "r2_n": 55,
+    "r2_beat_n": 28,
+    "r2_beat_d": 55,
     "r3": 0.4,
     "r3_n": 58,
+    "r3_beat_n": 24,
+    "r3_beat_d": 58,
     "r4": -0.09,
-    "r4_n": 51
+    "r4_n": 51,
+    "r4_beat_n": 23,
+    "r4_beat_d": 51
    },
    {
     "fund": "XLP",
     "name": "Consumer staples",
     "all": 0.81,
     "all_n": 222,
+    "all_beat_n": 102,
+    "all_beat_d": 222,
     "r1": 0.74,
     "r1_n": 58,
+    "r1_beat_n": 26,
+    "r1_beat_d": 58,
     "r2": 0.97,
     "r2_n": 55,
+    "r2_beat_n": 21,
+    "r2_beat_d": 55,
     "r3": 0.69,
     "r3_n": 58,
+    "r3_beat_n": 24,
+    "r3_beat_d": 58,
     "r4": 0.84,
-    "r4_n": 51
+    "r4_n": 51,
+    "r4_beat_n": 31,
+    "r4_beat_d": 51
    },
    {
     "fund": "XLY",
     "name": "Consumer discretionary",
     "all": 1.16,
     "all_n": 222,
+    "all_beat_n": 120,
+    "all_beat_d": 222,
     "r1": 2.3,
     "r1_n": 58,
+    "r1_beat_n": 41,
+    "r1_beat_d": 58,
     "r2": 1.74,
     "r2_n": 55,
+    "r2_beat_n": 25,
+    "r2_beat_d": 55,
     "r3": 0.85,
     "r3_n": 58,
+    "r3_beat_n": 34,
+    "r3_beat_d": 58,
     "r4": -0.42,
-    "r4_n": 51
+    "r4_n": 51,
+    "r4_beat_n": 20,
+    "r4_beat_d": 51
    },
    {
     "fund": "XLU",
     "name": "Utilities",
     "all": 0.75,
     "all_n": 222,
+    "all_beat_n": 107,
+    "all_beat_d": 222,
     "r1": 1.06,
     "r1_n": 58,
+    "r1_beat_n": 26,
+    "r1_beat_d": 58,
     "r2": 1.54,
     "r2_n": 55,
+    "r2_beat_n": 26,
+    "r2_beat_d": 55,
     "r3": 0.3,
     "r3_n": 58,
+    "r3_beat_n": 29,
+    "r3_beat_d": 58,
     "r4": 0.07,
-    "r4_n": 51
+    "r4_n": 51,
+    "r4_beat_n": 26,
+    "r4_beat_d": 51
    },
    {
     "fund": "XLB",
     "name": "Materials",
     "all": 0.78,
     "all_n": 222,
+    "all_beat_n": 96,
+    "all_beat_d": 222,
     "r1": 1.55,
     "r1_n": 58,
+    "r1_beat_n": 27,
+    "r1_beat_d": 58,
     "r2": 0.95,
     "r2_n": 55,
+    "r2_beat_n": 22,
+    "r2_beat_d": 55,
     "r3": 0.53,
     "r3_n": 58,
+    "r3_beat_n": 23,
+    "r3_beat_d": 58,
     "r4": -0.02,
-    "r4_n": 51
+    "r4_n": 51,
+    "r4_beat_n": 24,
+    "r4_beat_d": 51
    },
    {
     "fund": "XLRE",
     "name": "Real estate",
     "all": 0.7,
     "all_n": 129,
+    "all_beat_n": 50,
+    "all_beat_d": 129,
     "r1": 1.39,
     "r1_n": 30,
+    "r1_beat_n": 13,
+    "r1_beat_d": 30,
     "r2": 1.06,
     "r2_n": 39,
+    "r2_beat_n": 12,
+    "r2_beat_d": 39,
     "r3": 0.5,
     "r3_n": 32,
+    "r3_beat_n": 13,
+    "r3_beat_d": 32,
     "r4": -0.32,
-    "r4_n": 28
+    "r4_n": 28,
+    "r4_beat_n": 12,
+    "r4_beat_d": 28
    },
    {
     "fund": "XLC",
     "name": "Communication services",
     "all": 1.04,
     "all_n": 97,
+    "all_beat_n": 50,
+    "all_beat_d": 97,
     "r1": 1.46,
     "r1_n": 24,
+    "r1_beat_n": 11,
+    "r1_beat_d": 24,
     "r2": 1.73,
     "r2_n": 28,
+    "r2_beat_n": 12,
+    "r2_beat_d": 28,
     "r3": 1.03,
     "r3_n": 21,
+    "r3_beat_n": 14,
+    "r3_beat_d": 21,
     "r4": -0.17,
-    "r4_n": 24
+    "r4_n": 24,
+    "r4_beat_n": 13,
+    "r4_beat_d": 24
    },
    {
     "fund": "TLT",
     "name": "Long Treasuries (20+ years)",
     "all": 0.27,
     "all_n": 222,
+    "all_beat_n": 86,
+    "all_beat_d": 222,
     "r1": 1.04,
     "r1_n": 58,
+    "r1_beat_n": 26,
+    "r1_beat_d": 58,
     "r2": 0.15,
     "r2_n": 55,
+    "r2_beat_n": 15,
+    "r2_beat_d": 55,
     "r3": -0.59,
     "r3_n": 58,
+    "r3_beat_n": 21,
+    "r3_beat_d": 58,
     "r4": 0.51,
-    "r4_n": 51
+    "r4_n": 51,
+    "r4_beat_n": 24,
+    "r4_beat_d": 51
    },
    {
     "fund": "IEF",
     "name": "Treasuries (7 to 10 years)",
     "all": 0.24,
     "all_n": 222,
+    "all_beat_n": 83,
+    "all_beat_d": 222,
     "r1": 0.64,
     "r1_n": 58,
+    "r1_beat_n": 22,
+    "r1_beat_d": 58,
     "r2": 0.07,
     "r2_n": 55,
+    "r2_beat_n": 18,
+    "r2_beat_d": 55,
     "r3": -0.14,
     "r3_n": 58,
+    "r3_beat_n": 19,
+    "r3_beat_d": 58,
     "r4": 0.39,
-    "r4_n": 51
+    "r4_n": 51,
+    "r4_beat_n": 24,
+    "r4_beat_d": 51
    },
    {
     "fund": "GLD",
     "name": "Gold",
     "all": 0.76,
     "all_n": 222,
+    "all_beat_n": 99,
+    "all_beat_d": 222,
     "r1": 1.39,
     "r1_n": 58,
+    "r1_beat_n": 25,
+    "r1_beat_d": 58,
     "r2": 0.64,
     "r2_n": 55,
+    "r2_beat_n": 22,
+    "r2_beat_d": 55,
     "r3": 0.52,
     "r3_n": 58,
+    "r3_beat_n": 25,
+    "r3_beat_d": 58,
     "r4": 0.44,
-    "r4_n": 51
+    "r4_n": 51,
+    "r4_beat_n": 27,
+    "r4_beat_d": 51
    }
   ]
  },
@@ -478,7 +700,10 @@
       "mean": 7.37,
       "excess": 2.73,
       "hit": 0.88,
-      "n": 8
+      "n": 8,
+      "beat": 0.62,
+      "beat_n": 5,
+      "beat_d": 8
      },
      {
       "fund": "XLK",
@@ -486,7 +711,10 @@
       "mean": 6.91,
       "excess": 1.31,
       "hit": 0.77,
-      "n": 26
+      "n": 26,
+      "beat": 0.54,
+      "beat_n": 14,
+      "beat_d": 26
      },
      {
       "fund": "XLY",
@@ -494,7 +722,10 @@
       "mean": 6.39,
       "excess": 0.79,
       "hit": 0.77,
-      "n": 26
+      "n": 26,
+      "beat": 0.58,
+      "beat_n": 15,
+      "beat_d": 26
      }
     ],
     "worst": [
@@ -504,7 +735,10 @@
       "mean": 1.5,
       "excess": -4.3,
       "hit": 0.72,
-      "n": 25
+      "n": 25,
+      "beat": 0.28,
+      "beat_n": 7,
+      "beat_d": 25
      },
      {
       "fund": "TLT",
@@ -512,7 +746,10 @@
       "mean": 2.07,
       "excess": -3.73,
       "hit": 0.64,
-      "n": 25
+      "n": 25,
+      "beat": 0.4,
+      "beat_n": 10,
+      "beat_d": 25
      },
      {
       "fund": "GLD",
@@ -520,7 +757,10 @@
       "mean": 3.16,
       "excess": -2.09,
       "hit": 0.64,
-      "n": 22
+      "n": 22,
+      "beat": 0.32,
+      "beat_n": 7,
+      "beat_d": 22
      }
     ]
    },
@@ -535,7 +775,10 @@
       "mean": 6.65,
       "excess": 2.05,
       "hit": 0.92,
-      "n": 24
+      "n": 24,
+      "beat": 0.75,
+      "beat_n": 18,
+      "beat_d": 24
      },
      {
       "fund": "XLI",
@@ -543,7 +786,10 @@
       "mean": 5.12,
       "excess": 0.51,
       "hit": 0.83,
-      "n": 24
+      "n": 24,
+      "beat": 0.62,
+      "beat_n": 15,
+      "beat_d": 24
      },
      {
       "fund": "XLE",
@@ -551,7 +797,10 @@
       "mean": 4.95,
       "excess": 0.35,
       "hit": 0.75,
-      "n": 24
+      "n": 24,
+      "beat": 0.54,
+      "beat_n": 13,
+      "beat_d": 24
      }
     ],
     "worst": [
@@ -561,7 +810,10 @@
       "mean": -1.66,
       "excess": -7.76,
       "hit": 0.4,
-      "n": 20
+      "n": 20,
+      "beat": 0.05,
+      "beat_n": 1,
+      "beat_d": 20
      },
      {
       "fund": "IEF",
@@ -569,7 +821,10 @@
       "mean": -0.5,
       "excess": -6.59,
       "hit": 0.5,
-      "n": 20
+      "n": 20,
+      "beat": 0.0,
+      "beat_n": 0,
+      "beat_d": 20
      },
      {
       "fund": "XLU",
@@ -577,7 +832,10 @@
       "mean": 0.74,
       "excess": -3.86,
       "hit": 0.62,
-      "n": 24
+      "n": 24,
+      "beat": 0.21,
+      "beat_n": 5,
+      "beat_d": 24
      }
     ]
    },
@@ -592,7 +850,10 @@
       "mean": 3.0,
       "excess": 3.68,
       "hit": 0.64,
-      "n": 28
+      "n": 28,
+      "beat": 0.64,
+      "beat_n": 18,
+      "beat_d": 28
      },
      {
       "fund": "XLU",
@@ -600,7 +861,10 @@
       "mean": 1.9,
       "excess": 2.0,
       "hit": 0.65,
-      "n": 37
+      "n": 37,
+      "beat": 0.62,
+      "beat_n": 23,
+      "beat_d": 37
      },
      {
       "fund": "XLE",
@@ -608,7 +872,10 @@
       "mean": 1.87,
       "excess": 1.97,
       "hit": 0.59,
-      "n": 37
+      "n": 37,
+      "beat": 0.59,
+      "beat_n": 22,
+      "beat_d": 37
      }
     ],
     "worst": [
@@ -618,7 +885,10 @@
       "mean": -4.18,
       "excess": -2.2,
       "hit": 0.25,
-      "n": 8
+      "n": 8,
+      "beat": 0.5,
+      "beat_n": 4,
+      "beat_d": 8
      },
      {
       "fund": "XLRE",
@@ -626,7 +896,10 @@
       "mean": -1.39,
       "excess": -1.17,
       "hit": 0.58,
-      "n": 12
+      "n": 12,
+      "beat": 0.58,
+      "beat_n": 7,
+      "beat_d": 12
      },
      {
       "fund": "XLF",
@@ -634,7 +907,10 @@
       "mean": -0.99,
       "excess": -0.89,
       "hit": 0.54,
-      "n": 37
+      "n": 37,
+      "beat": 0.38,
+      "beat_n": 14,
+      "beat_d": 37
      }
     ]
    },
@@ -649,7 +925,10 @@
       "mean": 2.89,
       "excess": 2.22,
       "hit": 0.61,
-      "n": 23
+      "n": 23,
+      "beat": 0.61,
+      "beat_n": 14,
+      "beat_d": 23
      },
      {
       "fund": "XLV",
@@ -657,7 +936,10 @@
       "mean": 2.66,
       "excess": 1.99,
       "hit": 0.65,
-      "n": 23
+      "n": 23,
+      "beat": 0.7,
+      "beat_n": 16,
+      "beat_d": 23
      },
      {
       "fund": "XLB",
@@ -665,7 +947,10 @@
       "mean": 2.17,
       "excess": 1.5,
       "hit": 0.52,
-      "n": 23
+      "n": 23,
+      "beat": 0.57,
+      "beat_n": 13,
+      "beat_d": 23
      }
     ],
     "worst": [
@@ -675,7 +960,10 @@
       "mean": 1.77,
       "excess": -3.09,
       "hit": 0.5,
-      "n": 8
+      "n": 8,
+      "beat": 0.25,
+      "beat_n": 2,
+      "beat_d": 8
      },
      {
       "fund": "XLE",
@@ -683,7 +971,10 @@
       "mean": -0.28,
       "excess": -0.95,
       "hit": 0.48,
-      "n": 23
+      "n": 23,
+      "beat": 0.43,
+      "beat_n": 10,
+      "beat_d": 23
      },
      {
       "fund": "XLK",
@@ -691,7 +982,10 @@
       "mean": -0.1,
       "excess": -0.77,
       "hit": 0.61,
-      "n": 23
+      "n": 23,
+      "beat": 0.39,
+      "beat_n": 9,
+      "beat_d": 23
      }
     ]
    }
@@ -702,210 +996,360 @@
     "name": "S&P 500",
     "all": 2.43,
     "all_n": 110,
+    "all_beat_n": null,
+    "all_beat_d": null,
     "r1": 5.6,
     "r1_n": 26,
+    "r1_beat_n": null,
+    "r1_beat_d": null,
     "r2": 4.6,
     "r2_n": 24,
+    "r2_beat_n": null,
+    "r2_beat_d": null,
     "r3": -0.1,
     "r3_n": 37,
+    "r3_beat_n": null,
+    "r3_beat_d": null,
     "r4": 0.67,
-    "r4_n": 23
+    "r4_n": 23,
+    "r4_beat_n": null,
+    "r4_beat_d": null
    },
    {
     "fund": "XLE",
     "name": "Energy",
     "all": 2.97,
     "all_n": 110,
+    "all_beat_n": 57,
+    "all_beat_d": 110,
     "r1": 5.6,
     "r1_n": 26,
+    "r1_beat_n": 12,
+    "r1_beat_d": 26,
     "r2": 4.95,
     "r2_n": 24,
+    "r2_beat_n": 13,
+    "r2_beat_d": 24,
     "r3": 1.87,
     "r3_n": 37,
+    "r3_beat_n": 22,
+    "r3_beat_d": 37,
     "r4": -0.28,
-    "r4_n": 23
+    "r4_n": 23,
+    "r4_beat_n": 10,
+    "r4_beat_d": 23
    },
    {
     "fund": "XLF",
     "name": "Financials",
     "all": 2.08,
     "all_n": 110,
+    "all_beat_n": 54,
+    "all_beat_d": 110,
     "r1": 4.83,
     "r1_n": 26,
+    "r1_beat_n": 13,
+    "r1_beat_d": 26,
     "r2": 4.68,
     "r2_n": 24,
+    "r2_beat_n": 12,
+    "r2_beat_d": 24,
     "r3": -0.99,
     "r3_n": 37,
+    "r3_beat_n": 14,
+    "r3_beat_d": 37,
     "r4": 1.2,
-    "r4_n": 23
+    "r4_n": 23,
+    "r4_beat_n": 15,
+    "r4_beat_d": 23
    },
    {
     "fund": "XLK",
     "name": "Technology",
     "all": 3.35,
     "all_n": 110,
+    "all_beat_n": 63,
+    "all_beat_d": 110,
     "r1": 6.91,
     "r1_n": 26,
+    "r1_beat_n": 14,
+    "r1_beat_d": 26,
     "r2": 6.65,
     "r2_n": 24,
+    "r2_beat_n": 18,
+    "r2_beat_d": 24,
     "r3": 0.87,
     "r3_n": 37,
+    "r3_beat_n": 22,
+    "r3_beat_d": 37,
     "r4": -0.1,
-    "r4_n": 23
+    "r4_n": 23,
+    "r4_beat_n": 9,
+    "r4_beat_d": 23
    },
    {
     "fund": "XLV",
     "name": "Health care",
     "all": 2.29,
     "all_n": 110,
+    "all_beat_n": 50,
+    "all_beat_d": 110,
     "r1": 3.54,
     "r1_n": 26,
+    "r1_beat_n": 7,
+    "r1_beat_d": 26,
     "r2": 3.24,
     "r2_n": 24,
+    "r2_beat_n": 6,
+    "r2_beat_d": 24,
     "r3": 0.56,
     "r3_n": 37,
+    "r3_beat_n": 21,
+    "r3_beat_d": 37,
     "r4": 2.66,
-    "r4_n": 23
+    "r4_n": 23,
+    "r4_beat_n": 16,
+    "r4_beat_d": 23
    },
    {
     "fund": "XLI",
     "name": "Industrials",
     "all": 2.79,
     "all_n": 110,
+    "all_beat_n": 56,
+    "all_beat_d": 110,
     "r1": 5.9,
     "r1_n": 26,
+    "r1_beat_n": 13,
+    "r1_beat_d": 26,
     "r2": 5.12,
     "r2_n": 24,
+    "r2_beat_n": 15,
+    "r2_beat_d": 24,
     "r3": -0.02,
     "r3_n": 37,
+    "r3_beat_n": 16,
+    "r3_beat_d": 37,
     "r4": 1.37,
-    "r4_n": 23
+    "r4_n": 23,
+    "r4_beat_n": 12,
+    "r4_beat_d": 23
    },
    {
     "fund": "XLP",
     "name": "Consumer staples",
     "all": 1.81,
     "all_n": 110,
+    "all_beat_n": 43,
+    "all_beat_d": 110,
     "r1": 4.1,
     "r1_n": 26,
+    "r1_beat_n": 10,
+    "r1_beat_d": 26,
     "r2": 2.19,
     "r2_n": 24,
+    "r2_beat_n": 6,
+    "r2_beat_d": 24,
     "r3": 0.1,
     "r3_n": 37,
+    "r3_beat_n": 17,
+    "r3_beat_d": 37,
     "r4": 1.59,
-    "r4_n": 23
+    "r4_n": 23,
+    "r4_beat_n": 10,
+    "r4_beat_d": 23
    },
    {
     "fund": "XLY",
     "name": "Consumer discretionary",
     "all": 2.79,
     "all_n": 110,
+    "all_beat_n": 57,
+    "all_beat_d": 110,
     "r1": 6.39,
     "r1_n": 26,
+    "r1_beat_n": 15,
+    "r1_beat_d": 26,
     "r2": 4.39,
     "r2_n": 24,
+    "r2_beat_n": 10,
+    "r2_beat_d": 24,
     "r3": -0.84,
     "r3_n": 37,
+    "r3_beat_n": 18,
+    "r3_beat_d": 37,
     "r4": 2.89,
-    "r4_n": 23
+    "r4_n": 23,
+    "r4_beat_n": 14,
+    "r4_beat_d": 23
    },
    {
     "fund": "XLU",
     "name": "Utilities",
     "all": 2.16,
     "all_n": 110,
+    "all_beat_n": 52,
+    "all_beat_d": 110,
     "r1": 3.85,
     "r1_n": 26,
+    "r1_beat_n": 11,
+    "r1_beat_d": 26,
     "r2": 0.74,
     "r2_n": 24,
+    "r2_beat_n": 5,
+    "r2_beat_d": 24,
     "r3": 1.9,
     "r3_n": 37,
+    "r3_beat_n": 23,
+    "r3_beat_d": 37,
     "r4": 2.13,
-    "r4_n": 23
+    "r4_n": 23,
+    "r4_beat_n": 13,
+    "r4_beat_d": 23
    },
    {
     "fund": "XLB",
     "name": "Materials",
     "all": 2.53,
     "all_n": 110,
+    "all_beat_n": 56,
+    "all_beat_d": 110,
     "r1": 6.05,
     "r1_n": 26,
+    "r1_beat_n": 11,
+    "r1_beat_d": 26,
     "r2": 4.17,
     "r2_n": 24,
+    "r2_beat_n": 14,
+    "r2_beat_d": 24,
     "r3": -0.77,
     "r3_n": 37,
+    "r3_beat_n": 18,
+    "r3_beat_d": 37,
     "r4": 2.17,
-    "r4_n": 23
+    "r4_n": 23,
+    "r4_beat_n": 13,
+    "r4_beat_d": 23
    },
    {
     "fund": "XLRE",
     "name": "Real estate",
     "all": 2.02,
     "all_n": 42,
+    "all_beat_n": 16,
+    "all_beat_d": 42,
     "r1": 2.67,
     "r1_n": 9,
+    "r1_beat_n": 3,
+    "r1_beat_d": 9,
     "r2": 3.34,
     "r2_n": 13,
+    "r2_beat_n": 3,
+    "r2_beat_d": 13,
     "r3": -1.39,
     "r3_n": 12,
+    "r3_beat_n": 7,
+    "r3_beat_d": 12,
     "r4": 4.27,
-    "r4_n": 8
+    "r4_n": 8,
+    "r4_beat_n": 3,
+    "r4_beat_d": 8
    },
    {
     "fund": "XLC",
     "name": "Communication services",
     "all": 3.24,
     "all_n": 32,
+    "all_beat_n": 17,
+    "all_beat_d": 32,
     "r1": 7.37,
     "r1_n": 8,
+    "r1_beat_n": 5,
+    "r1_beat_d": 8,
     "r2": 8.01,
     "r2_n": 8,
+    "r2_beat_n": 6,
+    "r2_beat_d": 8,
     "r3": -4.18,
     "r3_n": 8,
+    "r3_beat_n": 4,
+    "r3_beat_d": 8,
     "r4": 1.77,
-    "r4_n": 8
+    "r4_n": 8,
+    "r4_beat_n": 2,
+    "r4_beat_d": 8
    },
    {
     "fund": "TLT",
     "name": "Long Treasuries (20+ years)",
     "all": 1.09,
     "all_n": 95,
+    "all_beat_n": 33,
+    "all_beat_d": 95,
     "r1": 2.07,
     "r1_n": 25,
+    "r1_beat_n": 10,
+    "r1_beat_d": 25,
     "r2": -1.66,
     "r2_n": 20,
+    "r2_beat_n": 1,
+    "r2_beat_d": 20,
     "r3": 1.14,
     "r3_n": 32,
+    "r3_beat_n": 13,
+    "r3_beat_d": 32,
     "r4": 2.69,
-    "r4_n": 18
+    "r4_n": 18,
+    "r4_beat_n": 9,
+    "r4_beat_d": 18
    },
    {
     "fund": "IEF",
     "name": "Treasuries (7 to 10 years)",
     "all": 0.88,
     "all_n": 95,
+    "all_beat_n": 29,
+    "all_beat_d": 95,
     "r1": 1.5,
     "r1_n": 25,
+    "r1_beat_n": 7,
+    "r1_beat_d": 25,
     "r2": -0.5,
     "r2_n": 20,
+    "r2_beat_n": 0,
+    "r2_beat_d": 20,
     "r3": 0.74,
     "r3_n": 32,
+    "r3_beat_n": 16,
+    "r3_beat_d": 32,
     "r4": 1.8,
-    "r4_n": 18
+    "r4_n": 18,
+    "r4_beat_n": 6,
+    "r4_beat_d": 18
    },
    {
     "fund": "GLD",
     "name": "Gold",
     "all": 2.79,
     "all_n": 86,
+    "all_beat_n": 39,
+    "all_beat_d": 86,
     "r1": 3.16,
     "r1_n": 22,
+    "r1_beat_n": 7,
+    "r1_beat_d": 22,
     "r2": 3.01,
     "r2_n": 19,
+    "r2_beat_n": 6,
+    "r2_beat_d": 19,
     "r3": 3.0,
     "r3_n": 28,
+    "r3_beat_n": 18,
+    "r3_beat_d": 28,
     "r4": 1.7,
-    "r4_n": 17
+    "r4_n": 17,
+    "r4_beat_n": 8,
+    "r4_beat_d": 17
    }
   ]
  },
@@ -925,7 +1369,10 @@
       "mean": 3.11,
       "excess": 1.18,
       "hit": 0.72,
-      "n": 36
+      "n": 36,
+      "beat": 0.64,
+      "beat_n": 23,
+      "beat_d": 36
      },
      {
       "fund": "XLY",
@@ -933,7 +1380,10 @@
       "mean": 2.57,
       "excess": 0.64,
       "hit": 0.69,
-      "n": 36
+      "n": 36,
+      "beat": 0.56,
+      "beat_n": 20,
+      "beat_d": 36
      },
      {
       "fund": "XLE",
@@ -941,7 +1391,10 @@
       "mean": 2.37,
       "excess": 0.44,
       "hit": 0.53,
-      "n": 36
+      "n": 36,
+      "beat": 0.44,
+      "beat_n": 16,
+      "beat_d": 36
      }
     ],
     "worst": [
@@ -951,7 +1404,10 @@
       "mean": 0.02,
       "excess": -1.91,
       "hit": 0.5,
-      "n": 36
+      "n": 36,
+      "beat": 0.25,
+      "beat_n": 9,
+      "beat_d": 36
      },
      {
       "fund": "IEF",
@@ -959,7 +1415,10 @@
       "mean": 0.14,
       "excess": -1.8,
       "hit": 0.58,
-      "n": 36
+      "n": 36,
+      "beat": 0.28,
+      "beat_n": 10,
+      "beat_d": 36
      },
      {
       "fund": "XLP",
@@ -967,7 +1426,10 @@
       "mean": 0.29,
       "excess": -1.64,
       "hit": 0.5,
-      "n": 36
+      "n": 36,
+      "beat": 0.25,
+      "beat_n": 9,
+      "beat_d": 36
      }
     ]
    },
@@ -982,7 +1444,10 @@
       "mean": 4.24,
       "excess": 1.41,
       "hit": 0.9,
-      "n": 20
+      "n": 20,
+      "beat": 0.5,
+      "beat_n": 10,
+      "beat_d": 20
      },
      {
       "fund": "XLF",
@@ -990,7 +1455,10 @@
       "mean": 2.91,
       "excess": 0.08,
       "hit": 0.7,
-      "n": 20
+      "n": 20,
+      "beat": 0.55,
+      "beat_n": 11,
+      "beat_d": 20
      },
      {
       "fund": "XLE",
@@ -998,7 +1466,10 @@
       "mean": 2.58,
       "excess": -0.24,
       "hit": 0.75,
-      "n": 20
+      "n": 20,
+      "beat": 0.45,
+      "beat_n": 9,
+      "beat_d": 20
      }
     ],
     "worst": [
@@ -1008,7 +1479,10 @@
       "mean": 0.1,
       "excess": -2.73,
       "hit": 0.45,
-      "n": 20
+      "n": 20,
+      "beat": 0.15,
+      "beat_n": 3,
+      "beat_d": 20
      },
      {
       "fund": "TLT",
@@ -1016,7 +1490,10 @@
       "mean": 0.25,
       "excess": -2.58,
       "hit": 0.55,
-      "n": 20
+      "n": 20,
+      "beat": 0.2,
+      "beat_n": 4,
+      "beat_d": 20
      },
      {
       "fund": "XLP",
@@ -1024,7 +1501,10 @@
       "mean": 0.75,
       "excess": -2.08,
       "hit": 0.6,
-      "n": 20
+      "n": 20,
+      "beat": 0.25,
+      "beat_n": 5,
+      "beat_d": 20
      }
     ]
    },
@@ -1039,7 +1519,10 @@
       "mean": 2.37,
       "excess": 1.11,
       "hit": 0.54,
-      "n": 24
+      "n": 24,
+      "beat": 0.62,
+      "beat_n": 15,
+      "beat_d": 24
      },
      {
       "fund": "XLY",
@@ -1047,7 +1530,10 @@
       "mean": 1.65,
       "excess": 0.39,
       "hit": 0.62,
-      "n": 24
+      "n": 24,
+      "beat": 0.54,
+      "beat_n": 13,
+      "beat_d": 24
      },
      {
       "fund": "XLC",
@@ -1055,7 +1541,10 @@
       "mean": 1.24,
       "excess": -0.1,
       "hit": 0.65,
-      "n": 20
+      "n": 20,
+      "beat": 0.65,
+      "beat_n": 13,
+      "beat_d": 20
      }
     ],
     "worst": [
@@ -1065,7 +1554,10 @@
       "mean": -0.42,
       "excess": -1.68,
       "hit": 0.5,
-      "n": 24
+      "n": 24,
+      "beat": 0.42,
+      "beat_n": 10,
+      "beat_d": 24
      },
      {
       "fund": "TLT",
@@ -1073,7 +1565,10 @@
       "mean": -0.22,
       "excess": -1.48,
       "hit": 0.58,
-      "n": 24
+      "n": 24,
+      "beat": 0.29,
+      "beat_n": 7,
+      "beat_d": 24
      },
      {
       "fund": "IEF",
@@ -1081,7 +1576,10 @@
       "mean": 0.12,
       "excess": -1.14,
       "hit": 0.62,
-      "n": 24
+      "n": 24,
+      "beat": 0.33,
+      "beat_n": 8,
+      "beat_d": 24
      }
     ]
    },
@@ -1096,7 +1594,10 @@
       "mean": 1.14,
       "excess": 1.31,
       "hit": 0.51,
-      "n": 37
+      "n": 37,
+      "beat": 0.62,
+      "beat_n": 23,
+      "beat_d": 37
      },
      {
       "fund": "XLV",
@@ -1104,7 +1605,10 @@
       "mean": 1.09,
       "excess": 1.25,
       "hit": 0.59,
-      "n": 37
+      "n": 37,
+      "beat": 0.57,
+      "beat_n": 21,
+      "beat_d": 37
      },
      {
       "fund": "XLP",
@@ -1112,7 +1616,10 @@
       "mean": 0.98,
       "excess": 1.15,
       "hit": 0.59,
-      "n": 37
+      "n": 37,
+      "beat": 0.65,
+      "beat_n": 24,
+      "beat_d": 37
      }
     ],
     "worst": [
@@ -1122,7 +1629,10 @@
       "mean": -1.23,
       "excess": -1.06,
       "hit": 0.54,
-      "n": 37
+      "n": 37,
+      "beat": 0.38,
+      "beat_n": 14,
+      "beat_d": 37
      },
      {
       "fund": "XLC",
@@ -1130,7 +1640,10 @@
       "mean": -0.67,
       "excess": -0.33,
       "hit": 0.48,
-      "n": 33
+      "n": 33,
+      "beat": 0.52,
+      "beat_n": 17,
+      "beat_d": 33
      },
      {
       "fund": "XLB",
@@ -1138,7 +1651,10 @@
       "mean": -0.5,
       "excess": -0.33,
       "hit": 0.46,
-      "n": 37
+      "n": 37,
+      "beat": 0.49,
+      "beat_n": 18,
+      "beat_d": 37
      }
     ]
    }
@@ -1149,210 +1665,360 @@
     "name": "S&P 500",
     "all": 1.28,
     "all_n": 117,
+    "all_beat_n": null,
+    "all_beat_d": null,
     "r1": 1.93,
     "r1_n": 36,
+    "r1_beat_n": null,
+    "r1_beat_d": null,
     "r2": 2.83,
     "r2_n": 20,
+    "r2_beat_n": null,
+    "r2_beat_d": null,
     "r3": 1.26,
     "r3_n": 24,
+    "r3_beat_n": null,
+    "r3_beat_d": null,
     "r4": -0.17,
-    "r4_n": 37
+    "r4_n": 37,
+    "r4_beat_n": null,
+    "r4_beat_d": null
    },
    {
     "fund": "XLE",
     "name": "Energy",
     "all": 1.18,
     "all_n": 117,
+    "all_beat_n": 51,
+    "all_beat_d": 117,
     "r1": 2.37,
     "r1_n": 36,
+    "r1_beat_n": 16,
+    "r1_beat_d": 36,
     "r2": 2.58,
     "r2_n": 20,
+    "r2_beat_n": 9,
+    "r2_beat_d": 20,
     "r3": 0.25,
     "r3_n": 24,
+    "r3_beat_n": 11,
+    "r3_beat_d": 24,
     "r4": -0.13,
-    "r4_n": 37
+    "r4_n": 37,
+    "r4_beat_n": 15,
+    "r4_beat_d": 37
    },
    {
     "fund": "XLF",
     "name": "Financials",
     "all": 1.06,
     "all_n": 117,
+    "all_beat_n": 59,
+    "all_beat_d": 117,
     "r1": 1.32,
     "r1_n": 36,
+    "r1_beat_n": 17,
+    "r1_beat_d": 36,
     "r2": 2.91,
     "r2_n": 20,
+    "r2_beat_n": 11,
+    "r2_beat_d": 20,
     "r3": 0.91,
     "r3_n": 24,
+    "r3_beat_n": 11,
+    "r3_beat_d": 24,
     "r4": -0.11,
-    "r4_n": 37
+    "r4_n": 37,
+    "r4_beat_n": 20,
+    "r4_beat_d": 37
    },
    {
     "fund": "XLK",
     "name": "Technology",
     "all": 2.04,
     "all_n": 117,
+    "all_beat_n": 64,
+    "all_beat_d": 117,
     "r1": 3.11,
     "r1_n": 36,
+    "r1_beat_n": 23,
+    "r1_beat_d": 36,
     "r2": 4.24,
     "r2_n": 20,
+    "r2_beat_n": 10,
+    "r2_beat_d": 20,
     "r3": 2.37,
     "r3_n": 24,
+    "r3_beat_n": 15,
+    "r3_beat_d": 24,
     "r4": -0.4,
-    "r4_n": 37
+    "r4_n": 37,
+    "r4_beat_n": 16,
+    "r4_beat_d": 37
    },
    {
     "fund": "XLV",
     "name": "Health care",
     "all": 0.99,
     "all_n": 117,
+    "all_beat_n": 51,
+    "all_beat_d": 117,
     "r1": 1.53,
     "r1_n": 36,
+    "r1_beat_n": 16,
+    "r1_beat_d": 36,
     "r2": 1.53,
     "r2_n": 20,
+    "r2_beat_n": 4,
+    "r2_beat_d": 20,
     "r3": -0.42,
     "r3_n": 24,
+    "r3_beat_n": 10,
+    "r3_beat_d": 24,
     "r4": 1.09,
-    "r4_n": 37
+    "r4_n": 37,
+    "r4_beat_n": 21,
+    "r4_beat_d": 37
    },
    {
     "fund": "XLI",
     "name": "Industrials",
     "all": 1.15,
     "all_n": 117,
+    "all_beat_n": 55,
+    "all_beat_d": 117,
     "r1": 1.77,
     "r1_n": 36,
+    "r1_beat_n": 15,
+    "r1_beat_d": 36,
     "r2": 2.58,
     "r2_n": 20,
+    "r2_beat_n": 7,
+    "r2_beat_d": 20,
     "r3": 0.88,
     "r3_n": 24,
+    "r3_beat_n": 13,
+    "r3_beat_d": 24,
     "r4": -0.05,
-    "r4_n": 37
+    "r4_n": 37,
+    "r4_beat_n": 20,
+    "r4_beat_d": 37
    },
    {
     "fund": "XLP",
     "name": "Consumer staples",
     "all": 0.69,
     "all_n": 117,
+    "all_beat_n": 48,
+    "all_beat_d": 117,
     "r1": 0.29,
     "r1_n": 36,
+    "r1_beat_n": 9,
+    "r1_beat_d": 36,
     "r2": 0.75,
     "r2_n": 20,
+    "r2_beat_n": 5,
+    "r2_beat_d": 20,
     "r3": 0.8,
     "r3_n": 24,
+    "r3_beat_n": 10,
+    "r3_beat_d": 24,
     "r4": 0.98,
-    "r4_n": 37
+    "r4_n": 37,
+    "r4_beat_n": 24,
+    "r4_beat_d": 37
    },
    {
     "fund": "XLY",
     "name": "Consumer discretionary",
     "all": 1.12,
     "all_n": 117,
+    "all_beat_n": 53,
+    "all_beat_d": 117,
     "r1": 2.57,
     "r1_n": 36,
+    "r1_beat_n": 20,
+    "r1_beat_d": 36,
     "r2": 2.19,
     "r2_n": 20,
+    "r2_beat_n": 6,
+    "r2_beat_d": 20,
     "r3": 1.65,
     "r3_n": 24,
+    "r3_beat_n": 13,
+    "r3_beat_d": 24,
     "r4": -1.23,
-    "r4_n": 37
+    "r4_n": 37,
+    "r4_beat_n": 14,
+    "r4_beat_d": 37
    },
    {
     "fund": "XLU",
     "name": "Utilities",
     "all": 0.8,
     "all_n": 117,
+    "all_beat_n": 55,
+    "all_beat_d": 117,
     "r1": 0.34,
     "r1_n": 36,
+    "r1_beat_n": 13,
+    "r1_beat_d": 36,
     "r2": 2.22,
     "r2_n": 20,
+    "r2_beat_n": 8,
+    "r2_beat_d": 20,
     "r3": 0.71,
     "r3_n": 24,
+    "r3_beat_n": 11,
+    "r3_beat_d": 24,
     "r4": 0.55,
-    "r4_n": 37
+    "r4_n": 37,
+    "r4_beat_n": 23,
+    "r4_beat_d": 37
    },
    {
     "fund": "XLB",
     "name": "Materials",
     "all": 0.91,
     "all_n": 117,
+    "all_beat_n": 51,
+    "all_beat_d": 117,
     "r1": 1.76,
     "r1_n": 36,
+    "r1_beat_n": 17,
+    "r1_beat_d": 36,
     "r2": 2.03,
     "r2_n": 20,
+    "r2_beat_n": 7,
+    "r2_beat_d": 20,
     "r3": 0.85,
     "r3_n": 24,
+    "r3_beat_n": 9,
+    "r3_beat_d": 24,
     "r4": -0.5,
-    "r4_n": 37
+    "r4_n": 37,
+    "r4_beat_n": 18,
+    "r4_beat_d": 37
    },
    {
     "fund": "XLRE",
     "name": "Real estate",
     "all": 0.67,
     "all_n": 117,
+    "all_beat_n": 44,
+    "all_beat_d": 117,
     "r1": 0.88,
     "r1_n": 36,
+    "r1_beat_n": 10,
+    "r1_beat_d": 36,
     "r2": 2.04,
     "r2_n": 20,
+    "r2_beat_n": 7,
+    "r2_beat_d": 20,
     "r3": 0.63,
     "r3_n": 24,
+    "r3_beat_n": 10,
+    "r3_beat_d": 24,
     "r4": -0.24,
-    "r4_n": 37
+    "r4_n": 37,
+    "r4_beat_n": 17,
+    "r4_beat_d": 37
    },
    {
     "fund": "XLC",
     "name": "Communication services",
     "all": 1.04,
     "all_n": 99,
+    "all_beat_n": 51,
+    "all_beat_d": 99,
     "r1": 1.72,
     "r1_n": 32,
+    "r1_beat_n": 14,
+    "r1_beat_d": 32,
     "r2": 3.25,
     "r2_n": 14,
+    "r2_beat_n": 7,
+    "r2_beat_d": 14,
     "r3": 1.24,
     "r3_n": 20,
+    "r3_beat_n": 13,
+    "r3_beat_d": 20,
     "r4": -0.67,
-    "r4_n": 33
+    "r4_n": 33,
+    "r4_beat_n": 17,
+    "r4_beat_d": 33
    },
    {
     "fund": "TLT",
     "name": "Long Treasuries (20+ years)",
     "all": -0.02,
     "all_n": 117,
+    "all_beat_n": 39,
+    "all_beat_d": 117,
     "r1": 0.02,
     "r1_n": 36,
+    "r1_beat_n": 9,
+    "r1_beat_d": 36,
     "r2": 0.25,
     "r2_n": 20,
+    "r2_beat_n": 4,
+    "r2_beat_d": 20,
     "r3": -0.22,
     "r3_n": 24,
+    "r3_beat_n": 7,
+    "r3_beat_d": 24,
     "r4": -0.06,
-    "r4_n": 37
+    "r4_n": 37,
+    "r4_beat_n": 19,
+    "r4_beat_d": 37
    },
    {
     "fund": "IEF",
     "name": "Treasuries (7 to 10 years)",
     "all": 0.09,
     "all_n": 117,
+    "all_beat_n": 38,
+    "all_beat_d": 117,
     "r1": 0.14,
     "r1_n": 36,
+    "r1_beat_n": 10,
+    "r1_beat_d": 36,
     "r2": 0.1,
     "r2_n": 20,
+    "r2_beat_n": 3,
+    "r2_beat_d": 20,
     "r3": 0.12,
     "r3_n": 24,
+    "r3_beat_n": 8,
+    "r3_beat_d": 24,
     "r4": 0.02,
-    "r4_n": 37
+    "r4_n": 37,
+    "r4_beat_n": 17,
+    "r4_beat_d": 37
    },
    {
     "fund": "GLD",
     "name": "Gold",
     "all": 1.21,
     "all_n": 117,
+    "all_beat_n": 55,
+    "all_beat_d": 117,
     "r1": 1.84,
     "r1_n": 36,
+    "r1_beat_n": 15,
+    "r1_beat_d": 36,
     "r2": 1.16,
     "r2_n": 20,
+    "r2_beat_n": 7,
+    "r2_beat_d": 20,
     "r3": 0.4,
     "r3_n": 24,
+    "r3_beat_n": 10,
+    "r3_beat_d": 24,
     "r4": 1.14,
-    "r4_n": 37
+    "r4_n": 37,
+    "r4_beat_n": 23,
+    "r4_beat_d": 37
    }
   ],
   "agreement": 0.574,
