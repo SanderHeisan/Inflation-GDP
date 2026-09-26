@@ -52,6 +52,10 @@ jobs:
           python us_sheet.py
           python run_us.py > results_us/us_run.txt
 
+      - name: Sector returns by regime (fund prices from Yahoo; the feed carries the block when this succeeds)
+        continue-on-error: true
+        run: python us_sectors.py
+
       - name: Assemble the feed
         run: |
           mkdir -p feed
@@ -65,9 +69,12 @@ jobs:
 
           Rebuilt by the "US macro regime" workflow from fresh FRED and Zillow data.
 
-          - `latest.json` -- the regimes only: each quarter (from GDP) and each month
+          - `latest.json` -- the regimes: each quarter (from GDP) and each month
             (from the monthly growth measure), with directions, conviction and the
-            backtested hit rate of that kind of call
+            backtested hit rate of that kind of call; `hit_rates`, the backtest's
+            scorecard in one block; and `notes`, the story behind the numbers as
+            plain text (the next inflation print, the inflation path, oil, rents,
+            this quarter's growth, the pace assumed after it, rates, the consumer)
           - `us_sheet.json` -- the full data behind the page
           - `us_regime_sheet.html` -- the page
           - `us_run.txt` -- the console output of the live run

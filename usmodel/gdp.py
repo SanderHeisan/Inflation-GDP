@@ -66,8 +66,8 @@ def nowcast_qoq(gdp_level: pd.Series, indicators: dict) -> float:
 
     w = config.GDP_NOWCAST_WEIGHTS
     signals = {"momentum": gdp_level.pct_change().iloc[-2:].mean()}
-    if "ism" in indicators:            # 50 = neutral; calibrate the slope
-        signals["ism"] = (indicators["ism"] - 50.0) * 0.0006
+    # No ISM branch: there is no such series to be had (see config), and the
+    # free diffusion indices that replace it were scored and rejected.
     if "payrolls" in indicators:       # monthly payroll gain (k) -> QoQ proxy
         signals["payrolls"] = (indicators["payrolls"] - 100.0) * 0.00002
     if "retail" in indicators:

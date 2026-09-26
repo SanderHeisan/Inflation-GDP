@@ -29,6 +29,7 @@ DATA_DIR = Path(__file__).resolve().parent.parent / "data" / "us"
 # Activity indicators the GDP nowcast may use, if cached.
 INDICATOR_NAMES = ("payrolls", "indpro", "retail", "claims", "cfnai",
                    "sentiment", "yield_curve", "hours",
+                   "philly_fed", "philly_orders", "empire_fed", "dallas_fed",
                    "nfci", "credit_spread", "permits", "capex_orders",
                    "stocks", "real_m2", "housing_starts",
                    "real_pce", "real_income", "saving_rate",
@@ -54,6 +55,12 @@ class USDataBundle:
     cpi_shelter: pd.Series | None = None
     cpi_gasoline: pd.Series | None = None
     cpi_supercore: pd.Series | None = None
+    # The Atlanta Fed Wage Growth Tracker, ALREADY A PERCENT (median 12-month
+    # growth of individuals seen in both periods), not an index like `wages`.
+    # Anything reading it must not take a 12-month change of it again.
+    wage_tracker: pd.Series | None = None
+    wage_switcher: pd.Series | None = None
+    wage_stayer: pd.Series | None = None
     cpi_food: pd.Series | None = None
     cpi_energy: pd.Series | None = None
     gdp_vintages: pd.DataFrame | None = None
@@ -161,6 +168,9 @@ def load_bundle(data_dir: Path | str = DATA_DIR,
         cpi_nsa=opt("cpi_nsa"), cpi_core=opt("cpi_core"),
         cpi_shelter=opt("cpi_shelter"), cpi_gasoline=opt("cpi_gasoline"),
         cpi_supercore=opt("cpi_supercore"),
+        wage_tracker=opt("wage_tracker"),
+        wage_switcher=opt("wage_switcher"),
+        wage_stayer=opt("wage_stayer"),
         cpi_food=opt("cpi_food"),
         cpi_energy=opt("cpi_energy"),
         gdp_vintages=panel,

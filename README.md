@@ -268,6 +268,276 @@ consumer, interest rates and the subscriber's own view against the model's
 — with every hit rate read from `results_us/` so the page cannot quote a
 number the backtest did not produce. Regenerate it after each data release.
 
+`python us_feed.py` then writes `results_us/latest.json`, the compact feed a
+website reads: the quarters and months with their regimes, directions,
+conviction and hit rates; `hit_rates`, the backtest's scorecard in one block
+(the regime by distance, next month's inflation and the growth measure by
+conviction); and `notes`, the story behind the numbers as plain text with no
+markup (the next inflation print, the inflation path, oil, rents, this
+quarter's growth, the pace assumed after it, rates, the consumer), every
+sentence computed from the sheet. The "US macro regime" workflow publishes
+it to the `live-us-regime` branch on weekdays. `tests/test_us_feed.py` holds
+the contract and that no other vendor's product names are in the public
+blocks.
+
+## Sectors by regime
+
+`python us_sectors.py` answers "which sectors have done best in which R" with the SPDR
+sector funds (XLE, XLF, XLK, XLV, XLI, XLP, XLY, XLU, XLB, XLRE, XLC), SPY, long and
+intermediate Treasuries (TLT, IEF) and gold (GLD), from dividend-adjusted month-end
+closes (Yahoo Finance, cached in `data/us/sector_etf_monthly.csv`). It writes
+`results_us/us_sectors_by_regime.csv` (every cell: count, mean, median, share
+positive, excess over SPY, t-statistic) and `results_us/us_sectors_feed.json`, which
+`us_feed.py` folds into `latest.json` as `sectors`. Three bases, kept apart:
+
+- **Realized, monthly** (Feb 2008 to Jul 2026, 222 months): the regime each month turned
+  out to be, from the published data (the monthly growth measure's year-over-year change
+  and the CPI's, signs only). Known only after the fact.
+- **Called, monthly** (Jan 2017 to Sep 2026, 117 months): the model's point-in-time call for
+  month M made at the end of M-1 (the backtest's vintage builder). The version a reader
+  could have acted on; the call agrees with the outcome 57% of the time.
+- **Realized, quarterly** (Q4 1998 to Q2 2026, 111 quarters): real GDP year-over-year
+  direction x CPI year-over-year direction.
+
+Average month per regime (realized), SPY's average and share of positive months, and the
+funds with the best and worst average excess over SPY in that regime:
+
+| R | months | SPY | best vs SPY (pp a month) | worst vs SPY |
+|---|---|---|---|---|
+| R1 | 58 | +1.38% (64%) | Consumer discretionary (+0.91), Industrials (+0.57), Technology (+0.48) | Energy (-1.34), Treasuries (7 to 10 years) (-0.75), Consumer staples (-0.64) |
+| R2 | 55 | +1.69% (69%) | Technology (+0.96), Industrials (+0.09), Consumer discretionary (+0.05) | Treasuries (7 to 10 years) (-1.63), Long Treasuries (20+ years) (-1.54), Gold (-1.06) |
+| R3 | 58 | +0.84% (71%) | Energy (+1.16), Technology (+0.42), Communication services (+0.40) | Long Treasuries (20+ years) (-1.43), Treasuries (7 to 10 years) (-0.98), Utilities (-0.53) |
+| R4 | 51 | +0.10% (63%) | Health care (+0.90), Consumer staples (+0.74), Long Treasuries (20+ years) (+0.41) | Real estate (-0.65), Consumer discretionary (-0.52), Financials (-0.32) |
+
+On the model's own calls (Jan 2017 to Sep 2026):
+
+| R | months | SPY | best vs SPY | worst vs SPY |
+|---|---|---|---|---|
+| R1 | 36 | +1.93% (69%) | Technology (+1.18), Consumer discretionary (+0.64), Energy (+0.44) | Long Treasuries (20+ years) (-1.91), Treasuries (7 to 10 years) (-1.80), Consumer staples (-1.64) |
+| R2 | 20 | +2.83% (85%) | Technology (+1.41), Financials (+0.08), Energy (-0.24) | Treasuries (7 to 10 years) (-2.73), Long Treasuries (20+ years) (-2.58), Consumer staples (-2.08) |
+| R3 | 24 | +1.26% (71%) | Technology (+1.11), Consumer discretionary (+0.39), Communication services (-0.10) | Health care (-1.68), Long Treasuries (20+ years) (-1.48), Treasuries (7 to 10 years) (-1.14) |
+| R4 | 37 | -0.17% (62%) | Gold (+1.31), Health care (+1.25), Consumer staples (+1.15) | Consumer discretionary (-1.06), Communication services (-0.33), Materials (-0.33) |
+
+The pattern is the textbook one and it holds on the model's own calls: R2 (growth up,
+inflation up) is the strong regime for stocks and the weak one for bonds; R4 (both down)
+is the weak regime for stocks, where health care, staples, Treasuries and gold lead; R3
+(growth down, inflation up) is where energy and gold earn their keep. Plain averages over
+a handful of dozens of months each, so read the counts: nothing here is fitted, and none
+of it is a recommendation.
+
+## The wage input, and the round that tested it
+
+Core services ex shelter is the one CPI block built from wages:
+`supercore_yoy = a + b * wage_yoy`, with `a` and `b` refitted on each vintage's own
+published history (`usbacktest.vintage.estimate_supercore_passthrough`). The series
+behind `wage_yoy` is average hourly earnings (`CES0500000003`), a **mean** across
+whoever is on payrolls, so it moves when the composition of employment changes rather
+than when anyone is paid more. April 2020 printed +8.1% while the Atlanta Fed's
+matched-person tracker printed +3.7%: low-wage workers had been laid off, not given
+raises. Through 2022-24 the bias ran the other way, the tracker up to 2.5 points
+hotter. On the raw series the case for switching looks overwhelming: against services
+inflation on the 2015+ sample the tracker correlates 0.87 at a three to six month
+lead where average hourly earnings manages 0.48-0.51, and the two series' month-to-month
+**changes** correlate 0.05.
+
+So the swap was built and scored, point-in-time, 2017-01 to 2026-08, 116 month-end
+as-of dates. `USVintageConfig(wage_source="tracker")` feeds the block the Atlanta Fed
+Wage Growth Tracker (`FRBATLWGTUMHWGO`, published lag set to a deliberately
+conservative 20 days) instead, and the pass-through refits on whichever series is
+chosen. Pre-registered bar: the tracker replaces average hourly earnings only if the
+one-print-ahead CPI direction hit rate improves by at least 1.0 point on n >= 100, the
+projection error is no worse at every horizon, the quarterly regime call is not worse
+by more than 1.0 point, and neither half of the window is worse.
+
+**Verdict: 2 of 4. NOT A PROMOTION. The model stays on average hourly earnings.**
+
+| | average hourly earnings | tracker |
+|---|---|---|
+| CPI direction, one print ahead | 89.7% | 90.5% |
+| CPI error, MAE at 1 / 3 / 6 / 12 months | 0.131 / 0.451 / 0.795 / 1.495 | 0.130 / 0.452 / 0.801 / 1.510 |
+| Regime hit rate, horizons 0-4 | 0.596 / 0.378 / 0.389 / 0.381 / 0.333 | 0.596 / 0.378 / 0.389 / 0.390 / 0.333 |
+| Fitted pass-through across the 116 vintages | mean 0.581, sd 0.248, range 0.101-0.852 | mean 0.558, sd 0.120, range 0.455-0.733 |
+
+The direction figure fails the bar at +0.9 points, and the reason matters more than the
+number: **the two arms disagree on exactly one call in 116**, January 2022, where
+average hourly earnings predicted -0.013pp and the tracker +0.003pp. Both are zero to
+any honest reading. The median absolute change in the predicted month-ahead move across
+all 116 dates is 0.0044pp, and 10 of 580 quarterly regime calls differ.
+
+Why so little, when the raw series are so different? **The self-calibration had already
+absorbed it.** A series whose level is distorted by composition gets a compensating
+intercept and slope every time the block is refitted, so the distortion never reaches
+the projection. The last row of the table is the evidence: the tracker is clearly the
+better-behaved regressor, its fitted pass-through varying across a 0.28 band where
+average hourly earnings swings across 0.75 — and it still changes nothing, because the
+refit was doing that work already. The second reason is dilution: supercore is one of
+six CPI blocks, and shelter, which is larger, already carries new-lease rents at a
+year's lag.
+
+What would change the verdict: a fixed pass-through (then the series choice would matter
+a great deal, and the tracker would be the right one), a supercore-only scoring target
+rather than headline CPI, or true vintages for both series. Both arms here use the
+current vintage with truncation only, so neither gets revision-realistic treatment; that
+is an equal handicap, not a tilt.
+
+### Round 2: the fixed pass-through, which was supposed to rescue it
+
+Round 1's own explanation named the test that would overturn it, so it was run. Freeze
+the coefficient (`supercore_passthrough_fixed` / `supercore_intercept_fixed`, research
+only, off by default and leaving shelter untouched) and the wage series has to carry its
+own weight. Both coefficients are fitted once on the SAME pre-window months and then
+frozen, so neither series gets more history than the other, and nothing after the cut
+enters the fit.
+
+**It does not rescue the tracker. It makes the case against it stronger.**
+
+| frozen arms, 2017-01 to 2026-08 | average hourly earnings | tracker |
+|---|---|---|
+| CPI direction, one print ahead | 90.5% | 90.5% |
+| CPI error, MAE at 1 / 3 / 6 / 12 months | 0.128 / 0.437 / 0.765 / 1.444 | 0.130 / 0.451 / 0.799 / 1.515 |
+| Regime hit rate, horizons 0-4 | 0.596 / 0.387 / 0.407 / 0.391 / 0.353 | 0.588 / 0.378 / 0.389 / 0.391 / 0.333 |
+
+The direction call ties exactly: each series is right where the other is wrong on one
+month apiece. Average hourly earnings is better on error at every horizon and on the
+regime call at four of five. The tracker also fails the stability clause, 1.7 points
+worse in the first half of the window. **0 of 4. Still not a promotion.**
+
+Worth recording, because it is a trap this repo can fall into again: on the supercore
+block ALONE the frozen tracker looked clearly better, MAE 0.863 against 1.002. Being
+better at one of six CPI blocks did not survive into headline CPI. Block-level evidence
+is not evidence about the published call.
+
+### What the control arm found instead
+
+The same run compared frozen against refitted for each series, and turned up something
+nobody asked for: **freezing the supercore pass-through beats refitting it per vintage,
+on the series the model already uses.** Repeated at seven cut dates, each fitting before
+the cut and testing only after it:
+
+| fit through | AHE refit, MAE 12m | AHE frozen | AHE refit dir | AHE frozen dir |
+|---|---|---|---|---|
+| 2013 | 1.4629 | **1.4199** | 88.8% | **90.1%** |
+| 2014 | 1.3756 | **1.3348** | 90.0% | **91.4%** |
+| 2015 | 1.3890 | **1.3459** | 89.1% | **90.6%** |
+| 2016 | 1.4948 | **1.4440** | 89.7% | **90.5%** |
+| 2017 | 1.6517 | **1.5938** | 88.5% | **89.4%** |
+| 2018 | 1.7306 | **1.6669** | 88.0% | **89.1%** |
+| 2019 | 1.8607 | **1.7968** | 87.5% | **90.0%** |
+
+Seven of seven on error and seven of seven on direction. For the tracker the same test
+goes the other way, refit winning six of seven, and its direction call does not move at
+all. That resolves round 1's puzzle: average hourly earnings' LONG-RUN relationship with
+supercore is stable (the frozen b sits in 0.749-0.879 across every cut date), but the
+PER-VINTAGE refit was swinging across 0.101-0.852, fitting noise in short recent windows.
+Freezing it at the long-run value removes that noise. The tracker never had the problem,
+which is why freezing does nothing for it.
+
+**This is a lead, not a result, and it is NOT PROMOTED.** It came out of a control arm
+rather than a pre-registered hypothesis, and the cut dates were chosen as a round of
+years rather than by any rule. Promoting it needs its own round with its own bar: a
+rule for choosing and re-estimating the frozen coefficient (a long rolling window is the
+obvious candidate rather than a literal constant), the quarterly regime call scored as
+the target rather than watched, and the same treatment asked of the shelter pass-through,
+which is refitted the same way and may have the same problem.
+
+
+### Where it leaves the model
+
+The tracker is kept and **shown, not used**. `latest.json`'s `wages` driver row carries
+the matched-person number with average hourly earnings beside it and the job
+switcher/stayer split (`FRBATLWGT12MMUMHWGJSW` / `...JST`), because it is the better
+read for a person even though it is not a better input for this model.
+`tests/test_wage_source.py` pins the switch, the publication lag, the fact that the
+tracker is a rate and is never differenced again, the fallback when it is not cached,
+and that the default is still average hourly earnings.
+
+## Surveys, the dead ISM weight, and the peak that was not one
+
+`GDP_NOWCAST_WEIGHTS` carried an `ism` slot at 0.30 from the day the model was written
+and it never fired once. ISM restricted redistribution, FRED dropped the NAPM series,
+and nothing ever supplied one, so `gdp.nowcast_qoq` renormalised over its three real
+slots and a reader of the config was told a third of the growth fallback rested on an
+input that did not exist. It is gone. Removing it is numerically inert, and
+`tests/test_pmi_surveys.py` pins that rather than asking anyone to take it on trust. The
+slot was doubly dead: the live path is the ridge nowcast, and the weighted blend it sat
+in is only the fallback for vintages too early to fit.
+
+The free substitutes are the regional Fed manufacturing surveys, the same family of
+diffusion index and what forecasters use to nowcast the ISM itself. They are also the
+**timeliest** input available, published during the month they describe where payrolls
+land eight days after it and industrial production seventeen:
+
+| series | FRED id | from | publication lag used |
+|---|---|---|---|
+| Philadelphia, general activity | `GACDFSA066MSFRBPHI` | May 1968 | 0 |
+| Philadelphia, new orders | `NOCDFSA066MSFRBPHI` | May 1968 | 0 |
+| Empire State, general activity | `GACDISA066MSFRBNY` | Jul 2001 | 0 |
+| Dallas, business activity | `BACTSAMFRBDAL` | Jun 2004 | 0 |
+
+A lag of zero means "known once the month is over", which at the backtest's month-end
+as-of dates is exact and for a live run understates their timeliness. They enter the
+nowcast as LEVELS (`nowcast.SURVEY_SPEC`): a diffusion index is already a rate of change
+in disguise, so differencing it would ask for the change in the change.
+`USVintageConfig(nowcast_spec=...)` picks the panel: `base` is production, `surveys` adds
+all four, `philly` adds only the longest.
+
+### They make the size better and the direction worse
+
+Scored point-in-time, 2017-01 to 2026-08, 114 nowcasts. Pre-registered bar: the nowcast
+error improves, growth direction at horizon 0 improves by at least 2.0 points, the regime
+call is not worse by more than 1.0 point at any horizon, and neither half of the window
+is worse.
+
+| | base | + Philadelphia | + all four |
+|---|---|---|---|
+| Nowcast QoQ, MAE | 0.6609 | 0.6521 | 0.6526 |
+| Nowcast QoQ, RMSE | 1.3189 | 1.2480 | **1.1652** |
+| Growth direction, horizon 0 | **0.6667** | 0.6491 | 0.6053 |
+| Regime hit rate, horizon 0 | **0.5965** | 0.5789 | 0.5263 |
+| Growth direction, first / second half | 61.4 / 71.9 | 57.9 / 71.9 | 57.9 / 63.2 |
+
+**0 of 4. NOT A PROMOTION.** The surveys cut the nowcast's RMSE by 12%, so they genuinely
+help with the SIZE of a quarter, mostly by shrinking the large misses. They make the SIGN
+worse at every variant, and the sign is the only half the regime call uses. A more
+accurate level with a worse direction is worth nothing here. Horizons 1 to 4 barely move,
+which is expected: past the nowcast quarter this model does not forecast GDP at all.
+
+### The peak claim, tested
+
+The prompt for all this was a cycle-high PMI print and the inference that growth has
+therefore peaked and the cycle turns down. That is testable. Three point-in-time readings
+of "peaked", each against the question the model cares about: does the monthly growth
+measure's year-over-year rate come in LOWER k months later?
+
+Unconditionally it does 48.9% of the time at one month, 49.3% at three and six, 52.0% at
+twelve. A coin flip. Conditional on a survey standing at a twelve-month high:
+
+| survey (edge over base rate) | k=1 | k=3 | k=6 | k=12 | fires |
+|---|---|---|---|---|---|
+| Philadelphia, general activity | -12.9 | -21.3 | -9.3 | -12.0 | 25 |
+| Philadelphia, new orders | -5.5 | -19.3 | -12.7 | -15.4 | 30 |
+| Empire State | -19.2 | -30.8 | -27.1 | -18.7 | 27 |
+| Dallas | -11.4 | -30.6 | -27.5 | -14.5 | 32 |
+
+**Every survey, every horizon, the wrong sign for the thesis.** Eleven of twelve cells for
+"rolled over" (fell after a local high) go the same way. A survey at a twelve-month high
+has been followed by growth CONTINUING to accelerate more often than the base rate, not
+less: three months after an Empire State local high, growth was lower only 18.5% of the
+time against 49.3% unconditionally. At these horizons these indices carry momentum, not
+mean reversion into a growth decline.
+
+One cell supports the thesis and is worth naming rather than burying: Empire State in the
+top quintile of its trailing ten years is followed by lower growth twelve months later
+75.8% of the time against 52.0% base, on 33 observations. It is one survey at one horizon,
+it disagrees with the same survey's local-high result, and it is not enough to act on.
+
+Bounds on all of it: the sample is 2008-2026, 223 months, containing two downturns, so
+genuine pre-recession survey peaks are nearly absent from it; the windows overlap, so the
+effective sample is far smaller than 223; and a twelve-month high is a weak proxy for a
+cycle peak, which is only identifiable afterwards. What the test does establish is the
+narrower and more useful claim: **on this data, a high or newly-peaking survey is not by
+itself evidence that growth is about to turn down.**
+
 ## The stats
 
 Walk-forward and point-in-time. At each as-of date the information set is

@@ -73,6 +73,15 @@ FRED_SERIES = {
     "wti":           ("DCOILWTICO", "D"),
     "dollar":        ("DTWEXBGS", "D"),
     "wages":         ("CES0500000003", "M"),
+    # The Atlanta Fed Wage Growth Tracker: the median 12-month wage growth of
+    # individuals observed in the CPS in BOTH periods, so a change in WHO is
+    # employed cannot move it. Average hourly earnings is a mean over whoever
+    # happens to be on payrolls, which is why it printed 8.1% in April 2020
+    # while the tracker printed 3.7%: low-wage workers had been laid off, not
+    # given raises. Already a growth rate in percent, not an index.
+    "wage_tracker":  ("FRBATLWGTUMHWGO", "M"),          # overall, unweighted
+    "wage_switcher": ("FRBATLWGT12MMUMHWGJSW", "M"),    # job switchers
+    "wage_stayer":   ("FRBATLWGT12MMUMHWGJST", "M"),    # job stayers
     "cpi_shelter":   ("CUSR0000SAH1", "M"),
     "cpi_gasoline":  ("CUSR0000SETB01", "M"),
     "cpi_food":      ("CPIUFDSL", "M"),
@@ -87,6 +96,15 @@ FRED_SERIES = {
     "retail":        ("RSAFS", "M"),       # retail & food services sales ($m)
     "claims":        ("ICSA", "W"),        # initial jobless claims, weekly
     "cfnai":         ("CFNAI", "M"),       # Chicago Fed national activity index
+    # Regional Fed manufacturing surveys: diffusion indices of the same family
+    # as the ISM/PMI the config's dead `ism` weight was written for. ISM
+    # restricted redistribution and FRED dropped the NAPM series; S&P Global's
+    # PMI is licensed too. These are free, long, and are what forecasters use
+    # to nowcast the ISM in the first place. Philadelphia runs from 1968.
+    "philly_fed":    ("GACDFSA066MSFRBPHI", "M"),   # Philadelphia, general activity
+    "philly_orders": ("NOCDFSA066MSFRBPHI", "M"),   # Philadelphia, new orders
+    "empire_fed":    ("GACDISA066MSFRBNY", "M"),    # Empire State, general activity
+    "dallas_fed":    ("BACTSAMFRBDAL", "M"),        # Dallas, business activity
     "sentiment":     ("UMCSENT", "M"),     # U. Michigan consumer sentiment
     "yield_curve":   ("T10Y3M", "D"),      # 10y-3m spread, daily
     "hours":         ("AWHMAN", "M"),      # avg weekly hours, manufacturing
@@ -154,6 +172,16 @@ INDICATOR_PUB_LAG_DAYS = {
     "fed_funds": 0, "treasury_10y": 0, "mortgage_30y": 0,
     "household_net_worth": 75,
     "real_income_ex_transfers": 30, "hours_all": 8, "bbk_gdp": 75, "wei": 7,
+    # The Atlanta Fed publishes the tracker after the employment report it is
+    # built from. 20 days is deliberately conservative: understating what was
+    # knowable can only handicap the tracker in a comparison against AHE.
+    "wage_tracker": 20, "wage_switcher": 20, "wage_stayer": 20,
+    # The surveys are published DURING the month they describe (Philadelphia
+    # the third Thursday, Empire State around the 15th, Dallas near month
+    # end), so a month-end run has that month already. Zero means "known once
+    # the month is over", which at the backtest's month-end as-of dates is
+    # exactly right and for a live run understates the timeliness slightly.
+    "philly_fed": 0, "philly_orders": 0, "empire_fed": 0, "dallas_fed": 0,
 }
 
 DEFAULT_DATA_DIR = Path(__file__).resolve().parent.parent / "data" / "us"
