@@ -167,7 +167,14 @@ def realized_quarterly(bundle) -> pd.DataFrame:
 def cell_stats(rets: pd.DataFrame, regime: pd.Series, clear: Optional[pd.Series] = None,
                basis: str = "", clear_only: bool = False) -> pd.DataFrame:
     """One row per (regime, fund): count, mean, median, share positive,
-    excess over SPY and its t-statistic. Regime 0 is every period."""
+    share of periods that beat SPY, excess over SPY and its t-statistic.
+    Regime 0 is every period.
+
+    `hit` and `beat` answer different questions and the website needs the
+    second one: `hit` is how often the fund was UP, which in a rising decade
+    is high for nearly everything, while `beat` is how often it was ahead of
+    the index, which is the only one that says whether the regime favoured
+    it. A fund can be up in 70% of months and behind the index in most."""
     idx = rets.index.intersection(regime.index)
     if clear_only and clear is not None:
         idx = idx.intersection(clear[~clear].index)
@@ -185,6 +192,12 @@ def cell_stats(rets: pd.DataFrame, regime: pd.Series, clear: Optional[pd.Series]
             rows.append({
                 "basis": basis, "regime": r, "fund": t, "name": FUNDS.get(t, t), "n": int(len(s)),
                 "mean": float(s.mean()), "median": float(s.median()), "hit": float((s > 0).mean()),
+                "beat": (float((ex > 0).mean()) if ex is not None and len(ex) else None),
+                # counted, never reconstructed from the rate: a fund that
+                # launched mid-history has fewer months than the regime does,
+                # and fewer still than its own `n` where SPY is missing.
+                "beat_n": (int((ex > 0).sum()) if ex is not None and len(ex) else None),
+                "beat_d": (int(len(ex)) if ex is not None and len(ex) else None),
                 "excess": (float(ex.mean()) if ex is not None and len(ex) else None),
                 "tstat": (float(ex.mean() / (ex.std(ddof=1) / math.sqrt(len(ex)))) if ex is not None and len(ex) > 2 and ex.std(ddof=1) > 0 else None),
                 "first": str(s.index[0]), "last": str(s.index[-1]),
@@ -207,7 +220,11 @@ def _block(stats: pd.DataFrame, regime_series: pd.Series, funds: List[str], top:
         spy = stats[(stats["regime"] == r) & (stats["fund"] == BENCH)]
         ranked = sub.sort_values("excess", ascending=False)
         pick = lambda df: [{"fund": x.fund, "name": x.name, "mean": round(x.mean, 2), "excess": round(x.excess, 2),
-                            "hit": round(x.hit, 2), "n": int(x.n)} for x in df.itertuples()]
+                            "hit": round(x.hit, 2), "n": int(x.n),
+                            "beat": (round(x.beat, 2) if x.beat is not None and x.beat == x.beat else None),
+                            "beat_n": (int(x.beat_n) if x.beat_n is not None and x.beat_n == x.beat_n else None),
+                            "beat_d": (int(x.beat_d) if x.beat_d is not None and x.beat_d == x.beat_d else None)}
+                           for x in df.itertuples()]
         out["regimes"][str(r)] = {
             "n": int(counts.get(r, 0)),
             "spy_mean": (round(float(spy["mean"].iloc[0]), 2) if len(spy) else None),
@@ -221,6 +238,16 @@ def _block(stats: pd.DataFrame, regime_series: pd.Series, funds: List[str], top:
             key = "all" if r == 0 else f"r{r}"
             row[key] = (round(float(cell["mean"].iloc[0]), 2) if len(cell) else None)
             row[key + "_n"] = (int(cell["n"].iloc[0]) if len(cell) else 0)
+            # How often the fund was AHEAD OF the index in that cell, which is
+            # the question a reader actually has; the mean beside it says by
+            # how much. Carried as the two COUNTS, never as a rate: the rate
+            # follows exactly from them, and a fund that launched mid-history
+            # has its own denominator. Null for the benchmark, which cannot
+            # beat itself.
+            bn = (cell["beat_n"].iloc[0] if len(cell) else None)
+            bd = (cell["beat_d"].iloc[0] if len(cell) else None)
+            row[key + "_beat_n"] = (int(bn) if bn is not None and bn == bn else None)
+            row[key + "_beat_d"] = (int(bd) if bd is not None and bd == bd else None)
         out["table"].append(row)
     return out
 
@@ -277,8 +304,11 @@ def print_summary(res: dict) -> None:
         print(f"\n== {basis}: {blk['span']} ({blk['n']} periods)" + (f", call agrees with outcome {blk['agreement']:.0%} of {blk['agreement_n']}" if blk.get("agreement") is not None else ""))
         for r in ("1", "2", "3", "4"):
             g = blk["regimes"][r]
-            best = ", ".join(f"{b['fund']} {b['excess']:+.2f}" for b in g["best"])
-            worst = ", ".join(f"{b['fund']} {b['excess']:+.2f}" for b in g["worst"])
+            def _fmt(b):
+                beat = f" beat {b['beat_n']}/{b['beat_d']}" if b.get("beat_d") else ""
+                return f"{b['fund']} {b['excess']:+.2f}{beat}"
+            best = ", ".join(_fmt(b) for b in g["best"])
+            worst = ", ".join(_fmt(b) for b in g["worst"])
             print(f"  R{r}: n={g['n']:3d}  SPY avg {g['spy_mean']:+.2f}% ({g['spy_hit']:.0%} positive)  best vs SPY: {best}  |  worst: {worst}")
 
 
