@@ -1,0 +1,2035 @@
+{
+ "generated_utc": "2026-09-26T08:39:42+00:00",
+ "asof": "2026-09-26",
+ "cpi_through": "Aug 2026",
+ "gdp_through": "Q2 2026",
+ "regimes": {
+  "1": "Sweet spot",
+  "2": "Heating",
+  "3": "Squeeze",
+  "4": "Cooling"
+ },
+ "quarters": [
+  {
+   "quarter": "2026Q1",
+   "label": "Q1 2026",
+   "regime": 1,
+   "regime_name": "Sweet spot",
+   "too_close_to_call": true,
+   "realized": true,
+   "growth_yoy": 2.68,
+   "growth_dir": "up",
+   "inflation_yoy": 2.7,
+   "inflation_dir": "down",
+   "backtest_hit": null
+  },
+  {
+   "quarter": "2026Q2",
+   "label": "Q2 2026",
+   "regime": 3,
+   "regime_name": "Squeeze",
+   "too_close_to_call": false,
+   "realized": true,
+   "growth_yoy": 2.1,
+   "growth_dir": "down",
+   "inflation_yoy": 3.8,
+   "inflation_dir": "up",
+   "backtest_hit": null
+  },
+  {
+   "quarter": "2026Q3",
+   "label": "Q3 2026",
+   "regime": 4,
+   "regime_name": "Cooling",
+   "too_close_to_call": false,
+   "realized": false,
+   "growth_yoy": 1.68,
+   "growth_dir": "down",
+   "inflation_yoy": 3.39,
+   "inflation_dir": "down",
+   "backtest_hit": 0.6403508771929824
+  },
+  {
+   "quarter": "2026Q4",
+   "label": "Q4 2026",
+   "regime": 2,
+   "regime_name": "Heating",
+   "too_close_to_call": false,
+   "realized": false,
+   "growth_yoy": 2.13,
+   "growth_dir": "up",
+   "inflation_yoy": 3.58,
+   "inflation_dir": "up",
+   "backtest_hit": 0.3783783783783784
+  },
+  {
+   "quarter": "2027Q1",
+   "label": "Q1 2027",
+   "regime": 1,
+   "regime_name": "Sweet spot",
+   "too_close_to_call": true,
+   "realized": false,
+   "growth_yoy": 2.17,
+   "growth_dir": "up",
+   "inflation_yoy": 3.25,
+   "inflation_dir": "down",
+   "backtest_hit": 0.3888888888888889
+  },
+  {
+   "quarter": "2027Q2",
+   "label": "Q2 2027",
+   "regime": 1,
+   "regime_name": "Sweet spot",
+   "too_close_to_call": false,
+   "realized": false,
+   "growth_yoy": 2.29,
+   "growth_dir": "up",
+   "inflation_yoy": 2.29,
+   "inflation_dir": "down",
+   "backtest_hit": 0.3523809523809524
+  },
+  {
+   "quarter": "2027Q3",
+   "label": "Q3 2027",
+   "regime": 3,
+   "regime_name": "Squeeze",
+   "too_close_to_call": false,
+   "realized": false,
+   "growth_yoy": 2.05,
+   "growth_dir": "down",
+   "inflation_yoy": 2.49,
+   "inflation_dir": "up",
+   "backtest_hit": 0.2549019607843137
+  },
+  {
+   "quarter": "2027Q4",
+   "label": "Q4 2027",
+   "regime": 4,
+   "regime_name": "Cooling",
+   "too_close_to_call": false,
+   "realized": false,
+   "growth_yoy": 1.89,
+   "growth_dir": "down",
+   "inflation_yoy": 2.23,
+   "inflation_dir": "down",
+   "backtest_hit": null
+  }
+ ],
+ "months": [
+  {
+   "month": "2026-06",
+   "label": "Jun 2026",
+   "regime": 1,
+   "regime_name": "Sweet spot",
+   "too_close_to_call": false,
+   "status": "actual",
+   "growth_measure_yoy": 2.03,
+   "growth_dir": "up",
+   "growth_conviction": "lean (0.05-0.15pp)",
+   "growth_hit": null,
+   "cpi_yoy": 3.46,
+   "cpi_mom": -0.42,
+   "cpi_dir": "down",
+   "cpi_conviction": "strong",
+   "cpi_hit": 1.0,
+   "hedgeye_regime": null
+  },
+  {
+   "month": "2026-07",
+   "label": "Jul 2026",
+   "regime": 4,
+   "regime_name": "Cooling",
+   "too_close_to_call": false,
+   "status": "actual",
+   "growth_measure_yoy": 1.52,
+   "growth_dir": "down",
+   "growth_conviction": "strong (>0.30pp)",
+   "growth_hit": null,
+   "cpi_yoy": 3.3,
+   "cpi_mom": 0.07,
+   "cpi_dir": "down",
+   "cpi_conviction": "good",
+   "cpi_hit": 0.895,
+   "hedgeye_regime": 4
+  },
+  {
+   "month": "2026-08",
+   "label": "Aug 2026",
+   "regime": 2,
+   "regime_name": "Heating",
+   "too_close_to_call": true,
+   "status": "nowcast",
+   "growth_measure_yoy": 1.66,
+   "growth_dir": "up",
+   "growth_conviction": "lean (0.05-0.15pp)",
+   "growth_hit": 0.7075471698113207,
+   "cpi_yoy": 3.35,
+   "cpi_mom": 0.4,
+   "cpi_dir": "up",
+   "cpi_conviction": "toss-up",
+   "cpi_hit": 0.667,
+   "hedgeye_regime": 3
+  },
+  {
+   "month": "2026-09",
+   "label": "Sep 2026",
+   "regime": 2,
+   "regime_name": "Heating",
+   "too_close_to_call": false,
+   "status": "forecast",
+   "growth_measure_yoy": 1.79,
+   "growth_dir": "up",
+   "growth_conviction": "lean (0.05-0.15pp)",
+   "growth_hit": 0.6494845360824743,
+   "cpi_yoy": 3.51,
+   "cpi_mom": 0.45,
+   "cpi_dir": "up",
+   "cpi_conviction": "good",
+   "cpi_hit": 0.895,
+   "hedgeye_regime": 2
+  },
+  {
+   "month": "2026-10",
+   "label": "Oct 2026",
+   "regime": 2,
+   "regime_name": "Heating",
+   "too_close_to_call": false,
+   "status": "forecast",
+   "growth_measure_yoy": 1.98,
+   "growth_dir": "up",
+   "growth_conviction": "call (0.15-0.30pp)",
+   "growth_hit": 0.826530612244898,
+   "cpi_yoy": 3.58,
+   "cpi_mom": 0.19,
+   "cpi_dir": "up",
+   "cpi_conviction": "lean",
+   "cpi_hit": 0.903,
+   "hedgeye_regime": 2
+  },
+  {
+   "month": "2026-11",
+   "label": "Nov 2026",
+   "regime": 2,
+   "regime_name": "Heating",
+   "too_close_to_call": false,
+   "status": "forecast",
+   "growth_measure_yoy": 2.13,
+   "growth_dir": "up",
+   "growth_conviction": "lean (0.05-0.15pp)",
+   "growth_hit": null,
+   "cpi_yoy": 3.64,
+   "cpi_mom": 0.19,
+   "cpi_dir": "up",
+   "cpi_conviction": "lean",
+   "cpi_hit": 0.903,
+   "hedgeye_regime": 1
+  },
+  {
+   "month": "2026-12",
+   "label": "Dec 2026",
+   "regime": 1,
+   "regime_name": "Sweet spot",
+   "too_close_to_call": false,
+   "status": "forecast",
+   "growth_measure_yoy": 2.31,
+   "growth_dir": "up",
+   "growth_conviction": "call (0.15-0.30pp)",
+   "growth_hit": null,
+   "cpi_yoy": 3.52,
+   "cpi_mom": 0.18,
+   "cpi_dir": "down",
+   "cpi_conviction": "lean",
+   "cpi_hit": 0.903,
+   "hedgeye_regime": 2
+  },
+  {
+   "month": "2027-01",
+   "label": "Jan 2027",
+   "regime": 2,
+   "regime_name": "Heating",
+   "too_close_to_call": true,
+   "status": "forecast",
+   "growth_measure_yoy": 2.67,
+   "growth_dir": "up",
+   "growth_conviction": "strong (>0.30pp)",
+   "growth_hit": null,
+   "cpi_yoy": 3.54,
+   "cpi_mom": 0.18,
+   "cpi_dir": "up",
+   "cpi_conviction": "toss-up",
+   "cpi_hit": 0.667,
+   "hedgeye_regime": 2
+  },
+  {
+   "month": "2027-02",
+   "label": "Feb 2027",
+   "regime": 4,
+   "regime_name": "Cooling",
+   "too_close_to_call": false,
+   "status": "forecast",
+   "growth_measure_yoy": 2.62,
+   "growth_dir": "down",
+   "growth_conviction": "lean (0.05-0.15pp)",
+   "growth_hit": null,
+   "cpi_yoy": 3.45,
+   "cpi_mom": 0.18,
+   "cpi_dir": "down",
+   "cpi_conviction": "lean",
+   "cpi_hit": 0.903,
+   "hedgeye_regime": 4
+  },
+  {
+   "month": "2027-03",
+   "label": "Mar 2027",
+   "regime": 1,
+   "regime_name": "Sweet spot",
+   "too_close_to_call": true,
+   "status": "forecast",
+   "growth_measure_yoy": 2.64,
+   "growth_dir": "up",
+   "growth_conviction": "toss-up (<0.05pp)",
+   "growth_hit": null,
+   "cpi_yoy": 2.75,
+   "cpi_mom": 0.18,
+   "cpi_dir": "down",
+   "cpi_conviction": "strong",
+   "cpi_hit": 1.0,
+   "hedgeye_regime": 1
+  },
+  {
+   "month": "2027-04",
+   "label": "Apr 2027",
+   "regime": 4,
+   "regime_name": "Cooling",
+   "too_close_to_call": true,
+   "status": "forecast",
+   "growth_measure_yoy": 2.62,
+   "growth_dir": "down",
+   "growth_conviction": "toss-up (<0.05pp)",
+   "growth_hit": null,
+   "cpi_yoy": 2.28,
+   "cpi_mom": 0.18,
+   "cpi_dir": "down",
+   "cpi_conviction": "strong",
+   "cpi_hit": 1.0,
+   "hedgeye_regime": 1
+  },
+  {
+   "month": "2027-05",
+   "label": "May 2027",
+   "regime": 4,
+   "regime_name": "Cooling",
+   "too_close_to_call": false,
+   "status": "forecast",
+   "growth_measure_yoy": 2.55,
+   "growth_dir": "down",
+   "growth_conviction": "lean (0.05-0.15pp)",
+   "growth_hit": null,
+   "cpi_yoy": 1.98,
+   "cpi_mom": 0.18,
+   "cpi_dir": "down",
+   "cpi_conviction": "good",
+   "cpi_hit": 0.895,
+   "hedgeye_regime": 4
+  },
+  {
+   "month": "2027-06",
+   "label": "Jun 2027",
+   "regime": 3,
+   "regime_name": "Squeeze",
+   "too_close_to_call": false,
+   "status": "forecast",
+   "growth_measure_yoy": 2.39,
+   "growth_dir": "down",
+   "growth_conviction": "call (0.15-0.30pp)",
+   "growth_hit": null,
+   "cpi_yoy": 2.61,
+   "cpi_mom": 0.18,
+   "cpi_dir": "up",
+   "cpi_conviction": "strong",
+   "cpi_hit": 1.0,
+   "hedgeye_regime": 3
+  },
+  {
+   "month": "2027-07",
+   "label": "Jul 2027",
+   "regime": 2,
+   "regime_name": "Heating",
+   "too_close_to_call": false,
+   "status": "forecast",
+   "growth_measure_yoy": 2.62,
+   "growth_dir": "up",
+   "growth_conviction": "call (0.15-0.30pp)",
+   "growth_hit": null,
+   "cpi_yoy": 2.72,
+   "cpi_mom": 0.18,
+   "cpi_dir": "up",
+   "cpi_conviction": "lean",
+   "cpi_hit": 0.903,
+   "hedgeye_regime": 2
+  },
+  {
+   "month": "2027-08",
+   "label": "Aug 2027",
+   "regime": 4,
+   "regime_name": "Cooling",
+   "too_close_to_call": true,
+   "status": "forecast",
+   "growth_measure_yoy": 2.57,
+   "growth_dir": "down",
+   "growth_conviction": "toss-up (<0.05pp)",
+   "growth_hit": null,
+   "cpi_yoy": 2.5,
+   "cpi_mom": 0.19,
+   "cpi_dir": "down",
+   "cpi_conviction": "good",
+   "cpi_hit": 0.895,
+   "hedgeye_regime": null
+  },
+  {
+   "month": "2027-09",
+   "label": "Sep 2027",
+   "regime": 4,
+   "regime_name": "Cooling",
+   "too_close_to_call": true,
+   "status": "forecast",
+   "growth_measure_yoy": 2.57,
+   "growth_dir": "down",
+   "growth_conviction": "toss-up (<0.05pp)",
+   "growth_hit": null,
+   "cpi_yoy": 2.23,
+   "cpi_mom": 0.19,
+   "cpi_dir": "down",
+   "cpi_conviction": "good",
+   "cpi_hit": 0.895,
+   "hedgeye_regime": null
+  },
+  {
+   "month": "2027-10",
+   "label": "Oct 2027",
+   "regime": 4,
+   "regime_name": "Cooling",
+   "too_close_to_call": true,
+   "status": "forecast",
+   "growth_measure_yoy": 2.57,
+   "growth_dir": "down",
+   "growth_conviction": "toss-up (<0.05pp)",
+   "growth_hit": null,
+   "cpi_yoy": 2.23,
+   "cpi_mom": 0.19,
+   "cpi_dir": "down",
+   "cpi_conviction": "toss-up",
+   "cpi_hit": 0.667,
+   "hedgeye_regime": null
+  },
+  {
+   "month": "2027-11",
+   "label": "Nov 2027",
+   "regime": 1,
+   "regime_name": "Sweet spot",
+   "too_close_to_call": true,
+   "status": "forecast",
+   "growth_measure_yoy": 2.57,
+   "growth_dir": "up",
+   "growth_conviction": "toss-up (<0.05pp)",
+   "growth_hit": null,
+   "cpi_yoy": 2.23,
+   "cpi_mom": 0.19,
+   "cpi_dir": "down",
+   "cpi_conviction": "toss-up",
+   "cpi_hit": 0.667,
+   "hedgeye_regime": null
+  },
+  {
+   "month": "2027-12",
+   "label": "Dec 2027",
+   "regime": 3,
+   "regime_name": "Squeeze",
+   "too_close_to_call": true,
+   "status": "forecast",
+   "growth_measure_yoy": 2.57,
+   "growth_dir": "down",
+   "growth_conviction": "toss-up (<0.05pp)",
+   "growth_hit": null,
+   "cpi_yoy": 2.23,
+   "cpi_mom": 0.19,
+   "cpi_dir": "up",
+   "cpi_conviction": "toss-up",
+   "cpi_hit": 0.667,
+   "hedgeye_regime": null
+  },
+  {
+   "month": "2028-01",
+   "label": "Jan 2028",
+   "regime": 3,
+   "regime_name": "Squeeze",
+   "too_close_to_call": true,
+   "status": "forecast",
+   "growth_measure_yoy": 2.57,
+   "growth_dir": "down",
+   "growth_conviction": "toss-up (<0.05pp)",
+   "growth_hit": null,
+   "cpi_yoy": 2.24,
+   "cpi_mom": 0.19,
+   "cpi_dir": "up",
+   "cpi_conviction": "toss-up",
+   "cpi_hit": 0.667,
+   "hedgeye_regime": null
+  }
+ ],
+ "source": "https://github.com/SanderHeisan/Inflation-GDP",
+ "hit_rates": {
+  "n_asof": 114,
+  "span": "January 2017 to September 2026",
+  "regime_by_horizon": {
+   "0": 0.64,
+   "1": 0.378,
+   "2": 0.389,
+   "3": 0.352,
+   "4": 0.255
+  },
+  "regime_this_quarter_clear": 0.704,
+  "growth_quarter_by_horizon": {
+   "0": 0.649,
+   "1": 0.568,
+   "2": 0.583,
+   "3": 0.581,
+   "4": 0.51
+  },
+  "inflation_quarter_by_horizon": {
+   "0": 0.871,
+   "1": 0.711,
+   "2": 0.685,
+   "3": 0.648,
+   "4": 0.638
+  },
+  "cpi_month": {
+   "all": 0.897,
+   "strong": 1.0,
+   "good": 0.895,
+   "lean": 0.903,
+   "toss-up": 0.667
+  },
+  "growth_month": {
+   "h1": 0.85,
+   "h2": 0.793,
+   "h3": 0.814,
+   "nowcast": 0.905,
+   "strong": 1.0,
+   "good": 0.935,
+   "lean": 0.708,
+   "toss-up": 0.646,
+   "vs_quarter_gdp": 0.544,
+   "n": 367
+  }
+ },
+ "notes": [
+  {
+   "key": "inflation_next",
+   "title": "The next inflation print, Sep 2026",
+   "text": "+0.45% on the month, 3.51% year over year (up from 3.35%). Gasoline adds +0.27 points (pump prices are +6.4% this month so far), rents +0.08, everything else +0.10."
+  },
+  {
+   "key": "inflation_path",
+   "title": "The inflation path",
+   "text": "Inflation tops out at 3.64% in Nov 2026 and falls to 1.98% by May 2027. Much of the fall is arithmetic rather than forecast: the largest monthly price rises of the past year drop out of the twelve-month comparison one by one, and those months carry the strongest calls."
+  },
+  {
+   "key": "energy",
+   "title": "Oil and the pump",
+   "text": "Oil is $98 a barrel against $84 in Aug 2026, and the pump price is $4.32 a gallon. In the data since 2000, $1 on a barrel of oil has been worth about 0.03 points on inflation, and pump prices follow oil by a few weeks."
+  },
+  {
+   "key": "rents_wages",
+   "title": "Rents and wages",
+   "text": "Rents in the index follow new-lease rents with about a year's lag; those are up 2.5%, so rents add a steady 0.08 points a month. Wages are up 3.1%, which feeds services prices slowly."
+  },
+  {
+   "key": "growth_now",
+   "title": "Growth this quarter, Q3 2026",
+   "text": "About +2.7% annualized, estimated from jobs, industrial production, retail sales and jobless claims with 2 of 3 months in. That falls short of the +4.4% pace of the same quarter last year, so year-over-year growth slips to 1.7%."
+  },
+  {
+   "key": "growth_after",
+   "title": "After this quarter",
+   "text": "The model does not forecast GDP two to four quarters out; every method tried did worse than a constant. It assumes the economy's normal pace, 2.0% a year, adjusted for interest rates. Up or down is then decided by the bar to beat: year-over-year growth rises only in a quarter that grows faster than the same quarter a year earlier, and those bars are already published."
+  },
+  {
+   "key": "rates",
+   "title": "Interest rates",
+   "text": "The Fed funds rate was 3.71% through September 2026, and the market path reaches 4.63% by July 2027. Rate changes reach growth with a lag: about 0.4 points of annual growth per 1 point of change, two to six quarters later. The Fed cut 1.6 points over the last two years, so the cuts still help growth for now; the new hikes start to bite in Q3 2027."
+  },
+  {
+   "key": "consumer",
+   "title": "The consumer",
+   "text": "Consumer spending is about two thirds of GDP. Right now consumer spending is +2.1% on a year ago (normal against the last ten years); consumer confidence is 52 (very low against the last ten years); household wealth is +11.8% on a year ago (high against the last ten years); income after inflation is +0.5% (low against the last ten years); the saving rate is 3.0% of income (very low against the last ten years); the 30-year mortgage rate is 6.86%. Weak income after inflation is the soft spot: spending is being carried by a low saving rate, not by pay."
+  }
+ ],
+ "drivers": [
+  {
+   "key": "oil",
+   "label": "Oil (WTI)",
+   "value": "$98 a barrel",
+   "change": "+15 since Aug 2026",
+   "level": "",
+   "note": "Each $1 on a barrel has been worth about 0.03 points on inflation since 2000."
+  },
+  {
+   "key": "pump",
+   "label": "Pump price",
+   "value": "$4.32 a gallon",
+   "change": "+6.4% this month so far",
+   "level": "",
+   "note": "Adds +0.27 points to Sep 2026 inflation; pump prices follow oil by a few weeks."
+  },
+  {
+   "key": "rents",
+   "label": "Market rents, new leases",
+   "value": "+2.5% year over year",
+   "change": "",
+   "level": "",
+   "note": "Rents in the index follow with about a year's lag, about 0.08 points a month."
+  },
+  {
+   "key": "wages",
+   "label": "Wages, same people year on year",
+   "value": "+4.1% year over year",
+   "change": "average hourly earnings +3.1%",
+   "level": "job switchers +4.4%, stayers +3.6%",
+   "note": "Median raise for people employed in both periods, so layoffs cannot flatter it. Feeds services prices slowly."
+  },
+  {
+   "key": "growth_pace",
+   "label": "Growth pace, Q3 2026",
+   "value": "+2.7% annualized",
+   "change": "bar to beat +4.4%",
+   "level": "",
+   "note": "2 of 3 months in; year-over-year growth slips to 1.7%."
+  },
+  {
+   "key": "pace_after",
+   "label": "Pace assumed after this quarter",
+   "value": "2.0% a year",
+   "change": "",
+   "level": "",
+   "note": "A normal pace, adjusted for interest rates; the model does not forecast GDP further out."
+  },
+  {
+   "key": "fed_funds",
+   "label": "Fed funds rate",
+   "value": "3.71%",
+   "change": "-1.6 points over two years",
+   "level": "normal against the last ten years",
+   "note": "Market path to 4.63% by July 2027; hikes reach growth two to six quarters later, biting from Q3 2027."
+  },
+  {
+   "key": "spending",
+   "label": "Consumer spending",
+   "value": "+2.1% year over year",
+   "change": "",
+   "level": "normal against the last ten years",
+   "note": "About two thirds of GDP. Very hot spending has been followed by slower growth about 7 times in 10."
+  },
+  {
+   "key": "confidence",
+   "label": "Consumer confidence",
+   "value": "52 (University of Michigan)",
+   "change": "",
+   "level": "very low against the last ten years",
+   "note": "Very low confidence has not meant weaker growth: the next quarter was higher 63% of the time."
+  },
+  {
+   "key": "wealth",
+   "label": "Household wealth",
+   "value": "$196 trillion",
+   "change": "+11.8% year over year",
+   "level": "high against the last ten years",
+   "note": "Fast wealth gains have meant slowing growth three to four quarters later 61% to 68% of the time."
+  },
+  {
+   "key": "income",
+   "label": "Income after inflation",
+   "value": "+0.5% year over year",
+   "change": "",
+   "level": "low against the last ten years",
+   "note": "Weak real income is the soft spot: spending carried by a low saving rate, not by pay."
+  },
+  {
+   "key": "saving",
+   "label": "Saving rate",
+   "value": "3.0% of income",
+   "change": "",
+   "level": "very low against the last ten years",
+   "note": "Extremes carry no measured signal for next quarter, but it is the cushion that is gone when very low."
+  },
+  {
+   "key": "mortgage",
+   "label": "30-year mortgage rate",
+   "value": "6.86%",
+   "change": "+0.14 points over a year",
+   "level": "normal against the last ten years",
+   "note": "Falling mortgage rates have been a strong lead on faster growth (75% to 79%); rising ones a weak lead on slower growth."
+  }
+ ],
+ "sectors": {
+  "generated": "2026-09-26",
+  "funds": {
+   "SPY": "S&P 500",
+   "XLE": "Energy",
+   "XLF": "Financials",
+   "XLK": "Technology",
+   "XLV": "Health care",
+   "XLI": "Industrials",
+   "XLP": "Consumer staples",
+   "XLY": "Consumer discretionary",
+   "XLU": "Utilities",
+   "XLB": "Materials",
+   "XLRE": "Real estate",
+   "XLC": "Communication services",
+   "TLT": "Long Treasuries (20+ years)",
+   "IEF": "Treasuries (7 to 10 years)",
+   "GLD": "Gold"
+  },
+  "realized_monthly": {
+   "span": "Feb 2008 to Jul 2026",
+   "n": 222,
+   "regimes": {
+    "1": {
+     "n": 58,
+     "spy_mean": 1.38,
+     "spy_hit": 0.64,
+     "best": [
+      {
+       "fund": "XLY",
+       "name": "Consumer discretionary",
+       "mean": 2.3,
+       "excess": 0.91,
+       "hit": 0.71,
+       "n": 58
+      },
+      {
+       "fund": "XLI",
+       "name": "Industrials",
+       "mean": 1.96,
+       "excess": 0.57,
+       "hit": 0.66,
+       "n": 58
+      },
+      {
+       "fund": "XLK",
+       "name": "Technology",
+       "mean": 1.87,
+       "excess": 0.48,
+       "hit": 0.66,
+       "n": 58
+      }
+     ],
+     "worst": [
+      {
+       "fund": "XLE",
+       "name": "Energy",
+       "mean": 0.05,
+       "excess": -1.34,
+       "hit": 0.45,
+       "n": 58
+      },
+      {
+       "fund": "IEF",
+       "name": "Treasuries (7 to 10 years)",
+       "mean": 0.64,
+       "excess": -0.75,
+       "hit": 0.67,
+       "n": 58
+      },
+      {
+       "fund": "XLP",
+       "name": "Consumer staples",
+       "mean": 0.74,
+       "excess": -0.64,
+       "hit": 0.57,
+       "n": 58
+      }
+     ]
+    },
+    "2": {
+     "n": 55,
+     "spy_mean": 1.69,
+     "spy_hit": 0.69,
+     "best": [
+      {
+       "fund": "XLK",
+       "name": "Technology",
+       "mean": 2.66,
+       "excess": 0.96,
+       "hit": 0.67,
+       "n": 55
+      },
+      {
+       "fund": "XLI",
+       "name": "Industrials",
+       "mean": 1.79,
+       "excess": 0.09,
+       "hit": 0.65,
+       "n": 55
+      },
+      {
+       "fund": "XLY",
+       "name": "Consumer discretionary",
+       "mean": 1.74,
+       "excess": 0.05,
+       "hit": 0.65,
+       "n": 55
+      }
+     ],
+     "worst": [
+      {
+       "fund": "IEF",
+       "name": "Treasuries (7 to 10 years)",
+       "mean": 0.07,
+       "excess": -1.63,
+       "hit": 0.42,
+       "n": 55
+      },
+      {
+       "fund": "TLT",
+       "name": "Long Treasuries (20+ years)",
+       "mean": 0.15,
+       "excess": -1.54,
+       "hit": 0.47,
+       "n": 55
+      },
+      {
+       "fund": "GLD",
+       "name": "Gold",
+       "mean": 0.64,
+       "excess": -1.06,
+       "hit": 0.51,
+       "n": 55
+      }
+     ]
+    },
+    "3": {
+     "n": 58,
+     "spy_mean": 0.84,
+     "spy_hit": 0.71,
+     "best": [
+      {
+       "fund": "XLE",
+       "name": "Energy",
+       "mean": 1.99,
+       "excess": 1.16,
+       "hit": 0.67,
+       "n": 58
+      },
+      {
+       "fund": "XLK",
+       "name": "Technology",
+       "mean": 1.26,
+       "excess": 0.42,
+       "hit": 0.62,
+       "n": 58
+      },
+      {
+       "fund": "XLC",
+       "name": "Communication services",
+       "mean": 1.03,
+       "excess": 0.4,
+       "hit": 0.67,
+       "n": 21
+      }
+     ],
+     "worst": [
+      {
+       "fund": "TLT",
+       "name": "Long Treasuries (20+ years)",
+       "mean": -0.59,
+       "excess": -1.43,
+       "hit": 0.38,
+       "n": 58
+      },
+      {
+       "fund": "IEF",
+       "name": "Treasuries (7 to 10 years)",
+       "mean": -0.14,
+       "excess": -0.98,
+       "hit": 0.45,
+       "n": 58
+      },
+      {
+       "fund": "XLU",
+       "name": "Utilities",
+       "mean": 0.3,
+       "excess": -0.53,
+       "hit": 0.57,
+       "n": 58
+      }
+     ]
+    },
+    "4": {
+     "n": 51,
+     "spy_mean": 0.1,
+     "spy_hit": 0.63,
+     "best": [
+      {
+       "fund": "XLV",
+       "name": "Health care",
+       "mean": 1.0,
+       "excess": 0.9,
+       "hit": 0.61,
+       "n": 51
+      },
+      {
+       "fund": "XLP",
+       "name": "Consumer staples",
+       "mean": 0.84,
+       "excess": 0.74,
+       "hit": 0.63,
+       "n": 51
+      },
+      {
+       "fund": "TLT",
+       "name": "Long Treasuries (20+ years)",
+       "mean": 0.51,
+       "excess": 0.41,
+       "hit": 0.57,
+       "n": 51
+      }
+     ],
+     "worst": [
+      {
+       "fund": "XLRE",
+       "name": "Real estate",
+       "mean": -0.32,
+       "excess": -0.65,
+       "hit": 0.5,
+       "n": 28
+      },
+      {
+       "fund": "XLY",
+       "name": "Consumer discretionary",
+       "mean": -0.42,
+       "excess": -0.52,
+       "hit": 0.49,
+       "n": 51
+      },
+      {
+       "fund": "XLF",
+       "name": "Financials",
+       "mean": -0.22,
+       "excess": -0.32,
+       "hit": 0.55,
+       "n": 51
+      }
+     ]
+    }
+   },
+   "table": [
+    {
+     "fund": "SPY",
+     "name": "S&P 500",
+     "all": 1.02,
+     "all_n": 222,
+     "r1": 1.38,
+     "r1_n": 58,
+     "r2": 1.69,
+     "r2_n": 55,
+     "r3": 0.84,
+     "r3_n": 58,
+     "r4": 0.1,
+     "r4_n": 51
+    },
+    {
+     "fund": "XLE",
+     "name": "Energy",
+     "all": 0.8,
+     "all_n": 222,
+     "r1": 0.05,
+     "r1_n": 58,
+     "r2": 0.7,
+     "r2_n": 55,
+     "r3": 1.99,
+     "r3_n": 58,
+     "r4": 0.42,
+     "r4_n": 51
+    },
+    {
+     "fund": "XLF",
+     "name": "Financials",
+     "all": 0.78,
+     "all_n": 222,
+     "r1": 1.17,
+     "r1_n": 58,
+     "r2": 1.26,
+     "r2_n": 55,
+     "r3": 0.81,
+     "r3_n": 58,
+     "r4": -0.22,
+     "r4_n": 51
+    },
+    {
+     "fund": "XLK",
+     "name": "Technology",
+     "all": 1.5,
+     "all_n": 222,
+     "r1": 1.87,
+     "r1_n": 58,
+     "r2": 2.66,
+     "r2_n": 55,
+     "r3": 1.26,
+     "r3_n": 58,
+     "r4": 0.1,
+     "r4_n": 51
+    },
+    {
+     "fund": "XLV",
+     "name": "Health care",
+     "all": 0.94,
+     "all_n": 222,
+     "r1": 1.13,
+     "r1_n": 58,
+     "r2": 0.87,
+     "r2_n": 55,
+     "r3": 0.78,
+     "r3_n": 58,
+     "r4": 1.0,
+     "r4_n": 51
+    },
+    {
+     "fund": "XLI",
+     "name": "Industrials",
+     "all": 1.04,
+     "all_n": 222,
+     "r1": 1.96,
+     "r1_n": 58,
+     "r2": 1.79,
+     "r2_n": 55,
+     "r3": 0.4,
+     "r3_n": 58,
+     "r4": -0.09,
+     "r4_n": 51
+    },
+    {
+     "fund": "XLP",
+     "name": "Consumer staples",
+     "all": 0.81,
+     "all_n": 222,
+     "r1": 0.74,
+     "r1_n": 58,
+     "r2": 0.97,
+     "r2_n": 55,
+     "r3": 0.69,
+     "r3_n": 58,
+     "r4": 0.84,
+     "r4_n": 51
+    },
+    {
+     "fund": "XLY",
+     "name": "Consumer discretionary",
+     "all": 1.16,
+     "all_n": 222,
+     "r1": 2.3,
+     "r1_n": 58,
+     "r2": 1.74,
+     "r2_n": 55,
+     "r3": 0.85,
+     "r3_n": 58,
+     "r4": -0.42,
+     "r4_n": 51
+    },
+    {
+     "fund": "XLU",
+     "name": "Utilities",
+     "all": 0.75,
+     "all_n": 222,
+     "r1": 1.06,
+     "r1_n": 58,
+     "r2": 1.54,
+     "r2_n": 55,
+     "r3": 0.3,
+     "r3_n": 58,
+     "r4": 0.07,
+     "r4_n": 51
+    },
+    {
+     "fund": "XLB",
+     "name": "Materials",
+     "all": 0.78,
+     "all_n": 222,
+     "r1": 1.55,
+     "r1_n": 58,
+     "r2": 0.95,
+     "r2_n": 55,
+     "r3": 0.53,
+     "r3_n": 58,
+     "r4": -0.02,
+     "r4_n": 51
+    },
+    {
+     "fund": "XLRE",
+     "name": "Real estate",
+     "all": 0.7,
+     "all_n": 129,
+     "r1": 1.39,
+     "r1_n": 30,
+     "r2": 1.06,
+     "r2_n": 39,
+     "r3": 0.5,
+     "r3_n": 32,
+     "r4": -0.32,
+     "r4_n": 28
+    },
+    {
+     "fund": "XLC",
+     "name": "Communication services",
+     "all": 1.04,
+     "all_n": 97,
+     "r1": 1.46,
+     "r1_n": 24,
+     "r2": 1.73,
+     "r2_n": 28,
+     "r3": 1.03,
+     "r3_n": 21,
+     "r4": -0.17,
+     "r4_n": 24
+    },
+    {
+     "fund": "TLT",
+     "name": "Long Treasuries (20+ years)",
+     "all": 0.27,
+     "all_n": 222,
+     "r1": 1.04,
+     "r1_n": 58,
+     "r2": 0.15,
+     "r2_n": 55,
+     "r3": -0.59,
+     "r3_n": 58,
+     "r4": 0.51,
+     "r4_n": 51
+    },
+    {
+     "fund": "IEF",
+     "name": "Treasuries (7 to 10 years)",
+     "all": 0.24,
+     "all_n": 222,
+     "r1": 0.64,
+     "r1_n": 58,
+     "r2": 0.07,
+     "r2_n": 55,
+     "r3": -0.14,
+     "r3_n": 58,
+     "r4": 0.39,
+     "r4_n": 51
+    },
+    {
+     "fund": "GLD",
+     "name": "Gold",
+     "all": 0.76,
+     "all_n": 222,
+     "r1": 1.39,
+     "r1_n": 58,
+     "r2": 0.64,
+     "r2_n": 55,
+     "r3": 0.52,
+     "r3_n": 58,
+     "r4": 0.44,
+     "r4_n": 51
+    }
+   ]
+  },
+  "realized_quarterly": {
+   "span": "Q4 1998 to Q2 2026",
+   "n": 111,
+   "regimes": {
+    "1": {
+     "n": 27,
+     "spy_mean": 5.6,
+     "spy_hit": 0.85,
+     "best": [
+      {
+       "fund": "XLC",
+       "name": "Communication services",
+       "mean": 7.37,
+       "excess": 2.73,
+       "hit": 0.88,
+       "n": 8
+      },
+      {
+       "fund": "XLK",
+       "name": "Technology",
+       "mean": 6.91,
+       "excess": 1.31,
+       "hit": 0.77,
+       "n": 26
+      },
+      {
+       "fund": "XLY",
+       "name": "Consumer discretionary",
+       "mean": 6.39,
+       "excess": 0.79,
+       "hit": 0.77,
+       "n": 26
+      }
+     ],
+     "worst": [
+      {
+       "fund": "IEF",
+       "name": "Treasuries (7 to 10 years)",
+       "mean": 1.5,
+       "excess": -4.3,
+       "hit": 0.72,
+       "n": 25
+      },
+      {
+       "fund": "TLT",
+       "name": "Long Treasuries (20+ years)",
+       "mean": 2.07,
+       "excess": -3.73,
+       "hit": 0.64,
+       "n": 25
+      },
+      {
+       "fund": "GLD",
+       "name": "Gold",
+       "mean": 3.16,
+       "excess": -2.09,
+       "hit": 0.64,
+       "n": 22
+      }
+     ]
+    },
+    "2": {
+     "n": 24,
+     "spy_mean": 4.6,
+     "spy_hit": 0.83,
+     "best": [
+      {
+       "fund": "XLK",
+       "name": "Technology",
+       "mean": 6.65,
+       "excess": 2.05,
+       "hit": 0.92,
+       "n": 24
+      },
+      {
+       "fund": "XLI",
+       "name": "Industrials",
+       "mean": 5.12,
+       "excess": 0.51,
+       "hit": 0.83,
+       "n": 24
+      },
+      {
+       "fund": "XLE",
+       "name": "Energy",
+       "mean": 4.95,
+       "excess": 0.35,
+       "hit": 0.75,
+       "n": 24
+      }
+     ],
+     "worst": [
+      {
+       "fund": "TLT",
+       "name": "Long Treasuries (20+ years)",
+       "mean": -1.66,
+       "excess": -7.76,
+       "hit": 0.4,
+       "n": 20
+      },
+      {
+       "fund": "IEF",
+       "name": "Treasuries (7 to 10 years)",
+       "mean": -0.5,
+       "excess": -6.59,
+       "hit": 0.5,
+       "n": 20
+      },
+      {
+       "fund": "XLU",
+       "name": "Utilities",
+       "mean": 0.74,
+       "excess": -3.86,
+       "hit": 0.62,
+       "n": 24
+      }
+     ]
+    },
+    "3": {
+     "n": 37,
+     "spy_mean": -0.1,
+     "spy_hit": 0.59,
+     "best": [
+      {
+       "fund": "GLD",
+       "name": "Gold",
+       "mean": 3.0,
+       "excess": 3.68,
+       "hit": 0.64,
+       "n": 28
+      },
+      {
+       "fund": "XLU",
+       "name": "Utilities",
+       "mean": 1.9,
+       "excess": 2.0,
+       "hit": 0.65,
+       "n": 37
+      },
+      {
+       "fund": "XLE",
+       "name": "Energy",
+       "mean": 1.87,
+       "excess": 1.97,
+       "hit": 0.59,
+       "n": 37
+      }
+     ],
+     "worst": [
+      {
+       "fund": "XLC",
+       "name": "Communication services",
+       "mean": -4.18,
+       "excess": -2.2,
+       "hit": 0.25,
+       "n": 8
+      },
+      {
+       "fund": "XLRE",
+       "name": "Real estate",
+       "mean": -1.39,
+       "excess": -1.17,
+       "hit": 0.58,
+       "n": 12
+      },
+      {
+       "fund": "XLF",
+       "name": "Financials",
+       "mean": -0.99,
+       "excess": -0.89,
+       "hit": 0.54,
+       "n": 37
+      }
+     ]
+    },
+    "4": {
+     "n": 23,
+     "spy_mean": 0.67,
+     "spy_hit": 0.61,
+     "best": [
+      {
+       "fund": "XLY",
+       "name": "Consumer discretionary",
+       "mean": 2.89,
+       "excess": 2.22,
+       "hit": 0.61,
+       "n": 23
+      },
+      {
+       "fund": "XLV",
+       "name": "Health care",
+       "mean": 2.66,
+       "excess": 1.99,
+       "hit": 0.65,
+       "n": 23
+      },
+      {
+       "fund": "XLB",
+       "name": "Materials",
+       "mean": 2.17,
+       "excess": 1.5,
+       "hit": 0.52,
+       "n": 23
+      }
+     ],
+     "worst": [
+      {
+       "fund": "XLC",
+       "name": "Communication services",
+       "mean": 1.77,
+       "excess": -3.09,
+       "hit": 0.5,
+       "n": 8
+      },
+      {
+       "fund": "XLE",
+       "name": "Energy",
+       "mean": -0.28,
+       "excess": -0.95,
+       "hit": 0.48,
+       "n": 23
+      },
+      {
+       "fund": "XLK",
+       "name": "Technology",
+       "mean": -0.1,
+       "excess": -0.77,
+       "hit": 0.61,
+       "n": 23
+      }
+     ]
+    }
+   },
+   "table": [
+    {
+     "fund": "SPY",
+     "name": "S&P 500",
+     "all": 2.43,
+     "all_n": 110,
+     "r1": 5.6,
+     "r1_n": 26,
+     "r2": 4.6,
+     "r2_n": 24,
+     "r3": -0.1,
+     "r3_n": 37,
+     "r4": 0.67,
+     "r4_n": 23
+    },
+    {
+     "fund": "XLE",
+     "name": "Energy",
+     "all": 2.97,
+     "all_n": 110,
+     "r1": 5.6,
+     "r1_n": 26,
+     "r2": 4.95,
+     "r2_n": 24,
+     "r3": 1.87,
+     "r3_n": 37,
+     "r4": -0.28,
+     "r4_n": 23
+    },
+    {
+     "fund": "XLF",
+     "name": "Financials",
+     "all": 2.08,
+     "all_n": 110,
+     "r1": 4.83,
+     "r1_n": 26,
+     "r2": 4.68,
+     "r2_n": 24,
+     "r3": -0.99,
+     "r3_n": 37,
+     "r4": 1.2,
+     "r4_n": 23
+    },
+    {
+     "fund": "XLK",
+     "name": "Technology",
+     "all": 3.35,
+     "all_n": 110,
+     "r1": 6.91,
+     "r1_n": 26,
+     "r2": 6.65,
+     "r2_n": 24,
+     "r3": 0.87,
+     "r3_n": 37,
+     "r4": -0.1,
+     "r4_n": 23
+    },
+    {
+     "fund": "XLV",
+     "name": "Health care",
+     "all": 2.29,
+     "all_n": 110,
+     "r1": 3.54,
+     "r1_n": 26,
+     "r2": 3.24,
+     "r2_n": 24,
+     "r3": 0.56,
+     "r3_n": 37,
+     "r4": 2.66,
+     "r4_n": 23
+    },
+    {
+     "fund": "XLI",
+     "name": "Industrials",
+     "all": 2.79,
+     "all_n": 110,
+     "r1": 5.9,
+     "r1_n": 26,
+     "r2": 5.12,
+     "r2_n": 24,
+     "r3": -0.02,
+     "r3_n": 37,
+     "r4": 1.37,
+     "r4_n": 23
+    },
+    {
+     "fund": "XLP",
+     "name": "Consumer staples",
+     "all": 1.81,
+     "all_n": 110,
+     "r1": 4.1,
+     "r1_n": 26,
+     "r2": 2.19,
+     "r2_n": 24,
+     "r3": 0.1,
+     "r3_n": 37,
+     "r4": 1.59,
+     "r4_n": 23
+    },
+    {
+     "fund": "XLY",
+     "name": "Consumer discretionary",
+     "all": 2.79,
+     "all_n": 110,
+     "r1": 6.39,
+     "r1_n": 26,
+     "r2": 4.39,
+     "r2_n": 24,
+     "r3": -0.84,
+     "r3_n": 37,
+     "r4": 2.89,
+     "r4_n": 23
+    },
+    {
+     "fund": "XLU",
+     "name": "Utilities",
+     "all": 2.16,
+     "all_n": 110,
+     "r1": 3.85,
+     "r1_n": 26,
+     "r2": 0.74,
+     "r2_n": 24,
+     "r3": 1.9,
+     "r3_n": 37,
+     "r4": 2.13,
+     "r4_n": 23
+    },
+    {
+     "fund": "XLB",
+     "name": "Materials",
+     "all": 2.53,
+     "all_n": 110,
+     "r1": 6.05,
+     "r1_n": 26,
+     "r2": 4.17,
+     "r2_n": 24,
+     "r3": -0.77,
+     "r3_n": 37,
+     "r4": 2.17,
+     "r4_n": 23
+    },
+    {
+     "fund": "XLRE",
+     "name": "Real estate",
+     "all": 2.02,
+     "all_n": 42,
+     "r1": 2.67,
+     "r1_n": 9,
+     "r2": 3.34,
+     "r2_n": 13,
+     "r3": -1.39,
+     "r3_n": 12,
+     "r4": 4.27,
+     "r4_n": 8
+    },
+    {
+     "fund": "XLC",
+     "name": "Communication services",
+     "all": 3.24,
+     "all_n": 32,
+     "r1": 7.37,
+     "r1_n": 8,
+     "r2": 8.01,
+     "r2_n": 8,
+     "r3": -4.18,
+     "r3_n": 8,
+     "r4": 1.77,
+     "r4_n": 8
+    },
+    {
+     "fund": "TLT",
+     "name": "Long Treasuries (20+ years)",
+     "all": 1.09,
+     "all_n": 95,
+     "r1": 2.07,
+     "r1_n": 25,
+     "r2": -1.66,
+     "r2_n": 20,
+     "r3": 1.14,
+     "r3_n": 32,
+     "r4": 2.69,
+     "r4_n": 18
+    },
+    {
+     "fund": "IEF",
+     "name": "Treasuries (7 to 10 years)",
+     "all": 0.88,
+     "all_n": 95,
+     "r1": 1.5,
+     "r1_n": 25,
+     "r2": -0.5,
+     "r2_n": 20,
+     "r3": 0.74,
+     "r3_n": 32,
+     "r4": 1.8,
+     "r4_n": 18
+    },
+    {
+     "fund": "GLD",
+     "name": "Gold",
+     "all": 2.79,
+     "all_n": 86,
+     "r1": 3.16,
+     "r1_n": 22,
+     "r2": 3.01,
+     "r2_n": 19,
+     "r3": 3.0,
+     "r3_n": 28,
+     "r4": 1.7,
+     "r4_n": 17
+    }
+   ]
+  },
+  "called_monthly": {
+   "span": "Jan 2017 to Sep 2026",
+   "n": 117,
+   "skipped": 0,
+   "regimes": {
+    "1": {
+     "n": 36,
+     "spy_mean": 1.97,
+     "spy_hit": 0.72,
+     "best": [
+      {
+       "fund": "XLK",
+       "name": "Technology",
+       "mean": 3.21,
+       "excess": 1.25,
+       "hit": 0.72,
+       "n": 36
+      },
+      {
+       "fund": "XLY",
+       "name": "Consumer discretionary",
+       "mean": 2.56,
+       "excess": 0.6,
+       "hit": 0.69,
+       "n": 36
+      },
+      {
+       "fund": "XLE",
+       "name": "Energy",
+       "mean": 2.29,
+       "excess": 0.32,
+       "hit": 0.5,
+       "n": 36
+      }
+     ],
+     "worst": [
+      {
+       "fund": "TLT",
+       "name": "Long Treasuries (20+ years)",
+       "mean": -0.05,
+       "excess": -2.01,
+       "hit": 0.5,
+       "n": 36
+      },
+      {
+       "fund": "IEF",
+       "name": "Treasuries (7 to 10 years)",
+       "mean": 0.11,
+       "excess": -1.86,
+       "hit": 0.58,
+       "n": 36
+      },
+      {
+       "fund": "XLU",
+       "name": "Utilities",
+       "mean": 0.25,
+       "excess": -1.72,
+       "hit": 0.58,
+       "n": 36
+      }
+     ]
+    },
+    "2": {
+     "n": 20,
+     "spy_mean": 2.83,
+     "spy_hit": 0.85,
+     "best": [
+      {
+       "fund": "XLK",
+       "name": "Technology",
+       "mean": 4.24,
+       "excess": 1.41,
+       "hit": 0.9,
+       "n": 20
+      },
+      {
+       "fund": "XLF",
+       "name": "Financials",
+       "mean": 2.91,
+       "excess": 0.08,
+       "hit": 0.7,
+       "n": 20
+      },
+      {
+       "fund": "XLE",
+       "name": "Energy",
+       "mean": 2.58,
+       "excess": -0.24,
+       "hit": 0.75,
+       "n": 20
+      }
+     ],
+     "worst": [
+      {
+       "fund": "IEF",
+       "name": "Treasuries (7 to 10 years)",
+       "mean": 0.1,
+       "excess": -2.73,
+       "hit": 0.45,
+       "n": 20
+      },
+      {
+       "fund": "TLT",
+       "name": "Long Treasuries (20+ years)",
+       "mean": 0.25,
+       "excess": -2.58,
+       "hit": 0.55,
+       "n": 20
+      },
+      {
+       "fund": "XLP",
+       "name": "Consumer staples",
+       "mean": 0.75,
+       "excess": -2.08,
+       "hit": 0.6,
+       "n": 20
+      }
+     ]
+    },
+    "3": {
+     "n": 24,
+     "spy_mean": 1.26,
+     "spy_hit": 0.71,
+     "best": [
+      {
+       "fund": "XLK",
+       "name": "Technology",
+       "mean": 2.37,
+       "excess": 1.11,
+       "hit": 0.54,
+       "n": 24
+      },
+      {
+       "fund": "XLY",
+       "name": "Consumer discretionary",
+       "mean": 1.65,
+       "excess": 0.39,
+       "hit": 0.62,
+       "n": 24
+      },
+      {
+       "fund": "XLC",
+       "name": "Communication services",
+       "mean": 1.24,
+       "excess": -0.1,
+       "hit": 0.65,
+       "n": 20
+      }
+     ],
+     "worst": [
+      {
+       "fund": "XLV",
+       "name": "Health care",
+       "mean": -0.42,
+       "excess": -1.68,
+       "hit": 0.5,
+       "n": 24
+      },
+      {
+       "fund": "TLT",
+       "name": "Long Treasuries (20+ years)",
+       "mean": -0.22,
+       "excess": -1.48,
+       "hit": 0.58,
+       "n": 24
+      },
+      {
+       "fund": "IEF",
+       "name": "Treasuries (7 to 10 years)",
+       "mean": 0.12,
+       "excess": -1.14,
+       "hit": 0.62,
+       "n": 24
+      }
+     ]
+    },
+    "4": {
+     "n": 37,
+     "spy_mean": -0.17,
+     "spy_hit": 0.62,
+     "best": [
+      {
+       "fund": "GLD",
+       "name": "Gold",
+       "mean": 1.14,
+       "excess": 1.31,
+       "hit": 0.51,
+       "n": 37
+      },
+      {
+       "fund": "XLV",
+       "name": "Health care",
+       "mean": 1.09,
+       "excess": 1.25,
+       "hit": 0.59,
+       "n": 37
+      },
+      {
+       "fund": "XLP",
+       "name": "Consumer staples",
+       "mean": 0.98,
+       "excess": 1.15,
+       "hit": 0.59,
+       "n": 37
+      }
+     ],
+     "worst": [
+      {
+       "fund": "XLY",
+       "name": "Consumer discretionary",
+       "mean": -1.23,
+       "excess": -1.06,
+       "hit": 0.54,
+       "n": 37
+      },
+      {
+       "fund": "XLC",
+       "name": "Communication services",
+       "mean": -0.67,
+       "excess": -0.33,
+       "hit": 0.48,
+       "n": 33
+      },
+      {
+       "fund": "XLB",
+       "name": "Materials",
+       "mean": -0.5,
+       "excess": -0.33,
+       "hit": 0.46,
+       "n": 37
+      }
+     ]
+    }
+   },
+   "table": [
+    {
+     "fund": "SPY",
+     "name": "S&P 500",
+     "all": 1.29,
+     "all_n": 117,
+     "r1": 1.97,
+     "r1_n": 36,
+     "r2": 2.83,
+     "r2_n": 20,
+     "r3": 1.26,
+     "r3_n": 24,
+     "r4": -0.17,
+     "r4_n": 37
+    },
+    {
+     "fund": "XLE",
+     "name": "Energy",
+     "all": 1.15,
+     "all_n": 117,
+     "r1": 2.29,
+     "r1_n": 36,
+     "r2": 2.58,
+     "r2_n": 20,
+     "r3": 0.25,
+     "r3_n": 24,
+     "r4": -0.13,
+     "r4_n": 37
+    },
+    {
+     "fund": "XLF",
+     "name": "Financials",
+     "all": 1.04,
+     "all_n": 117,
+     "r1": 1.28,
+     "r1_n": 36,
+     "r2": 2.91,
+     "r2_n": 20,
+     "r3": 0.91,
+     "r3_n": 24,
+     "r4": -0.11,
+     "r4_n": 37
+    },
+    {
+     "fund": "XLK",
+     "name": "Technology",
+     "all": 2.07,
+     "all_n": 117,
+     "r1": 3.21,
+     "r1_n": 36,
+     "r2": 4.24,
+     "r2_n": 20,
+     "r3": 2.37,
+     "r3_n": 24,
+     "r4": -0.4,
+     "r4_n": 37
+    },
+    {
+     "fund": "XLV",
+     "name": "Health care",
+     "all": 1.0,
+     "all_n": 117,
+     "r1": 1.58,
+     "r1_n": 36,
+     "r2": 1.53,
+     "r2_n": 20,
+     "r3": -0.42,
+     "r3_n": 24,
+     "r4": 1.09,
+     "r4_n": 37
+    },
+    {
+     "fund": "XLI",
+     "name": "Industrials",
+     "all": 1.16,
+     "all_n": 117,
+     "r1": 1.78,
+     "r1_n": 36,
+     "r2": 2.58,
+     "r2_n": 20,
+     "r3": 0.88,
+     "r3_n": 24,
+     "r4": -0.05,
+     "r4_n": 37
+    },
+    {
+     "fund": "XLP",
+     "name": "Consumer staples",
+     "all": 0.69,
+     "all_n": 117,
+     "r1": 0.29,
+     "r1_n": 36,
+     "r2": 0.75,
+     "r2_n": 20,
+     "r3": 0.8,
+     "r3_n": 24,
+     "r4": 0.98,
+     "r4_n": 37
+    },
+    {
+     "fund": "XLY",
+     "name": "Consumer discretionary",
+     "all": 1.11,
+     "all_n": 117,
+     "r1": 2.56,
+     "r1_n": 36,
+     "r2": 2.19,
+     "r2_n": 20,
+     "r3": 1.65,
+     "r3_n": 24,
+     "r4": -1.23,
+     "r4_n": 37
+    },
+    {
+     "fund": "XLU",
+     "name": "Utilities",
+     "all": 0.78,
+     "all_n": 117,
+     "r1": 0.25,
+     "r1_n": 36,
+     "r2": 2.22,
+     "r2_n": 20,
+     "r3": 0.71,
+     "r3_n": 24,
+     "r4": 0.55,
+     "r4_n": 37
+    },
+    {
+     "fund": "XLB",
+     "name": "Materials",
+     "all": 0.91,
+     "all_n": 117,
+     "r1": 1.76,
+     "r1_n": 36,
+     "r2": 2.03,
+     "r2_n": 20,
+     "r3": 0.85,
+     "r3_n": 24,
+     "r4": -0.5,
+     "r4_n": 37
+    },
+    {
+     "fund": "XLRE",
+     "name": "Real estate",
+     "all": 0.66,
+     "all_n": 117,
+     "r1": 0.84,
+     "r1_n": 36,
+     "r2": 2.04,
+     "r2_n": 20,
+     "r3": 0.63,
+     "r3_n": 24,
+     "r4": -0.24,
+     "r4_n": 37
+    },
+    {
+     "fund": "XLC",
+     "name": "Communication services",
+     "all": 1.07,
+     "all_n": 99,
+     "r1": 1.79,
+     "r1_n": 32,
+     "r2": 3.25,
+     "r2_n": 14,
+     "r3": 1.24,
+     "r3_n": 20,
+     "r4": -0.67,
+     "r4_n": 33
+    },
+    {
+     "fund": "TLT",
+     "name": "Long Treasuries (20+ years)",
+     "all": -0.04,
+     "all_n": 117,
+     "r1": -0.05,
+     "r1_n": 36,
+     "r2": 0.25,
+     "r2_n": 20,
+     "r3": -0.22,
+     "r3_n": 24,
+     "r4": -0.06,
+     "r4_n": 37
+    },
+    {
+     "fund": "IEF",
+     "name": "Treasuries (7 to 10 years)",
+     "all": 0.08,
+     "all_n": 117,
+     "r1": 0.11,
+     "r1_n": 36,
+     "r2": 0.1,
+     "r2_n": 20,
+     "r3": 0.12,
+     "r3_n": 24,
+     "r4": 0.02,
+     "r4_n": 37
+    },
+    {
+     "fund": "GLD",
+     "name": "Gold",
+     "all": 1.19,
+     "all_n": 117,
+     "r1": 1.79,
+     "r1_n": 36,
+     "r2": 1.16,
+     "r2_n": 20,
+     "r3": 0.4,
+     "r3_n": 24,
+     "r4": 1.14,
+     "r4_n": 37
+    }
+   ],
+   "agreement": 0.574,
+   "agreement_n": 115
+  }
+ }
+}
