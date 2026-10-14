@@ -33,6 +33,7 @@ page to the live-us-regime branch.
 """
 from __future__ import annotations
 
+import csv
 import datetime
 import json
 from typing import Any, Dict, List, Optional
@@ -306,13 +307,76 @@ def build_feed(sheet: dict, repo: str = "SanderHeisan/Inflation-GDP") -> dict:
             feed["sectors"] = json.loads(sectors_path.read_text())
         except Exception as e:  # noqa: BLE001
             print(f"[us_feed] sectors skipped: {type(e).__name__}: {e}")
+    try:
+        attach_calls(feed)
+    except Exception as e:  # noqa: BLE001 - a missing record must not stop the feed
+        print(f"[us_feed] calls skipped: {type(e).__name__}: {e}")
     return feed
+
+
+def attach_calls(feed: dict) -> int:
+    """Stamp every month with the call the model made BEFORE that month began.
+
+    Owner, looking at a month that had already turned out: *"So when did I
+    call this? ... it is hard to see when I called it."* The live feed cannot
+    answer that on its own - it is rebuilt and force-published on every run,
+    so it only ever holds the newest view and keeps no record of the older
+    ones.
+
+    `us_sectors.py` does keep one, and a better one than a log would be,
+    because it is RECONSTRUCTED rather than remembered: one vintage per
+    month-end, each seeing only what had been published by then, the cell read
+    off the month after (`us_regime_monthly_called.csv`, back to 2017). It
+    does not depend on anyone having saved anything, and it is rebuilt from
+    scratch on every run, so it cannot drift.
+
+    Each month gains `called_regime`, `called_asof` and `called_too_close`.
+    Whether the call was RIGHT is deliberately left to the consumer: scoring
+    it here would need a second reading of the outcome, and a page that showed
+    one regime for the month while scoring the call against another would be
+    wrong in the way that is hardest to spot. The page compares the call with
+    the month's own `regime`, which is the number beside it.
+
+    Returns how many months were stamped. The record only covers months that
+    have begun, so the path ahead is untouched.
+    """
+    path = RESULTS_DIR / "us_regime_monthly_called.csv"
+    if not path.exists():
+        print("[us_feed] calls skipped: no us_regime_monthly_called.csv (us_sectors.py did not run)")
+        return 0
+    by_month: Dict[str, Dict[str, Any]] = {}
+    with path.open(newline="") as fh:
+        for row in csv.DictReader(fh):
+            month, asof, quad = row.get("month"), row.get("asof"), row.get("quad")
+            if not month or not asof:
+                continue
+            try:
+                q = int(quad)
+            except (TypeError, ValueError):
+                continue
+            if q not in (1, 2, 3, 4):
+                continue
+            # One row per month by construction; keep the EARLIEST if that
+            # ever stops being true, so the date is the call, not a redo.
+            if month in by_month and by_month[month]["called_asof"] <= asof:
+                continue
+            by_month[month] = {"called_regime": q, "called_asof": asof,
+                               "called_too_close": str(row.get("close", "")).strip().lower() == "true"}
+    n = 0
+    for mm in feed.get("months", []):
+        got = by_month.get(mm.get("month"))
+        if got:
+            mm.update(got)
+            n += 1
+    return n
 
 
 def main() -> None:
     feed = build_feed(json.load(open(SRC)))
     OUT.write_text(json.dumps(feed, indent=1))
-    print(f"wrote {OUT}: {len(feed['quarters'])} quarters, {len(feed['months'])} months, "
+    called = sum(1 for m in feed["months"] if m.get("called_asof"))
+    print(f"wrote {OUT}: {len(feed['quarters'])} quarters, {len(feed['months'])} months "
+          f"({called} with the call that was made before the month began), "
           f"{len(feed.get('notes', []))} notes, as of {feed['asof']}")
 
 

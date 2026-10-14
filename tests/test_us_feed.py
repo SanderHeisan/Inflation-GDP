@@ -26,6 +26,10 @@ pytestmark = pytest.mark.skipif(not SHEET.exists(), reason="no committed sheet")
 MONTH_KEYS = {"month", "label", "regime", "regime_name", "too_close_to_call", "status",
               "growth_measure_yoy", "growth_dir", "growth_conviction", "growth_hit",
               "cpi_yoy", "cpi_mom", "cpi_dir", "cpi_conviction", "cpi_hit", "hedgeye_regime"}
+# Present only on a month that has BEGUN: there is no call to record for a
+# month still ahead. Named rather than waved through, so a typo or a stray
+# field still fails the contract.
+MONTH_CALL_KEYS = {"called_regime", "called_asof", "called_too_close"}
 QUARTER_KEYS = {"quarter", "label", "regime", "regime_name", "too_close_to_call", "realized",
                 "growth_yoy", "growth_dir", "inflation_yoy", "inflation_dir", "backtest_hit"}
 VENDOR = re.compile(r"hedgeye|\bquads?\b|\bgip\b", re.I)
@@ -47,7 +51,13 @@ def _rates(d):
 def test_the_rows_keep_their_contract(feed):
     assert feed["regimes"] == {1: "Sweet spot", 2: "Heating", 3: "Squeeze", 4: "Cooling"}
     assert feed["quarters"] and all(set(q) == QUARTER_KEYS for q in feed["quarters"])
-    assert feed["months"] and all(set(m) == MONTH_KEYS for m in feed["months"])
+    assert feed["months"]
+    for m in feed["months"]:
+        extra = set(m) - MONTH_KEYS
+        assert not extra - MONTH_CALL_KEYS, f"{m['month']}: unexpected keys {sorted(extra - MONTH_CALL_KEYS)}"
+        assert MONTH_KEYS <= set(m), f"{m['month']}: missing {sorted(MONTH_KEYS - set(m))}"
+        # the call keys arrive together or not at all
+        assert extra in (set(), MONTH_CALL_KEYS), f"{m['month']}: half a call {sorted(extra)}"
     assert all(q["regime"] in (1, 2, 3, 4) for q in feed["quarters"])
     assert all(m["status"] in ("actual", "nowcast", "forecast") for m in feed["months"])
 
@@ -114,3 +124,68 @@ def test_a_block_that_cannot_be_built_does_not_stop_the_feed():
     feed = us_feed.build_feed(sheet)
     assert "hit_rates" not in feed and feed["quarters"] and feed["months"]
     assert [n["key"] for n in feed["notes"]].count("rates") == 0 and len(feed["notes"]) >= 6
+
+
+# ── the call that was made before the month began ───────────────────────────
+
+def test_each_month_that_has_begun_carries_the_call_made_before_it(feed, tmp_path, monkeypatch):
+    """Owner, 2026-10-14, of a month that had already turned out: *"So when did
+    I call this? ... it is hard to see when I called it."*
+
+    The live feed is force-published on every run and keeps no history, so it
+    cannot answer that by remembering. `us_sectors.py` RECONSTRUCTS it instead
+    - one vintage per month-end, each seeing only what had been published by
+    then - and `attach_calls` stamps it onto the months.
+    """
+    import csv as _csv
+    months = [m["month"] for m in feed["months"]]
+    assert len(months) >= 3
+
+    rows = [{"month": months[0], "asof": "2026-05-31", "quad": 4, "close": "True", "horizon": 2, "status": "forecast"},
+            {"month": months[1], "asof": "2026-06-30", "quad": 1, "close": "False", "horizon": 2, "status": "forecast"},
+            # a month the record has no call for, and one that is not in the feed
+            {"month": "1999-01", "asof": "1998-12-31", "quad": 2, "close": "False", "horizon": 2, "status": "forecast"}]
+    out = tmp_path / "us_regime_monthly_called.csv"
+    with out.open("w", newline="") as fh:
+        w = _csv.DictWriter(fh, fieldnames=["month", "asof", "quad", "close", "horizon", "status"])
+        w.writeheader()
+        for r in rows:
+            w.writerow(r)
+    monkeypatch.setattr(us_feed, "RESULTS_DIR", tmp_path)
+
+    f = json.loads(json.dumps(feed))
+    for m in f["months"]:                       # start from a feed with no calls on it
+        for k in ("called_regime", "called_asof", "called_too_close"):
+            m.pop(k, None)
+    assert us_feed.attach_calls(f) == 2
+
+    by = {m["month"]: m for m in f["months"]}
+    assert by[months[0]]["called_regime"] == 4 and by[months[0]]["called_asof"] == "2026-05-31"
+    assert by[months[0]]["called_too_close"] is True
+    assert by[months[1]]["called_regime"] == 1 and by[months[1]]["called_too_close"] is False
+    # a month the record says nothing about is left alone rather than guessed at
+    assert "called_regime" not in by[months[2]]
+    # the call is the call, never the outcome: nothing here grades it
+    assert not any(k.startswith("called_right") or k == "called_hit" for k in by[months[0]])
+
+
+def test_a_missing_or_broken_call_record_does_not_stop_the_feed(feed, tmp_path, monkeypatch):
+    """`us_sectors.py` is continue-on-error in the workflow, so the record can
+    simply be absent. A feed that refused to publish over it would take the
+    regimes down with it."""
+    monkeypatch.setattr(us_feed, "RESULTS_DIR", tmp_path)
+    f = json.loads(json.dumps(feed))
+    for m in f["months"]:                       # the fixture arrives already stamped
+        for k in ("called_regime", "called_asof", "called_too_close"):
+            m.pop(k, None)
+    assert us_feed.attach_calls(f) == 0                      # no file at all
+
+    import csv as _csv
+    out = tmp_path / "us_regime_monthly_called.csv"
+    with out.open("w", newline="") as fh:
+        w = _csv.DictWriter(fh, fieldnames=["month", "asof", "quad", "close", "horizon", "status"])
+        w.writeheader()
+        w.writerow({"month": f["months"][0]["month"], "asof": "", "quad": "", "close": "", "horizon": "", "status": ""})
+        w.writerow({"month": f["months"][0]["month"], "asof": "2026-05-31", "quad": "7", "close": "", "horizon": "", "status": ""})
+    assert us_feed.attach_calls(f) == 0                      # blank and out-of-range rows are dropped
+    assert "called_regime" not in f["months"][0]
