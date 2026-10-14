@@ -1,7 +1,14 @@
 # Rebuilds the US macro regime sheet from fresh data and publishes it as a feed.
 #
-# Everything lands on the 'live-us-regime' branch, one commit, force-pushed,
-# so any consumer reads a stable raw URL with no token (the repo is public):
+# Everything lands on the 'live-us-regime' branch, which KEEPS ITS HISTORY:
+# one commit per run, on top of the last. It used to be `git init` plus a
+# force-push, which left the branch with exactly one commit and threw away
+# every earlier run -- so nothing anywhere recorded what the model had said
+# about a month before that month arrived (2026-10-14: the owner asked "when
+# did I call this?" and the honest answer was that the site could not say).
+# Consumers are unaffected: a raw URL always serves the tip.
+#
+# Any consumer reads a stable raw URL with no token (the repo is public):
 #
 #   https://raw.githubusercontent.com/<owner>/<repo>/live-us-regime/latest.json
 #       the regimes only: current + projected quarters, and every month
@@ -90,14 +97,34 @@ jobs:
           name: us-regime-sheet-${{ github.run_id }}
           path: feed/
 
-      - name: Publish to the live-us-regime branch
+      - name: Publish to the live-us-regime branch, on top of its history
+        env:
+          REMOTE: "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git"
         run: |
+          set -euo pipefail
           cd feed
           git init -b live-us-regime
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
+          git remote add origin "$REMOTE"
+          # Start from the published branch when there is one, so this run is a
+          # commit ON TOP of the last rather than a replacement for it. The
+          # fetch is allowed to fail: the very first run has nothing to fetch,
+          # and a branch that cannot be read should still publish.
+          # `reset` (mixed) and not `--soft`: it rebuilds the INDEX from the
+          # published tree, so the `git add -A` below sees a file dropped from
+          # the feed as a deletion. After a soft reset the index is still
+          # empty, git never learns the old file existed, and it would ride
+          # along in every later commit. Full fetch, not --depth=1: a shallow
+          # history is what makes a push get refused.
+          if git fetch origin live-us-regime 2>/dev/null; then
+            git reset FETCH_HEAD
+          fi
           git add -A
+          # Nothing changed (a rerun on the same data) is success, not failure.
+          if git diff --cached --quiet; then
+            echo "feed identical to the published one; nothing to commit"
+            exit 0
+          fi
           git commit -m "US macro regime $(date -u +%F)"
-          git push --force \
-            "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" \
-            live-us-regime
+          git push origin HEAD:live-us-regime
