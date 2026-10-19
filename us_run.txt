@@ -10,7 +10,7 @@ US GIP Quad Map | real data | CPI through 2026-09, GDP through 2026Q2
     durable goods           : +4.6% YoY, +7.6% 3m ann. (2026-08); 10y percentile 46%
     nondurable goods        : +1.8% YoY, +5.3% 3m ann. (2026-08); 10y percentile 21%
     services                : +2.5% YoY, +3.3% 3m ann. (2026-08); 10y percentile 59%
-    real retail sales       : +2.1% YoY, +4.2% 3m ann. (2026-08); 10y percentile 56%
+    real retail sales       : +2.5% YoY, +2.1% 3m ann. (2026-09); 10y percentile 67%
     consumer credit outstanding: +2.7% YoY, +3.2% 3m ann. (2026-08); 10y percentile 33%
   consumer sentiment     : 51.7 (2026-08); 10y percentile 5% depressed (bottom decile: next-quarter GDP QoQ HIGHER 63% historically)
   household net worth    : $195.9T (2026Q2), +12.8T on the quarter, +11.8% YoY; 10y percentile 87% ELEVATED (top quintile: growth YoY decelerating 3-4q later 61-68% historically)
@@ -27,12 +27,12 @@ US GIP Quad Map | real data | CPI through 2026-09, GDP through 2026Q2
   2026-06  actual    MoM +0.35%  YoY 2.10% (+0.01pp up)
   2026-07  actual    MoM +0.03%  YoY 1.69% (-0.41pp down)
   2026-08  actual    MoM +0.43%  YoY 2.04% (+0.35pp up)
-  2026-09  nowcast   MoM +0.26%  YoY 2.21% (+0.17pp up)  [1/5 components in]
-  2026-10  forecast  MoM +0.27%  YoY 2.44% (+0.23pp up)  [0/5 components in]
-  2026-11  forecast  MoM +0.27%  YoY 2.58% (+0.13pp up)  [0/5 components in]
-  call for 2026-09: up   0.17pp call (0.15-0.30pp)   -> right 93% of the time (nowcast)
-  call for 2026-10: up   0.23pp call (0.15-0.30pp)   -> right 93% of the time (forecast)
-  call for 2026-11: up   0.13pp lean (0.05-0.15pp)   -> right 71% of the time (forecast)
+  2026-09  nowcast   MoM +0.30%  YoY 2.25% (+0.21pp up)  [3/5 components in]
+  2026-10  forecast  MoM +0.28%  YoY 2.50% (+0.24pp up)  [0/5 components in]
+  2026-11  forecast  MoM +0.28%  YoY 2.64% (+0.14pp up)  [0/5 components in]
+  call for 2026-09: up   0.21pp call (0.15-0.30pp)   -> right 93% of the time (nowcast)
+  call for 2026-10: up   0.24pp call (0.15-0.30pp)   -> right 93% of the time (forecast)
+  call for 2026-11: up   0.14pp lean (0.05-0.15pp)   -> right 71% of the time (forecast)
   Agrees with the QUARTER's GDP direction about 2 months in 3; the third is inventories, imports and government.
 
 === The rate channel (policy rate -> growth, 2-6 quarters later) ===
