@@ -1,6 +1,6 @@
 
 US GIP Quad Map | real data | CPI through 2026-09, GDP through 2026Q2
-  CPI blocks : shelter b=0.38 a=2.18   supercore b=0.68   market rents 2.5% YoY
+  CPI blocks : shelter b=0.38 a=2.18   supercore b=0.68   market rents 2.7% YoY
   growth     : nowcast 0.75% QoQ (k=2 months in), then pace mode 'potential' = 0.50% QoQ (2.0% annualized); trailing median was 0.78% = 3.2%
   energy     : WTI $97 at the last CPI month, 1 later month(s) of pump prices observed (incl. the month in progress); pump slope 0.95
   rates      : fed funds 3.88% (2026-10), -0.02pp over 4q, -0.77pp over 8q; drag sensitivity -0.096pp/q per 1pp (raw fit -0.096, n=260, 1960Q1..2026Q2); path market-implied steps supplied
@@ -62,7 +62,7 @@ US GIP Quad Map | real data | CPI through 2026-09, GDP through 2026Q2
 2027Q1        2.44           3.49     -0.06        -0.35     4  Disinflation            True       True
 2027Q2        2.38           2.52     -0.07        -0.97     4  Disinflation            True       True
 2027Q3        2.05           2.63     -0.33         0.11     3   Stagflation           False       True
-2027Q4        1.89           2.17     -0.16        -0.46     4  Disinflation           False       True
+2027Q4        1.89           2.18     -0.16        -0.45     4  Disinflation           False       True
 
 === Quad flips (the tradeable events) ===
         quad         label  projected
