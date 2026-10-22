@@ -14,7 +14,7 @@ US GIP Quad Map | real data | CPI through 2026-09, GDP through 2026Q2
     consumer credit outstanding: +2.7% YoY, +3.2% 3m ann. (2026-08); 10y percentile 33%
   consumer sentiment     : 51.7 (2026-08); 10y percentile 5% depressed (bottom decile: next-quarter GDP QoQ HIGHER 63% historically)
   household net worth    : $195.9T (2026Q2), +12.8T on the quarter, +11.8% YoY; 10y percentile 87% ELEVATED (top quintile: growth YoY decelerating 3-4q later 61-68% historically)
-  30y mortgage rate      : 7.36% (2026-10), +1.13pp over 4q; 10y percentile of the change 85% rising (top quintile: weak signal, 57%)
+  30y mortgage rate      : 7.35% (2026-10), +1.12pp over 4q; 10y percentile of the change 85% rising (top quintile: weak signal, 57%)
   fed funds              : 3.88% (2026-10), -0.02pp over 4q
   real disposable income : +1.30% YoY (2026-08); 10y percentile 21%
   saving rate            : 4.1% (2026-08); 10y percentile 10%
@@ -58,11 +58,11 @@ US GIP Quad Map | real data | CPI through 2026-09, GDP through 2026Q2
 2026Q1        2.64           2.70      0.59        -0.03     1    Goldilocks            True      False
 2026Q2        2.19           3.80     -0.45         1.10     3   Stagflation           False      False
 2026Q3        1.99           3.46     -0.20        -0.35     4  Disinflation           False       True
-2026Q4        2.51           3.84      0.52         0.38     2     Reflation           False       True
-2027Q1        2.44           3.49     -0.06        -0.35     4  Disinflation            True       True
-2027Q2        2.38           2.52     -0.07        -0.97     4  Disinflation            True       True
-2027Q3        2.05           2.63     -0.33         0.11     3   Stagflation           False       True
-2027Q4        1.89           2.18     -0.16        -0.45     4  Disinflation           False       True
+2026Q4        2.51           3.82      0.52         0.37     2     Reflation           False       True
+2027Q1        2.44           3.48     -0.06        -0.35     4  Disinflation            True       True
+2027Q2        2.38           2.51     -0.07        -0.97     4  Disinflation            True       True
+2027Q3        2.05           2.62     -0.33         0.11     3   Stagflation           False       True
+2027Q4        1.89           2.18     -0.16        -0.44     4  Disinflation           False       True
 
 === Quad flips (the tradeable events) ===
         quad         label  projected
@@ -78,19 +78,19 @@ US GIP Quad Map | real data | CPI through 2026-09, GDP through 2026Q2
 === Direction calls (accelerating / decelerating) ===
 quarter              growth YoY             growth QoQ          inflation YoY          inflation QoQ
 2026Q3   down  0.20pp      weak down  0.04pp     split down  0.35pp    strong down  1.06pp    strong
-2026Q4     up  0.52pp    strong down  0.23pp      lean   up  0.38pp    strong   up  0.56pp    strong
-2027Q1   down  0.06pp      weak                no call down  0.35pp    strong down  0.45pp    strong
+2026Q4     up  0.52pp    strong down  0.23pp      lean   up  0.37pp    strong   up  0.55pp    strong
+2027Q1   down  0.06pp      weak                no call down  0.35pp    strong down  0.44pp    strong
   growth QoQ votes for 2026Q3: GDP reversal +0.01pp, real-PCE reversal -0.10pp -> SPLIT: coin flip (50% backtested)
   backtested hit rates by call and conviction: results_us/us_direction_conviction.csv
 
 === Next 6 CPI prints (bottom-up decomposition, MoM %) ===
          mom_pct  contrib_gasoline  contrib_shelter  contrib_core_goods  contrib_supercore  yoy_pct
-2026-10    0.244              0.06            0.085               0.007              0.047    3.839
-2026-11    0.184              0.00            0.084               0.007              0.047    3.899
-2026-12    0.181              0.00            0.084               0.005              0.047    3.779
-2027-01    0.180              0.00            0.083               0.004              0.047    3.788
-2027-02    0.180              0.00            0.083               0.005              0.047    3.698
-2027-03    0.177              0.00            0.083               0.002              0.047    2.990
+2026-10    0.229             0.046            0.085               0.007              0.047    3.824
+2026-11    0.184             0.000            0.084               0.007              0.047    3.884
+2026-12    0.181             0.000            0.084               0.005              0.047    3.764
+2027-01    0.180             0.000            0.083               0.004              0.047    3.773
+2027-02    0.180             0.000            0.083               0.005              0.047    3.683
+2027-03    0.177             0.000            0.083               0.002              0.047    2.975
 
 Deadband for low_conviction: +/-0.1pp. Measured accuracy of these calls is in the README.
 Note: the growth path past the nowcast quarter is the pace above plus the rate
