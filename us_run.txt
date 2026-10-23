@@ -12,7 +12,7 @@ US GIP Quad Map | real data | CPI through 2026-09, GDP through 2026Q2
     services                : +2.5% YoY, +3.3% 3m ann. (2026-08); 10y percentile 59%
     real retail sales       : +2.5% YoY, +2.1% 3m ann. (2026-09); 10y percentile 67%
     consumer credit outstanding: +2.7% YoY, +3.2% 3m ann. (2026-08); 10y percentile 33%
-  consumer sentiment     : 51.7 (2026-08); 10y percentile 5% depressed (bottom decile: next-quarter GDP QoQ HIGHER 63% historically)
+  consumer sentiment     : 48.1 (2026-09); 10y percentile 3% depressed (bottom decile: next-quarter GDP QoQ HIGHER 63% historically)
   household net worth    : $195.9T (2026Q2), +12.8T on the quarter, +11.8% YoY; 10y percentile 87% ELEVATED (top quintile: growth YoY decelerating 3-4q later 61-68% historically)
   30y mortgage rate      : 7.35% (2026-10), +1.12pp over 4q; 10y percentile of the change 85% rising (top quintile: weak signal, 57%)
   fed funds              : 3.88% (2026-10), -0.02pp over 4q
