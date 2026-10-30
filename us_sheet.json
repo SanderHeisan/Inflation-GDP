@@ -1,7 +1,7 @@
 {
  "meta": {
-  "asof": "29 Oct 2026",
-  "asof_iso": "2026-10-29",
+  "asof": "30 Oct 2026",
+  "asof_iso": "2026-10-30",
   "cpi_through": "Sep 2026",
   "gdp_through": "Q3 2026",
   "next_cpi_month": "Oct 2026",
@@ -11,7 +11,7 @@
   "pace_mode": "potential",
   "pace_ann": 2.000000000000024,
   "pace_persistence": 0.0,
-  "mg_last": "2026-08",
+  "mg_last": "2026-09",
   "hedgeye_monthly_asof": "mid-Sep 2026",
   "wti_last_cpi": 97.30809523809525,
   "wti_now": 101.37578947368421,
@@ -140,7 +140,7 @@
     "dir": "down",
     "grade": "call",
     "hit": 0.73,
-    "delta": -0.10774721125094011
+    "delta": -0.15639113770926505
    },
    "i_yoy": 3.8136304512327968,
    "di": 0.3555893786558144,
@@ -429,20 +429,20 @@
    "bar": 0.2950901819104068,
    "base_filled": false,
    "mg": {
-    "status": "nowcast",
-    "n_actual": 3,
-    "h": 1,
-    "mom": 0.3092781861450833,
-    "yoy": 2.3455064332746245,
-    "d_yoy": 0.2249355463297853,
+    "status": "actual",
+    "n_actual": 5,
+    "h": 0,
+    "mom": 0.09023549751172587,
+    "yoy": 2.121571430449354,
+    "d_yoy": 0.0010005435045146172,
     "dir": "up",
-    "bucket": "call (0.15-0.30pp)",
-    "hit": 0.9351851851851852
+    "bucket": "toss-up (<0.05pp)",
+    "hit": null
    },
    "mquad": {
     "quad": 2,
-    "close": false,
-    "status": "nowcast"
+    "close": true,
+    "status": "actual"
    },
    "hedgeye": {
     "quad": 2,
@@ -474,13 +474,13 @@
    "mg": {
     "status": "forecast",
     "n_actual": 0,
-    "h": 2,
-    "mom": 0.29160074117295565,
-    "yoy": 2.5998572022894795,
-    "d_yoy": 0.254350769014855,
+    "h": 1,
+    "mom": 0.2614544422601628,
+    "yoy": 2.344507940156726,
+    "d_yoy": 0.2229365097073721,
     "dir": "up",
     "bucket": "call (0.15-0.30pp)",
-    "hit": 0.8888888888888888
+    "hit": 0.9351851851851852
    },
    "mquad": {
     "quad": 2,
@@ -517,13 +517,13 @@
    "mg": {
     "status": "forecast",
     "n_actual": 0,
-    "h": 3,
-    "mom": 0.29160074117295565,
-    "yoy": 2.7571465354705227,
-    "d_yoy": 0.1572893331810432,
+    "h": 2,
+    "mom": 0.2614544422601628,
+    "yoy": 2.4705100905868527,
+    "d_yoy": 0.12600215043012675,
     "dir": "up",
-    "bucket": "call (0.15-0.30pp)",
-    "hit": 0.826530612244898
+    "bucket": "lean (0.05-0.15pp)",
+    "hit": 0.6494845360824743
    },
    "mquad": {
     "quad": 2,
@@ -560,13 +560,13 @@
    "mg": {
     "status": "forecast",
     "n_actual": 0,
-    "h": 4,
-    "mom": 0.29160074117295565,
-    "yoy": 3.0636089098307284,
-    "d_yoy": 0.30646237436020574,
+    "h": 3,
+    "mom": 0.2614544422601628,
+    "yoy": 2.7451390759695826,
+    "d_yoy": 0.27462898538272995,
     "dir": "up",
-    "bucket": "strong (>0.30pp)",
-    "hit": null
+    "bucket": "call (0.15-0.30pp)",
+    "hit": 0.826530612244898
    },
    "mquad": {
     "quad": 1,
@@ -603,10 +603,10 @@
    "mg": {
     "status": "forecast",
     "n_actual": 0,
-    "h": 5,
-    "mom": 0.29160074117295565,
-    "yoy": 3.4916367257846748,
-    "d_yoy": 0.42802781595394634,
+    "h": 4,
+    "mom": 0.2614544422601628,
+    "yoy": 3.1407464674264807,
+    "d_yoy": 0.39560739145689805,
     "dir": "up",
     "bucket": "strong (>0.30pp)",
     "hit": null
@@ -646,16 +646,16 @@
    "mg": {
     "status": "forecast",
     "n_actual": 0,
-    "h": 6,
-    "mom": 0.29160074117295565,
-    "yoy": 3.501081352009394,
-    "d_yoy": 0.009444626224719421,
-    "dir": "up",
+    "h": 5,
+    "mom": 0.2614544422601628,
+    "yoy": 3.1190678028619967,
+    "d_yoy": -0.021678664564483974,
+    "dir": "down",
     "bucket": "toss-up (<0.05pp)",
     "hit": null
    },
    "mquad": {
-    "quad": 1,
+    "quad": 4,
     "close": true,
     "status": "forecast"
    },
@@ -689,10 +689,10 @@
    "mg": {
     "status": "forecast",
     "n_actual": 0,
-    "h": 7,
-    "mom": 0.29160074117295565,
-    "yoy": 3.6006831463533784,
-    "d_yoy": 0.0996017943439842,
+    "h": 6,
+    "mom": 0.2614544422601628,
+    "yoy": 3.1871901675070147,
+    "d_yoy": 0.06812236464501797,
     "dir": "up",
     "bucket": "lean (0.05-0.15pp)",
     "hit": null
@@ -732,16 +732,16 @@
    "mg": {
     "status": "forecast",
     "n_actual": 0,
-    "h": 8,
-    "mom": 0.29160074117295565,
-    "yoy": 3.6045734725078216,
-    "d_yoy": 0.00389032615444318,
-    "dir": "up",
+    "h": 7,
+    "mom": 0.2614544422601628,
+    "yoy": 3.1599613681504657,
+    "d_yoy": -0.027228799356548983,
+    "dir": "down",
     "bucket": "toss-up (<0.05pp)",
     "hit": null
    },
    "mquad": {
-    "quad": 1,
+    "quad": 4,
     "close": true,
     "status": "forecast"
    },
@@ -775,10 +775,10 @@
    "mg": {
     "status": "forecast",
     "n_actual": 0,
-    "h": 9,
-    "mom": 0.29160074117295565,
-    "yoy": 3.5979852545868107,
-    "d_yoy": -0.0065882179210108305,
+    "h": 8,
+    "mom": 0.2614544422601628,
+    "yoy": 3.1223091772109246,
+    "d_yoy": -0.037652190939541086,
     "dir": "down",
     "bucket": "toss-up (<0.05pp)",
     "hit": null
@@ -818,10 +818,10 @@
    "mg": {
     "status": "forecast",
     "n_actual": 0,
-    "h": 10,
-    "mom": 0.29160074117295565,
-    "yoy": 3.5354464650188877,
-    "d_yoy": -0.06253878956792303,
+    "h": 9,
+    "mom": 0.2614544422601628,
+    "yoy": 3.0289934276438,
+    "d_yoy": -0.0933157495671244,
     "dir": "down",
     "bucket": "lean (0.05-0.15pp)",
     "hit": null
@@ -861,10 +861,10 @@
    "mg": {
     "status": "forecast",
     "n_actual": 0,
-    "h": 11,
-    "mom": 0.29160074117295565,
-    "yoy": 3.730298838271051,
-    "d_yoy": 0.19485237325216342,
+    "h": 10,
+    "mom": 0.2614544422601628,
+    "yoy": 3.191779471024603,
+    "d_yoy": 0.1627860433808026,
     "dir": "up",
     "bucket": "call (0.15-0.30pp)",
     "hit": null
@@ -904,10 +904,10 @@
    "mg": {
     "status": "forecast",
     "n_actual": 0,
-    "h": 12,
-    "mom": 0.29160074117295565,
-    "yoy": 3.5794601820993366,
-    "d_yoy": -0.15083865617171455,
+    "h": 11,
+    "mom": 0.2614544422601628,
+    "yoy": 3.010665314506822,
+    "d_yoy": -0.18111415651778096,
     "dir": "down",
     "bucket": "call (0.15-0.30pp)",
     "hit": null
@@ -944,17 +944,17 @@
    "mg": {
     "status": "forecast",
     "n_actual": 0,
-    "h": 13,
-    "mom": 0.29160074117295565,
-    "yoy": 3.5611515983158037,
-    "d_yoy": -0.01830858378353284,
-    "dir": "down",
-    "bucket": "toss-up (<0.05pp)",
+    "h": 12,
+    "mom": 0.2614544422601628,
+    "yoy": 3.1871901675069925,
+    "d_yoy": 0.17652485300017062,
+    "dir": "up",
+    "bucket": "call (0.15-0.30pp)",
     "hit": null
    },
    "mquad": {
-    "quad": 4,
-    "close": true,
+    "quad": 1,
+    "close": false,
     "status": "forecast"
    },
    "hedgeye": null
@@ -984,16 +984,16 @@
    "mg": {
     "status": "forecast",
     "n_actual": 0,
-    "h": 14,
-    "mom": 0.29160074117295565,
-    "yoy": 3.5611515983158037,
-    "d_yoy": 0.0,
-    "dir": "down",
+    "h": 13,
+    "mom": 0.2614544422601628,
+    "yoy": 3.1871901675070147,
+    "d_yoy": 2.220446049250313e-14,
+    "dir": "up",
     "bucket": "toss-up (<0.05pp)",
     "hit": null
    },
    "mquad": {
-    "quad": 4,
+    "quad": 1,
     "close": true,
     "status": "forecast"
    },
@@ -1024,10 +1024,10 @@
    "mg": {
     "status": "forecast",
     "n_actual": 0,
-    "h": 15,
-    "mom": 0.29160074117295565,
-    "yoy": 3.5611515983158037,
-    "d_yoy": 0.0,
+    "h": 14,
+    "mom": 0.2614544422601628,
+    "yoy": 3.1871901675069925,
+    "d_yoy": -2.220446049250313e-14,
     "dir": "down",
     "bucket": "toss-up (<0.05pp)",
     "hit": null
@@ -1064,16 +1064,16 @@
    "mg": {
     "status": "forecast",
     "n_actual": 0,
-    "h": 16,
-    "mom": 0.29160074117295565,
-    "yoy": 3.5611515983158037,
-    "d_yoy": 0.0,
-    "dir": "down",
+    "h": 15,
+    "mom": 0.2614544422601628,
+    "yoy": 3.1871901675070147,
+    "d_yoy": 2.220446049250313e-14,
+    "dir": "up",
     "bucket": "toss-up (<0.05pp)",
     "hit": null
    },
    "mquad": {
-    "quad": 3,
+    "quad": 2,
     "close": true,
     "status": "forecast"
    },
@@ -1104,9 +1104,9 @@
    "mg": {
     "status": "forecast",
     "n_actual": 0,
-    "h": 17,
-    "mom": 0.29160074117295565,
-    "yoy": 3.5611515983158037,
+    "h": 16,
+    "mom": 0.2614544422601628,
+    "yoy": 3.1871901675070147,
     "d_yoy": 0.0,
     "dir": "down",
     "bucket": "toss-up (<0.05pp)",
@@ -1144,9 +1144,9 @@
    "mg": {
     "status": "forecast",
     "n_actual": 0,
-    "h": 18,
-    "mom": 0.29160074117295565,
-    "yoy": 3.5611515983158037,
+    "h": 17,
+    "mom": 0.2614544422601628,
+    "yoy": 3.1871901675070147,
     "d_yoy": 0.0,
     "dir": "down",
     "bucket": "toss-up (<0.05pp)",
@@ -1400,37 +1400,37 @@
  },
  "consumer": {
   "real_pce": {
-   "latest_month": "2026-08",
-   "yoy_pct": 2.6939387889677313,
+   "latest_month": "2026-09",
+   "yoy_pct": 2.5365995071749525,
    "last_quarter": "2026Q3",
-   "last_quarter_qoq_pct": 0.8334987888654943,
-   "last_quarter_saar_pct": 3.375910471349064,
+   "last_quarter_qoq_pct": 0.9307866417821442,
+   "last_quarter_saar_pct": 3.775451703996513,
    "trailing_median_qoq_pct": 0.8277414889330315,
-   "pctl_10y": 0.38461538461538464,
+   "pctl_10y": 0.5384615384615384,
    "stretched": false,
    "depressed": false
   },
   "detail": {
    "real_pce_durables": {
     "label": "durable goods",
-    "latest_month": "2026-08",
-    "yoy_pct": 4.241281809613562,
-    "m3_ann_pct": 6.09941689969089,
+    "latest_month": "2026-09",
+    "yoy_pct": 3.24644772748659,
+    "m3_ann_pct": -1.3375924563946762,
     "pctl_10y": 0.4358974358974359
    },
    "real_pce_nondurables": {
     "label": "nondurable goods",
-    "latest_month": "2026-08",
-    "yoy_pct": 1.792631549184276,
-    "m3_ann_pct": 5.420803337567315,
+    "latest_month": "2026-09",
+    "yoy_pct": 2.1166122854305636,
+    "m3_ann_pct": 3.6369244388856137,
     "pctl_10y": 0.23076923076923078
    },
    "real_pce_services": {
     "label": "services",
-    "latest_month": "2026-08",
-    "yoy_pct": 2.717919562785398,
-    "m3_ann_pct": 4.146430093409315,
-    "pctl_10y": 0.717948717948718
+    "latest_month": "2026-09",
+    "yoy_pct": 2.5492669372235044,
+    "m3_ann_pct": 3.4636727111908128,
+    "pctl_10y": 0.6666666666666666
    },
    "real_retail": {
     "label": "real retail sales",
@@ -1478,13 +1478,13 @@
    "depressed": true
   },
   "real_income": {
-   "latest_month": "2026-08",
-   "yoy_pct": 1.3326730494112482,
-   "pctl_10y": 0.20512820512820512
+   "latest_month": "2026-09",
+   "yoy_pct": 0.9531295519631389,
+   "pctl_10y": 0.1794871794871795
   },
   "saving_rate": {
-   "latest_month": "2026-08",
-   "level_pct": 4.0,
+   "latest_month": "2026-09",
+   "level_pct": 3.8,
    "pctl_10y": 0.10256410256410256
   }
  },
