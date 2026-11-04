@@ -3,7 +3,7 @@ US GIP Quad Map | real data | CPI through 2026-09, GDP through 2026Q3
   CPI blocks : shelter b=0.38 a=2.18   supercore b=0.68   market rents 2.7% YoY
   growth     : nowcast 0.96% QoQ (k=0 months in), then pace mode 'potential' = 0.50% QoQ (2.0% annualized); trailing median was 0.78% = 3.2%
   energy     : WTI $97 at the last CPI month, 2 later month(s) of pump prices observed (incl. the month in progress); pump slope 0.95
-  rates      : fed funds 3.88% (2026-10), -0.02pp over 4q, -0.77pp over 8q; drag sensitivity -0.096pp/q per 1pp (raw fit -0.096, n=261, 1960Q1..2026Q3); path market-implied steps supplied
+  rates      : fed funds 3.88% (2026-11), -0.02pp over 4q, -0.77pp over 8q; drag sensitivity -0.096pp/q per 1pp (raw fit -0.096, n=261, 1960Q1..2026Q3); path market-implied steps supplied
 
 === The consumer (published data, vs its own trailing decade) ===
   real consumer spending : +2.54% YoY (2026-09); last quarter +3.8% ann. vs trailing median +3.4%; 10y percentile 54%
@@ -15,7 +15,7 @@ US GIP Quad Map | real data | CPI through 2026-09, GDP through 2026Q3
   consumer sentiment     : 48.1 (2026-09); 10y percentile 3% depressed (bottom decile: next-quarter GDP QoQ HIGHER 63% historically)
   household net worth    : $195.9T (2026Q2), +12.8T on the quarter, +11.8% YoY; 10y percentile 87% ELEVATED (top quintile: growth YoY decelerating 3-4q later 61-68% historically)
   30y mortgage rate      : 7.33% (2026-10), +1.10pp over 4q; 10y percentile of the change 85% rising (top quintile: weak signal, 57%)
-  fed funds              : 3.88% (2026-10), -0.02pp over 4q
+  fed funds              : 3.88% (2026-11), -0.02pp over 4q
   real disposable income : +0.95% YoY (2026-09); 10y percentile 18%
   saving rate            : 3.8% (2026-09); 10y percentile 10%
 
