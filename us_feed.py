@@ -36,6 +36,7 @@ from __future__ import annotations
 import csv
 import datetime
 import json
+import math
 from typing import Any, Dict, List, Optional
 
 from usbacktest.btconfig import RESULTS_DIR
@@ -314,6 +315,20 @@ def build_feed(sheet: dict, repo: str = "SanderHeisan/Inflation-GDP") -> dict:
     return feed
 
 
+def _number(raw: Any) -> Optional[float]:
+    """A CSV cell as a float, or None. Pandas writes a missing number as an
+    empty cell and a NaN as the text "nan"; neither is a number a JSON feed
+    may carry, and both arrive here as strings."""
+    text = str(raw if raw is not None else "").strip()
+    if not text:
+        return None
+    try:
+        f = float(text)
+    except ValueError:
+        return None
+    return f if math.isfinite(f) else None
+
+
 def attach_calls(feed: dict) -> int:
     """Stamp every month with the call the model made BEFORE that month began.
 
@@ -330,12 +345,18 @@ def attach_calls(feed: dict) -> int:
     does not depend on anyone having saved anything, and it is rebuilt from
     scratch on every run, so it cannot drift.
 
-    Each month gains `called_regime`, `called_asof` and `called_too_close`.
+    Each month gains `called_regime`, `called_asof`, `called_too_close` and,
+    where the vintage recorded them, `called_growth_yoy` and `called_cpi_yoy`
+    - the two RATES that were forecast, beside the cell they imply. A call can
+    miss the cell while the numbers land close, or take the cell while they do
+    not, and only carrying both lets a reader tell those apart.
+
     Whether the call was RIGHT is deliberately left to the consumer: scoring
     it here would need a second reading of the outcome, and a page that showed
     one regime for the month while scoring the call against another would be
     wrong in the way that is hardest to spot. The page compares the call with
-    the month's own `regime`, which is the number beside it.
+    the month's own `regime`, which is the number beside it, and the forecast
+    rates with that month's own `growth_measure_yoy` and `cpi_yoy`.
 
     Returns how many months were stamped. The record only covers months that
     have begun, so the path ahead is untouched.
@@ -360,8 +381,16 @@ def attach_calls(feed: dict) -> int:
             # ever stops being true, so the date is the call, not a redo.
             if month in by_month and by_month[month]["called_asof"] <= asof:
                 continue
-            by_month[month] = {"called_regime": q, "called_asof": asof,
-                               "called_too_close": str(row.get("close", "")).strip().lower() == "true"}
+            got = {"called_regime": q, "called_asof": asof,
+                   "called_too_close": str(row.get("close", "")).strip().lower() == "true"}
+            # The rates are optional: a record written before the vintage
+            # carried them has the columns missing or empty, and a month
+            # without them still shows its cell and its date.
+            for src, dst in (("growth_yoy", "called_growth_yoy"), ("inflation_yoy", "called_cpi_yoy")):
+                val = _number(row.get(src))
+                if val is not None:
+                    got[dst] = val
+            by_month[month] = got
     n = 0
     for mm in feed.get("months", []):
         got = by_month.get(mm.get("month"))

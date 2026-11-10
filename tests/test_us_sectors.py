@@ -112,3 +112,29 @@ def test_the_committed_block_has_every_regime_and_names_no_other_vendor():
         assert set(blk[basis]["regimes"]) == {"1", "2", "3", "4"} and blk[basis]["n"] > 50
         assert all(len(blk[basis]["regimes"][r]["best"]) == 3 for r in "1234")
     assert "hedgeye" not in json.dumps(blk).lower() and "quad" not in json.dumps(blk).lower()
+
+
+def test_a_call_record_with_no_rows_still_declares_its_columns():
+    """Owner, 2026-11-10: *"I also want to see what was forecasted and what was
+    the actual."* The call record answers that only if it carries the two
+    RATES the call was made of, not just the cell they imply.
+
+    An empty run is the case that silently drops a column: with no rows there
+    is no row to infer the frame from, so the empty frame has to name them,
+    or a run that skipped every vintage would write a header the feed cannot
+    read and every month would lose its numbers at once."""
+    out = us.called_monthly(None, start="2020-01", end=pd.Period("2019-12", "M"))
+    assert list(out.columns) == ["quad", "close", "growth_yoy", "inflation_yoy", "horizon", "status"]
+    assert out.empty
+
+
+@pytest.mark.parametrize("raw,want", [
+    (3.37, 3.37), ("3.37", 3.37), (0, 0.0),
+    (None, None), ("", None), ("nan", None), (float("nan"), None), (float("inf"), None),
+])
+def test_a_projection_with_no_number_becomes_a_missing_value(raw, want):
+    """pandas writes a missing number as a blank cell and a NaN as the text
+    "nan". Neither is a number JSON may carry, and a NaN that reached the feed
+    would render as the literal NaN and break the page's parse."""
+    got = us._finite(raw)
+    assert got is None if want is None else got == pytest.approx(want)

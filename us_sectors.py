@@ -38,7 +38,7 @@ from __future__ import annotations
 import datetime
 import json
 import math
-from typing import Dict, List, Optional
+from typing import Any, Dict, List, Optional
 
 import numpy as np
 import pandas as pd
@@ -115,11 +115,27 @@ def realized_monthly(bundle) -> pd.DataFrame:
     return mq[["quad", "close", "growth_yoy", "inflation_yoy"]]
 
 
+def _finite(x: Any) -> Optional[float]:
+    """A plain float, or None where the projection has no number. NaN written
+    to CSV comes back as the string "nan", which is not a number the feed can
+    carry, so it is turned into a missing value here instead."""
+    try:
+        f = float(x)
+    except (TypeError, ValueError):
+        return None
+    return f if math.isfinite(f) else None
+
+
 def called_monthly(bundle, start: str = CALLED_START, end: Optional[pd.Period] = None) -> pd.DataFrame:
     """The model's call for month M made at the end of M-1: one vintage per
     month-end, the CPI path and the growth measure projected, the cell read
-    off month M. Columns: quad, close, horizon (months past the growth
-    measure's last complete month), status."""
+    off month M. Columns: quad, close, growth_yoy, inflation_yoy, horizon
+    (months past the growth measure's last complete month), status.
+
+    The two RATES are the forecast itself, not a by-product. The cell is the
+    pair of directions they imply, so a call can be wrong on the cell while
+    the numbers land close, and right on the cell while they do not. Keeping
+    both is what lets a reader see which of the two happened."""
     cfg = USVintageConfig(revision_mode="none", live_partial_month=False)
     first = pd.Period(start, "M")
     last = end if end is not None else pd.Period(datetime.date.today(), "M") - 1
@@ -142,12 +158,15 @@ def called_monthly(bundle, start: str = CALLED_START, end: Optional[pd.Period] =
                 continue
             r = mq.loc[target]
             rows.append({"month": target, "asof": asof.date(), "quad": int(r["quad"]), "close": bool(r["close"]),
+                         "growth_yoy": _finite(r.get("growth_yoy")),
+                         "inflation_yoy": _finite(r.get("inflation_yoy")),
                          "horizon": int((target - mgi.attrs["last_complete"]).n) if mgi.attrs.get("last_complete") is not None else None,
                          "status": str(mgi.loc[target, "status"])})
         except Exception as e:                    # noqa: BLE001 - one bad vintage must not stop the table
             skipped += 1
             print(f"[us_sectors] {asof.date()} skipped: {type(e).__name__}: {e}")
-    out = pd.DataFrame(rows).set_index("month") if rows else pd.DataFrame(columns=["quad", "close", "horizon", "status"])
+    out = (pd.DataFrame(rows).set_index("month") if rows else
+           pd.DataFrame(columns=["quad", "close", "growth_yoy", "inflation_yoy", "horizon", "status"]))
     out.attrs["skipped"] = skipped
     return out
 
