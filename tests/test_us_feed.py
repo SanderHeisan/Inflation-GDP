@@ -30,6 +30,10 @@ MONTH_KEYS = {"month", "label", "regime", "regime_name", "too_close_to_call", "s
 # month still ahead. Named rather than waved through, so a typo or a stray
 # field still fails the contract.
 MONTH_CALL_KEYS = {"called_regime", "called_asof", "called_too_close"}
+# The two RATES the call was made of, beside the cell they imply. Optional
+# within an optional block: a record written before the vintage carried them
+# still gives a month its cell and its date.
+MONTH_CALL_RATE_KEYS = {"called_growth_yoy", "called_cpi_yoy"}
 QUARTER_KEYS = {"quarter", "label", "regime", "regime_name", "too_close_to_call", "realized",
                 "growth_yoy", "growth_dir", "inflation_yoy", "inflation_dir", "backtest_hit"}
 VENDOR = re.compile(r"hedgeye|\bquads?\b|\bgip\b", re.I)
@@ -54,10 +58,15 @@ def test_the_rows_keep_their_contract(feed):
     assert feed["months"]
     for m in feed["months"]:
         extra = set(m) - MONTH_KEYS
-        assert not extra - MONTH_CALL_KEYS, f"{m['month']}: unexpected keys {sorted(extra - MONTH_CALL_KEYS)}"
+        known = MONTH_CALL_KEYS | MONTH_CALL_RATE_KEYS
+        assert not extra - known, f"{m['month']}: unexpected keys {sorted(extra - known)}"
         assert MONTH_KEYS <= set(m), f"{m['month']}: missing {sorted(MONTH_KEYS - set(m))}"
         # the call keys arrive together or not at all
-        assert extra in (set(), MONTH_CALL_KEYS), f"{m['month']}: half a call {sorted(extra)}"
+        assert extra & MONTH_CALL_KEYS in (set(), MONTH_CALL_KEYS), f"{m['month']}: half a call {sorted(extra)}"
+        # a rate without the call it belongs to would be a number with no date
+        assert not (extra & MONTH_CALL_RATE_KEYS) or (extra & MONTH_CALL_KEYS), \
+            f"{m['month']}: forecast rates with no call {sorted(extra)}"
+        assert all(isinstance(m[k], float) for k in extra & MONTH_CALL_RATE_KEYS)
     assert all(q["regime"] in (1, 2, 3, 4) for q in feed["quarters"])
     assert all(m["status"] in ("actual", "nowcast", "forecast") for m in feed["months"])
 
@@ -155,7 +164,8 @@ def test_each_month_that_has_begun_carries_the_call_made_before_it(feed, tmp_pat
 
     f = json.loads(json.dumps(feed))
     for m in f["months"]:                       # start from a feed with no calls on it
-        for k in ("called_regime", "called_asof", "called_too_close"):
+        for k in ("called_regime", "called_asof", "called_too_close",
+                  "called_growth_yoy", "called_cpi_yoy"):
             m.pop(k, None)
     assert us_feed.attach_calls(f) == 2
 
@@ -169,6 +179,65 @@ def test_each_month_that_has_begun_carries_the_call_made_before_it(feed, tmp_pat
     assert not any(k.startswith("called_right") or k == "called_hit" for k in by[months[0]])
 
 
+def test_the_call_carries_the_two_rates_it_was_made_of(feed, tmp_path, monkeypatch):
+    """Owner, 2026-11-10: *"I also want to see what was forecasted and what was
+    the actual."*
+
+    The cell alone cannot answer that. R2 against R2 says the directions
+    matched; it does not say whether inflation was forecast at 3.4% and came
+    in at 3.8%. So the record carries the two RATES beside the cell, and a
+    record written before it did still gives the month its cell and its date.
+    """
+    import csv as _csv
+    months = [m["month"] for m in feed["months"]]
+    full = ["month", "asof", "quad", "close", "growth_yoy", "inflation_yoy", "horizon", "status"]
+    rows = [
+        {"month": months[0], "asof": "2026-05-31", "quad": 2, "close": "False",
+         "growth_yoy": "2.4", "inflation_yoy": "3.37", "horizon": 2, "status": "forecast"},
+        # a vintage that produced no number: blank and NaN both mean "no rate",
+        # and neither may reach a JSON feed as a value
+        {"month": months[1], "asof": "2026-06-30", "quad": 1, "close": "False",
+         "growth_yoy": "", "inflation_yoy": "nan", "horizon": 2, "status": "forecast"},
+    ]
+    out = tmp_path / "us_regime_monthly_called.csv"
+    with out.open("w", newline="") as fh:
+        w = _csv.DictWriter(fh, fieldnames=full)
+        w.writeheader()
+        for r in rows:
+            w.writerow(r)
+    monkeypatch.setattr(us_feed, "RESULTS_DIR", tmp_path)
+
+    f = json.loads(json.dumps(feed))
+    for m in f["months"]:
+        for k in ("called_regime", "called_asof", "called_too_close",
+                  "called_growth_yoy", "called_cpi_yoy"):
+            m.pop(k, None)
+    assert us_feed.attach_calls(f) == 2
+    by = {m["month"]: m for m in f["months"]}
+
+    assert by[months[0]]["called_growth_yoy"] == pytest.approx(2.4)
+    assert by[months[0]]["called_cpi_yoy"] == pytest.approx(3.37)
+    # the month whose vintage had no numbers keeps its call and gains no rates
+    assert by[months[1]]["called_regime"] == 1 and by[months[1]]["called_asof"] == "2026-06-30"
+    assert "called_growth_yoy" not in by[months[1]]
+    assert "called_cpi_yoy" not in by[months[1]]
+
+    # a record from before the rates existed: the columns are simply absent
+    with out.open("w", newline="") as fh:
+        w = _csv.DictWriter(fh, fieldnames=["month", "asof", "quad", "close", "horizon", "status"])
+        w.writeheader()
+        w.writerow({"month": months[0], "asof": "2026-05-31", "quad": 2, "close": "False",
+                    "horizon": 2, "status": "forecast"})
+    g = json.loads(json.dumps(feed))
+    for m in g["months"]:
+        for k in ("called_regime", "called_asof", "called_too_close",
+                  "called_growth_yoy", "called_cpi_yoy"):
+            m.pop(k, None)
+    assert us_feed.attach_calls(g) == 1
+    one = {m["month"]: m for m in g["months"]}[months[0]]
+    assert one["called_regime"] == 2 and "called_cpi_yoy" not in one
+
+
 def test_a_missing_or_broken_call_record_does_not_stop_the_feed(feed, tmp_path, monkeypatch):
     """`us_sectors.py` is continue-on-error in the workflow, so the record can
     simply be absent. A feed that refused to publish over it would take the
@@ -176,7 +245,8 @@ def test_a_missing_or_broken_call_record_does_not_stop_the_feed(feed, tmp_path, 
     monkeypatch.setattr(us_feed, "RESULTS_DIR", tmp_path)
     f = json.loads(json.dumps(feed))
     for m in f["months"]:                       # the fixture arrives already stamped
-        for k in ("called_regime", "called_asof", "called_too_close"):
+        for k in ("called_regime", "called_asof", "called_too_close",
+                  "called_growth_yoy", "called_cpi_yoy"):
             m.pop(k, None)
     assert us_feed.attach_calls(f) == 0                      # no file at all
 
