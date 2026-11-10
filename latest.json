@@ -1,5 +1,5 @@
 {
- "generated_utc": "2026-11-10T20:36:41+00:00",
+ "generated_utc": "2026-11-10T21:24:00+00:00",
  "asof": "2026-11-10",
  "cpi_through": "Sep 2026",
  "gdp_through": "Q3 2026",
@@ -135,7 +135,9 @@
    "hedgeye_regime": 4,
    "called_regime": 4,
    "called_asof": "2026-06-30",
-   "called_too_close": true
+   "called_too_close": true,
+   "called_growth_yoy": 1.6142763052068743,
+   "called_cpi_yoy": 3.7681139178658007
   },
   {
    "month": "2026-08",
@@ -156,7 +158,9 @@
    "hedgeye_regime": 3,
    "called_regime": 1,
    "called_asof": "2026-07-31",
-   "called_too_close": false
+   "called_too_close": false,
+   "called_growth_yoy": 2.0085509599626628,
+   "called_cpi_yoy": 3.1750815819495015
   },
   {
    "month": "2026-09",
@@ -177,7 +181,9 @@
    "hedgeye_regime": 2,
    "called_regime": 1,
    "called_asof": "2026-08-31",
-   "called_too_close": false
+   "called_too_close": false,
+   "called_growth_yoy": 2.1001931166689136,
+   "called_cpi_yoy": 3.2046845121521894
   },
   {
    "month": "2026-10",
@@ -198,7 +204,9 @@
    "hedgeye_regime": 2,
    "called_regime": 2,
    "called_asof": "2026-09-30",
-   "called_too_close": false
+   "called_too_close": false,
+   "called_growth_yoy": 2.560397579047846,
+   "called_cpi_yoy": 3.6069328190607264
   },
   {
    "month": "2026-11",
@@ -219,7 +227,9 @@
    "hedgeye_regime": 1,
    "called_regime": 2,
    "called_asof": "2026-10-31",
-   "called_too_close": false
+   "called_too_close": false,
+   "called_growth_yoy": 2.477724491224542,
+   "called_cpi_yoy": 3.8769004469805024
   },
   {
    "month": "2026-12",
@@ -2123,14 +2133,14 @@
     },
     "2": {
      "n": 22,
-     "spy_mean": 2.49,
+     "spy_mean": 2.5,
      "spy_hit": 0.77,
      "best": [
       {
        "fund": "XLK",
        "name": "Technology",
        "mean": 3.21,
-       "excess": 0.71,
+       "excess": 0.72,
        "hit": 0.82,
        "n": 22,
        "beat": 0.45,
@@ -2152,7 +2162,7 @@
        "fund": "XLU",
        "name": "Utilities",
        "mean": 2.51,
-       "excess": 0.01,
+       "excess": 0.02,
        "hit": 0.77,
        "n": 22,
        "beat": 0.45,
@@ -2164,12 +2174,12 @@
       {
        "fund": "IEF",
        "name": "Treasuries (7 to 10 years)",
-       "mean": 0.2,
+       "mean": 0.19,
        "excess": -2.3,
        "hit": 0.45,
        "n": 22,
-       "beat": 0.23,
-       "beat_n": 5,
+       "beat": 0.18,
+       "beat_n": 4,
        "beat_d": 22
       },
       {
@@ -2187,7 +2197,7 @@
        "fund": "GLD",
        "name": "Gold",
        "mean": 0.93,
-       "excess": -1.56,
+       "excess": -1.57,
        "hit": 0.64,
        "n": 22,
        "beat": 0.36,
@@ -2359,7 +2369,7 @@
      "r1_n": 36,
      "r1_beat_n": null,
      "r1_beat_d": null,
-     "r2": 2.49,
+     "r2": 2.5,
      "r2_n": 22,
      "r2_beat_n": null,
      "r2_beat_d": null,
@@ -2479,7 +2489,7 @@
      "r1_n": 36,
      "r1_beat_n": 16,
      "r1_beat_d": 36,
-     "r2": 2.39,
+     "r2": 2.4,
      "r2_n": 22,
      "r2_beat_n": 9,
      "r2_beat_d": 22,
@@ -2527,7 +2537,7 @@
      "r1_n": 36,
      "r1_beat_n": 21,
      "r1_beat_d": 36,
-     "r2": 2.48,
+     "r2": 2.49,
      "r2_n": 22,
      "r2_beat_n": 8,
      "r2_beat_d": 22,
@@ -2567,7 +2577,7 @@
     {
      "fund": "XLB",
      "name": "Materials",
-     "all": 0.94,
+     "all": 0.95,
      "all_n": 119,
      "all_beat_n": 53,
      "all_beat_d": 119,
@@ -2665,15 +2675,15 @@
      "name": "Treasuries (7 to 10 years)",
      "all": 0.09,
      "all_n": 119,
-     "all_beat_n": 40,
+     "all_beat_n": 39,
      "all_beat_d": 119,
      "r1": 0.18,
      "r1_n": 36,
      "r1_beat_n": 10,
      "r1_beat_d": 36,
-     "r2": 0.2,
+     "r2": 0.19,
      "r2_n": 22,
-     "r2_beat_n": 5,
+     "r2_beat_n": 4,
      "r2_beat_d": 22,
      "r3": 0.12,
      "r3_n": 24,
