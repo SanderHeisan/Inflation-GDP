@@ -1,7 +1,7 @@
 
 US GIP Quad Map | real data | CPI through 2026-10, GDP through 2026Q3
   CPI blocks : shelter b=0.38 a=2.20   supercore b=0.68   market rents 2.7% YoY
-  growth     : nowcast 0.95% QoQ (k=0 months in), then pace mode 'potential' = 0.50% QoQ (2.0% annualized); trailing median was 0.78% = 3.2%
+  growth     : nowcast 0.96% QoQ (k=0 months in), then pace mode 'potential' = 0.50% QoQ (2.0% annualized); trailing median was 0.78% = 3.2%
   energy     : WTI $102 at the last CPI month, 1 later month(s) of pump prices observed (incl. the month in progress); pump slope 0.95
   rates      : fed funds 3.88% (2026-11), -0.02pp over 4q, -0.77pp over 8q; drag sensitivity -0.096pp/q per 1pp (raw fit -0.096, n=261, 1960Q1..2026Q3); path market-implied steps supplied
 
@@ -10,7 +10,7 @@ US GIP Quad Map | real data | CPI through 2026-10, GDP through 2026Q3
     durable goods           : +3.2% YoY, -1.3% 3m ann. (2026-09); 10y percentile 44%
     nondurable goods        : +2.1% YoY, +3.6% 3m ann. (2026-09); 10y percentile 23%
     services                : +2.5% YoY, +3.5% 3m ann. (2026-09); 10y percentile 67%
-    real retail sales       : +2.5% YoY, +2.1% 3m ann. (2026-09); 10y percentile 67%
+    real retail sales       : +2.4% YoY, +4.4% 3m ann. (2026-10); 10y percentile 72%
     consumer credit outstanding: +3.0% YoY, +4.2% 3m ann. (2026-09); 10y percentile 36%
   consumer sentiment     : 48.1 (2026-09); 10y percentile 3% depressed (bottom decile: next-quarter GDP QoQ HIGHER 63% historically)
   household net worth    : $195.9T (2026Q2), +12.8T on the quarter, +11.8% YoY; 10y percentile 87% ELEVATED (top quintile: growth YoY decelerating 3-4q later 61-68% historically)
@@ -22,17 +22,17 @@ US GIP Quad Map | real data | CPI through 2026-10, GDP through 2026Q3
 === The monthly growth measure (the near-term growth call) ===
   index of real PCE .55, IP .15, real income ex transfers .10, real retail .10, payrolls x hours .10; complete through 2026-09
   2026-04  actual    MoM +0.29%  YoY 1.48% (+0.20pp up)
-  2026-05  actual    MoM +0.30%  YoY 2.09% (+0.61pp up)
-  2026-06  actual    MoM +0.35%  YoY 2.10% (+0.01pp up)
-  2026-07  actual    MoM +0.10%  YoY 1.76% (-0.34pp down)
-  2026-08  actual    MoM +0.44%  YoY 2.12% (+0.36pp up)
-  2026-09  actual    MoM +0.09%  YoY 2.13% (+0.00pp up)
-  2026-10  nowcast   MoM +0.26%  YoY 2.35% (+0.22pp up)  [1/5 components in]
-  2026-11  forecast  MoM +0.26%  YoY 2.47% (+0.12pp up)  [0/5 components in]
-  2026-12  forecast  MoM +0.26%  YoY 2.74% (+0.27pp up)  [0/5 components in]
-  call for 2026-10: up   0.22pp call (0.15-0.30pp)   -> right 93% of the time (nowcast)
-  call for 2026-11: up   0.12pp lean (0.05-0.15pp)   -> right 71% of the time (forecast)
-  call for 2026-12: up   0.27pp call (0.15-0.30pp)   -> right 93% of the time (forecast)
+  2026-05  actual    MoM +0.29%  YoY 2.09% (+0.61pp up)
+  2026-06  actual    MoM +0.36%  YoY 2.10% (+0.02pp up)
+  2026-07  actual    MoM +0.10%  YoY 1.76% (-0.35pp down)
+  2026-08  actual    MoM +0.44%  YoY 2.11% (+0.36pp up)
+  2026-09  actual    MoM +0.11%  YoY 2.14% (+0.02pp up)
+  2026-10  nowcast   MoM +0.10%  YoY 2.19% (+0.05pp up)  [3/5 components in]
+  2026-11  forecast  MoM +0.23%  YoY 2.28% (+0.09pp up)  [0/5 components in]
+  2026-12  forecast  MoM +0.23%  YoY 2.52% (+0.24pp up)  [0/5 components in]
+  call for 2026-10: up   0.05pp lean (0.05-0.15pp)   -> right 71% of the time (nowcast)
+  call for 2026-11: up   0.09pp lean (0.05-0.15pp)   -> right 71% of the time (forecast)
+  call for 2026-12: up   0.24pp call (0.15-0.30pp)   -> right 93% of the time (forecast)
   Agrees with the QUARTER's GDP direction about 2 months in 3; the third is inventories, imports and government.
 
 === The rate channel (policy rate -> growth, 2-6 quarters later) ===
@@ -57,12 +57,12 @@ US GIP Quad Map | real data | CPI through 2026-10, GDP through 2026Q3
 2026Q1        2.64           2.70      0.59        -0.03     1    Goldilocks            True      False
 2026Q2        2.19           3.80     -0.45         1.10     3   Stagflation           False      False
 2026Q3        2.07           3.46     -0.13        -0.35     4  Disinflation           False      False
-2026Q4        2.99           3.90      0.92         0.45     2     Reflation           False       True
-2027Q1        2.92           3.55     -0.06        -0.36     4  Disinflation            True       True
-2027Q2        2.85           2.59     -0.07        -0.95     4  Disinflation            True       True
-2027Q3        2.45           2.72     -0.41         0.13     3   Stagflation           False       True
-2027Q4        1.89           2.22     -0.55        -0.50     4  Disinflation           False       True
-2028Q1        1.74           2.25     -0.15         0.03     3   Stagflation            True       True
+2026Q4        2.99           3.86      0.92         0.40     2     Reflation           False       True
+2027Q1        2.92           3.48     -0.06        -0.38     4  Disinflation            True       True
+2027Q2        2.85           2.53     -0.07        -0.95     4  Disinflation            True       True
+2027Q3        2.45           2.66     -0.41         0.13     3   Stagflation           False       True
+2027Q4        1.89           2.20     -0.55        -0.46     4  Disinflation           False       True
+2028Q1        1.74           2.25     -0.15         0.05     3   Stagflation            True       True
 
 === Quad flips (the tradeable events) ===
         quad         label  projected
@@ -77,20 +77,20 @@ US GIP Quad Map | real data | CPI through 2026-10, GDP through 2026Q3
 
 === Direction calls (accelerating / decelerating) ===
 quarter              growth YoY             growth QoQ          inflation YoY          inflation QoQ
-2026Q4     up  0.92pp    strong down  0.16pp      call   up  0.45pp    strong   up  0.63pp    strong
-2027Q1   down  0.06pp      weak   up  0.05pp      lean down  0.36pp    strong down  0.52pp    strong
-2027Q2   down  0.07pp      weak                no call down  0.95pp    strong   up  0.02pp      weak
+2026Q4     up  0.92pp    strong down  0.16pp      call   up  0.40pp    strong   up  0.58pp    strong
+2027Q1   down  0.06pp      weak   up  0.05pp      lean down  0.38pp    strong down  0.50pp    strong
+2027Q2   down  0.07pp      weak                no call down  0.95pp    strong   up  0.04pp      weak
   growth QoQ votes for 2026Q4: GDP reversal -0.21pp, real-PCE reversal -0.10pp -> AGREE: call (73% backtested)
   backtested hit rates by call and conviction: results_us/us_direction_conviction.csv
 
 === Next 6 CPI prints (bottom-up decomposition, MoM %) ===
          mom_pct  contrib_gasoline  contrib_shelter  contrib_core_goods  contrib_supercore  yoy_pct
-2026-11    0.116            -0.073            0.084               0.007              0.049    3.940
-2026-12    0.187             0.000            0.084               0.005              0.049    3.824
-2027-01    0.185             0.000            0.083               0.004              0.049    3.839
-2027-02    0.186             0.000            0.083               0.005              0.049    3.755
-2027-03    0.183             0.000            0.083               0.002              0.049    3.053
-2027-04    0.182             0.000            0.084               0.000              0.049    2.584
+2026-11    0.049             -0.14            0.084               0.007              0.049    3.869
+2026-12    0.187              0.00            0.084               0.005              0.049    3.754
+2027-01    0.185              0.00            0.083               0.004              0.049    3.769
+2027-02    0.186              0.00            0.083               0.005              0.049    3.685
+2027-03    0.183              0.00            0.083               0.002              0.049    2.984
+2027-04    0.182              0.00            0.084               0.000              0.049    2.515
 
 Deadband for low_conviction: +/-0.1pp. Measured accuracy of these calls is in the README.
 Note: the growth path past the nowcast quarter is the pace above plus the rate
