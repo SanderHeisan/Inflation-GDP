@@ -1,7 +1,7 @@
 {
  "meta": {
-  "asof": "18 Nov 2026",
-  "asof_iso": "2026-11-18",
+  "asof": "19 Nov 2026",
+  "asof_iso": "2026-11-19",
   "cpi_through": "Oct 2026",
   "gdp_through": "Q3 2026",
   "next_cpi_month": "Nov 2026",
@@ -1455,8 +1455,8 @@
   },
   "mortgage_30y": {
    "latest_month": "2026-11",
-   "level_pct": 7.145,
-   "chg_4q_pp": 1.0093333333333332,
+   "level_pct": 7.19,
+   "chg_4q_pp": 1.031833333333334,
    "pctl_10y": 0.8461538461538461,
    "falling": false,
    "rising": true
