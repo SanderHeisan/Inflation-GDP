@@ -1,6 +1,6 @@
 
 US GIP Quad Map | real data | CPI through 2026-10, GDP through 2026Q3
-  CPI blocks : shelter b=0.38 a=2.20   supercore b=0.68   market rents 2.7% YoY
+  CPI blocks : shelter b=0.38 a=2.20   supercore b=0.68   market rents 2.9% YoY
   growth     : nowcast 0.96% QoQ (k=0 months in), then pace mode 'potential' = 0.50% QoQ (2.0% annualized); trailing median was 0.78% = 3.2%
   energy     : WTI $102 at the last CPI month, 1 later month(s) of pump prices observed (incl. the month in progress); pump slope 0.95
   rates      : fed funds 3.88% (2026-11), -0.02pp over 4q, -0.77pp over 8q; drag sensitivity -0.096pp/q per 1pp (raw fit -0.096, n=261, 1960Q1..2026Q3); path market-implied steps supplied
@@ -12,7 +12,7 @@ US GIP Quad Map | real data | CPI through 2026-10, GDP through 2026Q3
     services                : +2.5% YoY, +3.5% 3m ann. (2026-09); 10y percentile 67%
     real retail sales       : +2.4% YoY, +4.4% 3m ann. (2026-10); 10y percentile 72%
     consumer credit outstanding: +3.0% YoY, +4.2% 3m ann. (2026-09); 10y percentile 36%
-  consumer sentiment     : 48.1 (2026-09); 10y percentile 3% depressed (bottom decile: next-quarter GDP QoQ HIGHER 63% historically)
+  consumer sentiment     : 48.0 (2026-10); 10y percentile 0% depressed (bottom decile: next-quarter GDP QoQ HIGHER 63% historically)
   household net worth    : $195.9T (2026Q2), +12.8T on the quarter, +11.8% YoY; 10y percentile 87% ELEVATED (top quintile: growth YoY decelerating 3-4q later 61-68% historically)
   30y mortgage rate      : 7.19% (2026-11), +1.03pp over 4q; 10y percentile of the change 85% rising (top quintile: weak signal, 57%)
   fed funds              : 3.88% (2026-11), -0.02pp over 4q
@@ -61,8 +61,8 @@ US GIP Quad Map | real data | CPI through 2026-10, GDP through 2026Q3
 2027Q1        2.92           3.48     -0.06        -0.38     4  Disinflation            True       True
 2027Q2        2.85           2.53     -0.07        -0.95     4  Disinflation            True       True
 2027Q3        2.45           2.66     -0.41         0.13     3   Stagflation           False       True
-2027Q4        1.89           2.20     -0.55        -0.46     4  Disinflation           False       True
-2028Q1        1.74           2.25     -0.15         0.05     3   Stagflation            True       True
+2027Q4        1.89           2.20     -0.55        -0.45     4  Disinflation           False       True
+2028Q1        1.74           2.26     -0.15         0.06     3   Stagflation            True       True
 
 === Quad flips (the tradeable events) ===
         quad         label  projected
