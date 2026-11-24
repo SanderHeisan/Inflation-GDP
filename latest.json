@@ -1,6 +1,6 @@
 {
- "generated_utc": "2026-11-20T21:32:26+00:00",
- "asof": "2026-11-20",
+ "generated_utc": "2026-11-24T01:12:43+00:00",
+ "asof": "2026-11-24",
  "cpi_through": "Oct 2026",
  "gdp_through": "Q3 2026",
  "regimes": {
@@ -43,7 +43,7 @@
    "regime_name": "Heating",
    "too_close_to_call": false,
    "realized": false,
-   "growth_yoy": 2.99,
+   "growth_yoy": 2.95,
    "growth_dir": "up",
    "inflation_yoy": 3.86,
    "inflation_dir": "up",
@@ -56,7 +56,7 @@
    "regime_name": "Cooling",
    "too_close_to_call": true,
    "realized": false,
-   "growth_yoy": 2.92,
+   "growth_yoy": 2.89,
    "growth_dir": "down",
    "inflation_yoy": 3.48,
    "inflation_dir": "down",
@@ -69,7 +69,7 @@
    "regime_name": "Cooling",
    "too_close_to_call": true,
    "realized": false,
-   "growth_yoy": 2.85,
+   "growth_yoy": 2.82,
    "growth_dir": "down",
    "inflation_yoy": 2.53,
    "inflation_dir": "down",
@@ -82,9 +82,9 @@
    "regime_name": "Squeeze",
    "too_close_to_call": false,
    "realized": false,
-   "growth_yoy": 2.45,
+   "growth_yoy": 2.41,
    "growth_dir": "down",
-   "inflation_yoy": 2.66,
+   "inflation_yoy": 2.65,
    "inflation_dir": "up",
    "backtest_hit": 0.3523809523809524
   },
@@ -110,7 +110,7 @@
    "realized": false,
    "growth_yoy": 1.74,
    "growth_dir": "down",
-   "inflation_yoy": 2.27,
+   "inflation_yoy": 2.26,
    "inflation_dir": "up",
    "backtest_hit": null
   }
@@ -255,7 +255,7 @@
    "growth_dir": "down",
    "growth_conviction": "lean (0.05-0.15pp)",
    "growth_hit": null,
-   "cpi_yoy": 3.69,
+   "cpi_yoy": 3.68,
    "cpi_mom": 0.19,
    "cpi_dir": "down",
    "cpi_conviction": "lean",
@@ -291,7 +291,7 @@
    "growth_dir": "down",
    "growth_conviction": "lean (0.05-0.15pp)",
    "growth_hit": null,
-   "cpi_yoy": 2.52,
+   "cpi_yoy": 2.51,
    "cpi_mom": 0.18,
    "cpi_dir": "down",
    "cpi_conviction": "strong",
@@ -345,7 +345,7 @@
    "growth_dir": "up",
    "growth_conviction": "lean (0.05-0.15pp)",
    "growth_hit": null,
-   "cpi_yoy": 2.96,
+   "cpi_yoy": 2.95,
    "cpi_mom": 0.18,
    "cpi_dir": "up",
    "cpi_conviction": "lean",
@@ -435,7 +435,7 @@
    "growth_dir": "down",
    "growth_conviction": "toss-up (<0.05pp)",
    "growth_hit": null,
-   "cpi_yoy": 2.26,
+   "cpi_yoy": 2.25,
    "cpi_mom": 0.19,
    "cpi_dir": "up",
    "cpi_conviction": "toss-up",
@@ -567,7 +567,7 @@
   {
    "key": "growth_now",
    "title": "Growth this quarter, Q4 2026",
-   "text": "About +3.9% annualized, estimated from jobs, industrial production, retail sales and jobless claims with 0 of 3 months in. That beats the +0.2% pace of the same quarter last year, so year-over-year growth rises to 3.0%."
+   "text": "About +3.7% annualized, estimated from jobs, industrial production, retail sales and jobless claims with 0 of 3 months in. That beats the +0.2% pace of the same quarter last year, so year-over-year growth rises to 3.0%."
   },
   {
    "key": "growth_after",
@@ -621,7 +621,7 @@
   {
    "key": "growth_pace",
    "label": "Growth pace, Q4 2026",
-   "value": "+3.9% annualized",
+   "value": "+3.7% annualized",
    "change": "bar to beat +0.2%",
    "level": "",
    "note": "0 of 3 months in; year-over-year growth rises to 3.0%."
@@ -692,7 +692,7 @@
   }
  ],
  "sectors": {
-  "generated": "2026-11-20",
+  "generated": "2026-11-24",
   "funds": {
    "SPY": "S&P 500",
    "XLE": "Energy",
