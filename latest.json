@@ -1,6 +1,6 @@
 {
- "generated_utc": "2026-11-25T22:45:46+00:00",
- "asof": "2026-11-25",
+ "generated_utc": "2026-11-26T22:35:48+00:00",
+ "asof": "2026-11-26",
  "cpi_through": "Oct 2026",
  "gdp_through": "Q3 2026",
  "regimes": {
@@ -43,7 +43,7 @@
    "regime_name": "Heating",
    "too_close_to_call": false,
    "realized": false,
-   "growth_yoy": 3.19,
+   "growth_yoy": 2.84,
    "growth_dir": "up",
    "inflation_yoy": 3.81,
    "inflation_dir": "up",
@@ -56,7 +56,7 @@
    "regime_name": "Cooling",
    "too_close_to_call": true,
    "realized": false,
-   "growth_yoy": 3.13,
+   "growth_yoy": 2.78,
    "growth_dir": "down",
    "inflation_yoy": 3.41,
    "inflation_dir": "down",
@@ -69,7 +69,7 @@
    "regime_name": "Cooling",
    "too_close_to_call": true,
    "realized": false,
-   "growth_yoy": 3.06,
+   "growth_yoy": 2.71,
    "growth_dir": "down",
    "inflation_yoy": 2.46,
    "inflation_dir": "down",
@@ -82,7 +82,7 @@
    "regime_name": "Squeeze",
    "too_close_to_call": false,
    "realized": false,
-   "growth_yoy": 2.43,
+   "growth_yoy": 2.08,
    "growth_dir": "down",
    "inflation_yoy": 2.59,
    "inflation_dir": "up",
@@ -567,7 +567,7 @@
   {
    "key": "growth_now",
    "title": "Growth this quarter, Q4 2026",
-   "text": "About +3.8% annualized, estimated from jobs, industrial production, retail sales and jobless claims with 0 of 3 months in. That beats the +0.2% pace of the same quarter last year, so year-over-year growth rises to 3.2%."
+   "text": "About +2.4% annualized, estimated from jobs, industrial production, retail sales and jobless claims with 1 of 3 months in. That beats the +0.2% pace of the same quarter last year, so year-over-year growth rises to 2.8%."
   },
   {
    "key": "growth_after",
@@ -621,10 +621,10 @@
   {
    "key": "growth_pace",
    "label": "Growth pace, Q4 2026",
-   "value": "+3.8% annualized",
+   "value": "+2.4% annualized",
    "change": "bar to beat +0.2%",
    "level": "",
-   "note": "0 of 3 months in; year-over-year growth rises to 3.2%."
+   "note": "1 of 3 months in; year-over-year growth rises to 2.8%."
   },
   {
    "key": "pace_after",
@@ -692,7 +692,7 @@
   }
  ],
  "sectors": {
-  "generated": "2026-11-25",
+  "generated": "2026-11-26",
   "funds": {
    "SPY": "S&P 500",
    "XLE": "Energy",

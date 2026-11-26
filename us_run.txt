@@ -1,7 +1,7 @@
 
 US GIP Quad Map | real data | CPI through 2026-10, GDP through 2026Q3
   CPI blocks : shelter b=0.38 a=2.20   supercore b=0.68   market rents 2.9% YoY
-  growth     : nowcast 0.94% QoQ (k=0 months in), then pace mode 'potential' = 0.50% QoQ (2.0% annualized); trailing median was 0.78% = 3.2%
+  growth     : nowcast 0.59% QoQ (k=1 months in), then pace mode 'potential' = 0.50% QoQ (2.0% annualized); trailing median was 0.78% = 3.2%
   energy     : WTI $102 at the last CPI month, 1 later month(s) of pump prices observed (incl. the month in progress); pump slope 0.95
   rates      : fed funds 3.88% (2026-11), -0.02pp over 4q, -0.77pp over 8q; drag sensitivity -0.096pp/q per 1pp (raw fit -0.096, n=261, 1960Q1..2026Q3); path market-implied steps supplied
 
@@ -57,11 +57,11 @@ US GIP Quad Map | real data | CPI through 2026-10, GDP through 2026Q3
 2026Q1        2.64           2.70      0.59        -0.03     1    Goldilocks            True      False
 2026Q2        2.19           3.80     -0.45         1.10     3   Stagflation           False      False
 2026Q3        2.29           3.46      0.10        -0.35     1    Goldilocks            True      False
-2026Q4        3.19           3.81      0.90         0.36     2     Reflation           False       True
-2027Q1        3.13           3.41     -0.06        -0.40     4  Disinflation            True       True
-2027Q2        3.06           2.46     -0.07        -0.95     4  Disinflation            True       True
-2027Q3        2.43           2.59     -0.63         0.13     3   Stagflation           False       True
-2027Q4        1.89           2.18     -0.53        -0.41     4  Disinflation           False       True
+2026Q4        2.84           3.81      0.55         0.36     2     Reflation           False       True
+2027Q1        2.78           3.41     -0.06        -0.40     4  Disinflation            True       True
+2027Q2        2.71           2.46     -0.07        -0.95     4  Disinflation            True       True
+2027Q3        2.08           2.59     -0.63         0.13     3   Stagflation           False       True
+2027Q4        1.89           2.18     -0.18        -0.41     4  Disinflation           False       True
 2028Q1        1.74           2.26     -0.15         0.08     3   Stagflation            True       True
 
 === Quad flips (the tradeable events) ===
@@ -77,7 +77,7 @@ US GIP Quad Map | real data | CPI through 2026-10, GDP through 2026Q3
 
 === Direction calls (accelerating / decelerating) ===
 quarter              growth YoY             growth QoQ          inflation YoY          inflation QoQ
-2026Q4     up  0.90pp    strong down  0.29pp      call   up  0.36pp    strong   up  0.54pp    strong
+2026Q4     up  0.55pp    strong down  0.29pp      call   up  0.36pp    strong   up  0.54pp    strong
 2027Q1   down  0.06pp      weak   up  0.27pp      lean down  0.40pp    strong down  0.48pp    strong
 2027Q2   down  0.07pp      weak                no call down  0.95pp    strong   up  0.06pp      weak
   growth QoQ votes for 2026Q4: GDP reversal -0.38pp, real-PCE reversal -0.20pp -> AGREE: call (73% backtested)
